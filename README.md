@@ -1,4 +1,4 @@
-# CookingShare - Website Chia sẻ Công thức Nấu ăn
+# Project: CookingShare - Website Chia sẻ Công thức Nấu ăn
 ## 1. Student Information
 * **Full Name:** Le Hoang Anh
 * **Class:** DK24TTC4
