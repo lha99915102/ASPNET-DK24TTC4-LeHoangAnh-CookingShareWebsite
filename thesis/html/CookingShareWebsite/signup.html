@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - CookingShare</title>
+    
+    <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <style>
+        /* CSS Riêng cho trang Auth */
+        body, html {
+            height: 100%;
+            overflow-x: hidden;
+            /* 2. THÊM DÒNG NÀY ĐỂ XÓA KHOẢNG TRẮNG */
+            margin: 0;
+            padding: 0;
+        }
+        
+        .auth-bg {
+            background: url('https://placehold.co/800x1200?text=Food+Background') center/cover no-repeat;
+            position: relative;
+        }
+        
+        .auth-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            z-index: 10;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .back-home:hover { color: #FF6600; transform: translateX(-5px); }
+
+        .form-floating > .form-control:focus ~ label {
+            color: #28a745;
+        }
+        .form-floating > .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+        }
+        
+        /* Màu cam thương hiệu */
+        .text-orange { color: #FF6600 !important; }
+        .btn-orange { background-color: #FF6600; color: white; border: none; }
+        .btn-orange:hover { background-color: #e65c00; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="row g-0 h-100">
+        
+        <div class="col-lg-6 d-none d-lg-block position-relative auth-bg">
+            <div class="auth-overlay"></div>
+            
+            <a href="index.html" class="back-home"><i class="fas fa-arrow-left me-2"></i> Quay về trang chủ</a>
+
+            <div class="position-absolute bottom-0 start-0 p-5 text-white w-100">
+                <h1 class="mb-3" style="font-family: 'Dancing Script', cursive; font-size: 4rem;">CookingShare</h1>
+                <h3 class="fw-bold">Khơi nguồn cảm hứng nấu nướng</h3>
+                <p class="lead mb-4">Tham gia cộng đồng ẩm thực lớn nhất Việt Nam để chia sẻ và khám phá hàng ngàn công thức độc đáo.</p>
+            </div>
+        </div>
+
+        <div class="col-lg-6 d-flex align-items-center justify-content-center bg-white">
+            <div class="w-100 p-5" style="max-width: 550px;">
+                
+                <div class="text-center mb-4 d-lg-none">
+                    <h2 class="text-orange" style="font-family: 'Dancing Script', cursive; font-size: 3rem;">CookingShare</h2>
+                </div>
+
+                <div class="text-center mb-5">
+                    <h3 class="fw-bold">Tạo tài khoản mới</h3>
+                    <p class="text-muted">Điền thông tin bên dưới để bắt đầu hành trình của bạn.</p>
+                </div>
+
+                <form action="#" method="POST">
+                    
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="fullName" placeholder="Nguyen Van A" required>
+                        <label for="fullName">Họ và tên</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
+                        <label for="email">Địa chỉ Email</label>
+                    </div>
+
+                    <div class="form-floating mb-3 position-relative">
+                        <input type="password" class="form-control" id="password" placeholder="Password" required>
+                        <label for="password">Mật khẩu</label>
+                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer toggle-password" toggle="#password">
+                            <i class="far fa-eye text-secondary"></i>
+                        </span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Password" required>
+                        <label for="confirmPassword">Nhập lại mật khẩu</label>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" value="" id="termsCheck" required>
+                        <label class="form-check-label small text-secondary" for="termsCheck">
+                            Tôi đồng ý với <a href="#" class="text-success text-decoration-none fw-bold">Điều khoản sử dụng</a> và <a href="#" class="text-success text-decoration-none fw-bold">Chính sách bảo mật</a>.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-orange w-100 py-3 rounded-pill fw-bold shadow mb-4">Đăng Ký Tài Khoản</button>
+
+                    <div class="text-center position-relative mb-4">
+                        <hr class="text-secondary opacity-25">
+                        <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">Hoặc đăng ký với</span>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-light w-100 border py-2 d-flex align-items-center justify-content-center">
+                                <i class="fab fa-google text-danger me-2 fa-lg"></i> Google
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-light w-100 border py-2 d-flex align-items-center justify-content-center">
+                                <i class="fab fa-facebook text-primary me-2 fa-lg"></i> Facebook
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+
+                <div class="text-center mt-5">
+                    <p class="text-muted">Bạn đã có tài khoản? <a href="login.html" class="text-orange fw-bold text-decoration-none">Đăng nhập ngay</a></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        $(".toggle-password").click(function() {
+            $(this).find("i").toggleClass("fa-eye fa-eye-slash");
+            var input = $($(this).attr("toggle"));
+            if (input.attr("type") == "password") {
+                input.attr("type", "text");
+            } else {
+                input.attr("type", "password");
+            }
+        });
+    </script>
+</body>
+</html>

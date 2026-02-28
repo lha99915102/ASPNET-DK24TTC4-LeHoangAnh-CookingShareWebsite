@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>CookingShare</title>
+	<link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="assets/vendor/owl-carousel/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="assets/vendor/owl-carousel/css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+	<header>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container">
+            
+            <a class="navbar-brand navbar-brand-custom d-flex align-items-center" href="index.html">
+                <i class="fas fa-utensils me-2" style="color: #28a745;"></i> 
+                CookingShare
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="recipes.html">Công thức</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="kitchen.html">Góc bếp</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="community.html">Cộng đồng</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center ms-lg-4 gap-2">
+
+                    <a href="#" class="text-dark me-2 search-icon" id="search-trigger">
+                        <i class="fas fa-search"></i>
+                    </a>
+
+                    <!-- Đăng nhập / Đăng ký khi chưa đăng nhập -->
+                    <a href="login.html" class="btn btn-outline-custom btn-sm rounded-pill px-3">Đăng nhập</a>
+                    
+                    <a href="signup.html" class="btn btn-orange btn-sm rounded-pill px-3 shadow-sm">Đăng ký</a>
+
+                    <!-- Hồ sơ người dùng khi đã đăng nhập -->
+                    <div class="d-flex align-items-center ms-lg-4 gap-2">
+                        <div class="dropdown">
+                            <a href="user-profile.html" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="https://placehold.co/40x40" alt="User" class="rounded-circle border border-2 border-success me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                <span class="fw-bold text-dark d-none d-md-inline">Hoàng Anh</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="user-profile.html"><i class="fas fa-user-circle me-2 text-success"></i>Trang cá nhân</a></li>
+                                <li><a class="dropdown-item" href="user-profile.html"><i class="fas fa-book-open me-2 text-success"></i>Công thức của tôi</a></li>
+                                <li><a class="dropdown-item" href="user-profile.html"><i class="fas fa-cog me-2 text-success"></i>Cài đặt</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                        <a href="post-recipe.html" class="btn btn-orange btn-sm rounded-circle shadow-sm ms-2" title="Đăng công thức mới">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+	</header>
+	
+    <main class="bg-light py-5 mt-5">
+        <div class="container py-4">
+            
+            <div class="text-center mb-5">
+                <span class="text-orange fw-bold text-uppercase small">AI Recommendation</span>
+                <h1 class="fw-bold display-5 text-dark" style="font-family: 'Dancing Script';">Tủ lạnh thông minh</h1>
+                <p class="text-secondary col-lg-6 mx-auto">Bạn còn dư nguyên liệu gì? Hãy nhập vào đây, chúng tôi sẽ gợi ý món ngon bạn có thể nấu ngay lập tức!</p>
+            </div>
+    
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-3 sticky-top" style="top: 100px; z-index: 1;">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-carrot text-orange me-2"></i>Nguyên liệu đang có</h5>
+                            
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" placeholder="VD: Trứng, Cà chua...">
+                                <button class="btn btn-orange text-white" type="button"><i class="fas fa-plus"></i></button>
+                            </div>
+    
+                            <div class="d-flex flex-wrap gap-2 mb-4">
+                                <span class="badge bg-light text-dark border p-2 d-flex align-items-center">
+                                    Trứng gà <i class="fas fa-times ms-2 text-secondary cursor-pointer"></i>
+                                </span>
+                                <span class="badge bg-light text-dark border p-2 d-flex align-items-center">
+                                    Hành tây <i class="fas fa-times ms-2 text-secondary cursor-pointer"></i>
+                                </span>
+                                <span class="badge bg-light text-dark border p-2 d-flex align-items-center">
+                                    Cơm nguội <i class="fas fa-times ms-2 text-secondary cursor-pointer"></i>
+                                </span>
+                            </div>
+    
+                            <hr>
+    
+                            <div class="mb-3">
+                                <label class="fw-bold small mb-2">Chế độ tìm kiếm:</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="searchMode" id="mode1" checked>
+                                    <label class="form-check-label small" for="mode1">Ưu tiên dùng hết nguyên liệu này</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="searchMode" id="mode2">
+                                    <label class="form-check-label small" for="mode2">Chỉ cần chứa 1 trong số này</label>
+                                </div>
+                            </div>
+    
+                            <button class="btn btn-success w-100 rounded-pill fw-bold shadow-sm py-2">
+                                <i class="fas fa-magic me-2"></i> Gợi ý món ăn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0">Tìm thấy <span class="text-orange">3</span> món phù hợp</h4>
+                        <select class="form-select form-select-sm w-auto">
+                            <option>Độ trùng khớp cao nhất</option>
+                            <option>Thời gian nấu nhanh nhất</option>
+                        </select>
+                    </div>
+                    
+                    <div class="card border-0 shadow-sm rounded-3 mb-4 overflow-hidden">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="https://placehold.co/300x300?text=Com+Chien" class="img-fluid h-100 object-fit-cover" alt="...">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="fw-bold">Cơm chiên trứng hành tây</h5>
+                                        <small class="text-success fw-bold">90% Phù hợp</small>
+                                    </div>
+                                    <p class="text-secondary small mb-2">Bữa sáng nhanh gọn tận dụng cơm nguội tối qua, thơm lừng mùi hành phi.</p>
+                                    
+                                    <div class="bg-light p-2 rounded mb-3 small">
+                                        <div class="text-success fw-bold mb-1"><i class="fas fa-check me-1"></i> Có sẵn: Trứng, Hành tây, Cơm nguội</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Thiếu: Nước mắm, Tiêu, Dầu ăn</div>
+                                    </div>
+                                    
+                                    <a href="recipe-detail.html" class="btn btn-sm btn-outline-orange rounded-pill px-3">Xem cách làm</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="card border-0 shadow-sm rounded-3 mb-4 overflow-hidden">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="https://placehold.co/300x300?text=Trung+Op+La" class="img-fluid h-100 object-fit-cover" alt="...">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="fw-bold">Trứng ốp la hành tây</h5>
+                                        <small class="text-success fw-bold">85% Phù hợp</small>
+                                    </div>
+                                    <p class="text-secondary small mb-2">Trứng lòng đào béo ngậy kết hợp vị ngọt của hành tây xào tái.</p>
+                                    
+                                    <div class="bg-light p-2 rounded mb-3 small">
+                                        <div class="text-success fw-bold mb-1"><i class="fas fa-check me-1"></i> Có sẵn: Trứng, Hành tây</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Thiếu: Dầu hào</div>
+                                    </div>
+                                    
+                                    <a href="recipe-detail.html" class="btn btn-sm btn-outline-orange rounded-pill px-3">Xem cách làm</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                </div>
+            </div>
+        </div>
+    </main>
+    
+	<footer class="footer-section">
+    
+    <div class="footer-main bg-white pt-5 pb-4 border-top border-success border-3">
+        <div class="container text-md-start text-center">
+            <div class="row">
+                
+                <div class="col-md-4 col-lg-4 col-xl-4 mx-auto mt-3">
+                    <h5 class="mb-3 footer-brand">
+                        <i class="fas fa-utensils me-2 text-success"></i>CookingShare
+                    </h5>
+                    <p class="text-secondary pe-lg-5">
+                        Nền tảng chia sẻ công thức nấu ăn hàng đầu Việt Nam. Nơi kết nối những tâm hồn yêu bếp và lan tỏa hương vị yêu thương.
+                    </p>
+                    <form class="mt-4 position-relative">
+                        <input type="email" class="form-control rounded-pill ps-3 pe-5" placeholder="Nhập email để nhận công thức mới...">
+                        <button class="btn btn-orange rounded-pill position-absolute top-0 end-0 h-100 px-3" type="button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Khám phá</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="recipes.html" class="footer-link">Món ăn vặt</a></li>
+                        <li class="mb-2"><a href="recipes.html" class="footer-link">Thực đơn Healthy</a></li>
+                        <li class="mb-2"><a href="recipes.html" class="footer-link">Đặc sản vùng miền</a></li>
+                        <li class="mb-2"><a href="recipes.html" class="footer-link">Bếp bánh</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Hỗ trợ</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="user-profile.html" class="footer-link">Tài khoản</a></li>
+                        <li class="mb-2"><a href="signup.html" class="footer-link">Gửi bài viết</a></li>
+                        <li class="mb-2"><a href="404.html" class="footer-link">Chính sách bảo mật</a></li>
+                        <li class="mb-2"><a href="404.html" class="footer-link">Quy tắc cộng đồng</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Liên hệ</h6>
+                    <p class="text-secondary mb-2"><i class="fas fa-map-marker-alt me-2 text-warning"></i> 123 Cù Lao Giêng, An Giang</p>
+                    <p class="text-secondary mb-2"><i class="fas fa-envelope me-2 text-warning"></i> contact@cookingshare.com</p>
+                    <p class="text-secondary mb-4"><i class="fas fa-phone-alt me-2 text-warning"></i> 0912.345.678</p>
+                    
+                    <div>
+                        <a href="https://www.facebook.com" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.youtube.com" class="social-icon"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.tiktok.com" class="social-icon"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://www.instagram.com" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-12 text-center">
+                    <p class="mb-0 small">
+                        &copy; 2026 <strong>CookingShare</strong>. All Rights Reserved. 
+                        <span class="d-none d-sm-inline mx-2">|</span> <br class="d-sm-none">
+                        Designed by <span class="text-success fw-bold">Hoang Anh</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+	</footer>
+
+    <div id="search-overlay" class="search-overlay">
+    <button type="button" class="btn-close-search" id="search-close">
+        <i class="fas fa-times"></i>
+    </button>
+    
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form action="#" class="text-center">
+                    <input type="text" class="search-input-transparent" placeholder="Gõ tên món ăn bạn muốn tìm..." autocomplete="off">
+                    <p class="text-white-50 mt-3">Nhấn <span class="text-warning fw-bold">Enter</span> để tìm kiếm hoặc <span class="text-warning fw-bold">ESC</span> để đóng</p>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <a href="#" id="back-to-top" class="back-to-top" title="Lên đầu trang">
+        <i class="fas fa-chevron-up"></i>
+    </a>
+
+	<script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/owl-carousel/js/owl.carousel.min.js"></script>
+    <script src="assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

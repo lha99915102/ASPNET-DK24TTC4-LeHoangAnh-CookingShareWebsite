@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Công thức - CookingShare</title>
+    
+    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/vendor/font-awesome/css/all.min.css">
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <link href="assets/vendor/summernote/summernote-bs5.min.css" rel="stylesheet">
+    <link href="assets/vendor/datatables/css/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/admin-style.css">
+
+</head>
+<body>
+
+    <nav id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center">
+            <i class="fas fa-utensils me-2" style="color: #28a745;"></i> 
+            CookingShare
+        </div>
+
+        <div class="sidebar-menu">
+            <p class="menu-label">Tổng Quan</p>
+            <a href="admin-dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            
+            <p class="menu-label">Kiểm Duyệt</p>
+            <a href="admin-recipes.html">
+                <i class="fas fa-book-open"></i> Công thức 
+                <span class="badge bg-danger float-end rounded-pill">10</span>
+            </a>
+            <a href="admin-tips.html">
+                <i class="fas fa-lightbulb"></i> Mẹo vặt
+                <span class="badge bg-warning text-dark float-end rounded-pill">5</span>
+            </a>
+            <a href="admin-collections.html">
+                <i class="fas fa-layer-group"></i> Bộ sưu tập
+            </a>
+            <a href="admin-comments.html">
+                <i class="fas fa-comment"></i> Bình luận
+            </a>
+            <a href="admin-community.html"><i class="fas fa-users"></i> Cộng đồng & Report</a>
+
+            <p class="menu-label">Dữ liệu gốc (Master Data)</p>
+
+            <a href="admin-ingredients.html">
+                <i class="fas fa-carrot" style="width: 25px;"></i> Nguyên liệu & Calo
+            </a>
+
+            <a href="admin-categories.html">
+                <i class="fas fa-list" style="width: 25px;"></i> Danh mục Món ăn
+            </a>
+
+            <a href="admin-units.html">
+                <i class="fas fa-balance-scale" style="width: 25px;"></i> Đơn vị quy đổi
+            </a>
+
+            <a href="admin-tags.html">
+                <i class="fas fa-tags" style="width: 25px;"></i> Tag & Chế độ ăn
+            </a>
+
+            <p class="menu-label">Hệ thống</p>
+            <a href="admin-users.html"><i class="fas fa-user-cog"></i> Người dùng</a>
+            <a href="admin-banners.html" class="active"><i class="fas fa-images"></i> Quản lý Banner</a>
+            <a href="admin-settings.html"><i class="fas fa-cogs"></i> Cấu hình Website</a>
+            
+            <div class="mt-5 px-3">
+                <a href="admin-login.html" class="btn btn-outline-light w-100 text-start border-0">
+                    <i class="fas fa-sign-out-alt text-danger"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="content">
+        
+        <div class="top-navbar sticky-top bg-white p-3 shadow-sm d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button type="button" id="sidebarCollapse" class="btn btn-light border me-3"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 fw-bold text-secondary">Quản lý Banner</h4>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-group d-none d-md-flex" style="width: 250px;">
+                    <input type="text" class="form-control bg-light border-0" placeholder="Tìm kiếm nhanh...">
+                    <button class="btn btn-light border-0"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="text-secondary position-relative me-2" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-0">
+                        <div class="card border-0" style="width: 300px;">
+                            <div class="card-header bg-white fw-bold">Thông báo mới</div>
+                            <div class="list-group list-group-flush">
+                                <a href="#" class="list-group-item list-group-item-action small py-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-dark">Bài viết mới</strong>
+                                        <small class="text-muted">5p</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary">User <strong>TuanAnh</strong> vừa gửi bài "Phở Bò".</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action small py-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-danger">Báo cáo vi phạm</strong>
+                                        <small class="text-muted">1h</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary">Có báo cáo spam tại bình luận.</p>
+                                </a>
+                            </div>
+                        </div>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
+                        <img src="https://placehold.co/40x40" class="rounded-circle me-2" alt="Admin">
+                        <div class="d-none d-md-block text-end me-1">
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Admin</span>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <li><a class="dropdown-item" href="admin-profile.html"><i class="fas fa-user-circle me-2"></i>Hồ sơ</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="admin-login.html"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid p-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bannerModal">
+                    <i class="fas fa-plus-circle me-2"></i>Thêm Banner Mới
+                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small fw-bold">Trạng thái:</span>
+                    <select class="form-select w-auto" id="filterStatus">
+                        <option value="">Tất cả</option>
+                        <option value="Hiển thị">Đang hiển thị</option>
+                        <option value="Đang ẩn">Đang ẩn</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <table class="table table-hover align-middle datatable" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">Thứ tự</th>
+                                <th>Hình ảnh Banner</th>
+                                <th>Tiêu đề & Đường dẫn (Link)</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge bg-dark fs-6">1</span></td>
+                                <td>
+                                    <img src="https://placehold.co/800x300/ff9f43/white?text=Banner+Tet" class="banner-thumbnail" alt="Banner">
+                                </td>
+                                <td>
+                                    <h6 class="mb-1 fw-bold text-dark">Cuộc thi: Món ngon ngày Tết 2026</h6>
+                                    <a href="#" class="small text-decoration-none"><i class="fas fa-link me-1"></i>/cuoc-thi-tet-2026</a>
+                                </td>
+                                <td><span class="badge bg-success">Hiển thị</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><span class="badge bg-dark fs-6">2</span></td>
+                                <td>
+                                    <img src="https://placehold.co/800x300/28a745/white?text=Eat+Clean" class="banner-thumbnail" alt="Banner">
+                                </td>
+                                <td>
+                                    <h6 class="mb-1 fw-bold text-dark">Bộ sưu tập: 30 Ngày Eat Clean</h6>
+                                    <a href="#" class="small text-decoration-none"><i class="fas fa-link me-1"></i>/collection/eat-clean</a>
+                                </td>
+                                <td><span class="badge bg-success">Hiển thị</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+
+                            <tr class="opacity-75">
+                                <td><span class="badge bg-secondary fs-6">3</span></td>
+                                <td>
+                                    <img src="https://placehold.co/800x300/6c757d/white?text=Khuyen+Mai" class="banner-thumbnail grayscale" alt="Banner">
+                                </td>
+                                <td>
+                                    <h6 class="mb-1 fw-bold text-muted">Giảm 50% khóa học làm bánh</h6>
+                                    <a href="#" class="small text-muted text-decoration-none"><i class="fas fa-link me-1"></i>/khoa-hoc-lam-banh</a>
+                                </td>
+                                <td><span class="badge bg-secondary">Đang ẩn</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="bannerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg"> <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Cập nhật Banner</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bannerForm">
+                        <div class="row">
+                            <div class="col-md-7 mb-3">
+                                <label class="form-label fw-bold">Hình ảnh Banner <span class="text-danger">*</span></label>
+                                
+                                <div class="mb-2 position-relative overflow-hidden w-100 rounded d-flex align-items-center justify-content-center" 
+                                    style="height: 180px; background-color: #f8f9fa; border: 2px dashed #ced4da;">
+                                    
+                                    <img id="bannerPreview" src="https://placehold.co/800x300?text=Upload+Image+(1920x600)" 
+                                        class="position-absolute top-0 start-0 w-100 h-100" 
+                                        style="object-fit: cover;" alt="Preview">
+                                        
+                                </div>
+                                
+                                <input class="form-control form-control-sm" type="file" id="bannerImage" accept="image/png, image/jpeg, image/webp">
+                                <small class="text-muted d-block mt-1"><i class="fas fa-info-circle"></i> Kích thước khuyến nghị: 1920 x 600px. Tối đa 2MB.</small>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Tên chiến dịch / Tiêu đề</label>
+                                    <input type="text" class="form-control" id="bannerTitle" placeholder="VD: Món ngon ngày Tết">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Đường dẫn khi click (URL)</label>
+                                    <input type="text" class="form-control" id="bannerLink" placeholder="VD: /cuoc-thi-tet hoặc https://...">
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold">Thứ tự hiển thị</label>
+                                        <input type="number" class="form-control" id="bannerOrder" value="1" min="1">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold">Trạng thái</label>
+                                        <select class="form-select" id="bannerStatus">
+                                            <option value="active">Hiển thị</option>
+                                            <option value="hidden">Ẩn</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-banner"><i class="fas fa-save me-2"></i>Lưu Banner</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/vendor/jquery/jquery.min.js"></script>
+    <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <script src="assets/vendor/summernote/summernote-bs5.min.js"></script>
+    <script src="assets/vendor/datatables/js/datatables.min.js"></script>
+    <script src="assets/js/admin-main.js"></script> 
+    <script src="assets/js/admin-banners.js"></script>
+</body>
+</html>

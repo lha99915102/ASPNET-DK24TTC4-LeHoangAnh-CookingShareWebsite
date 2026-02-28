@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Công thức - CookingShare</title>
+    
+    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/vendor/font-awesome/css/all.min.css">
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <link href="assets/vendor/summernote/summernote-bs5.min.css" rel="stylesheet">
+    <link href="assets/vendor/datatables/css/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/admin-style.css">
+
+</head>
+<body>
+
+    <nav id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center">
+            <i class="fas fa-utensils me-2" style="color: #28a745;"></i> 
+            CookingShare
+        </div>
+
+        <div class="sidebar-menu">
+            <p class="menu-label">Tổng Quan</p>
+            <a href="admin-dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            
+            <p class="menu-label">Kiểm Duyệt</p>
+            <a href="admin-recipes.html">
+                <i class="fas fa-book-open"></i> Công thức 
+                <span class="badge bg-danger float-end rounded-pill">10</span>
+            </a>
+            <a href="admin-tips.html">
+                <i class="fas fa-lightbulb"></i> Mẹo vặt
+                <span class="badge bg-warning text-dark float-end rounded-pill">5</span>
+            </a>
+            <a href="admin-collections.html">
+                <i class="fas fa-layer-group"></i> Bộ sưu tập
+            </a>
+            <a href="admin-comments.html">
+                <i class="fas fa-comment"></i> Bình luận
+            </a>
+            <a href="admin-community.html" class="active"><i class="fas fa-users"></i> Cộng đồng & Report</a>
+
+            <p class="menu-label">Dữ liệu gốc (Master Data)</p>
+
+            <a href="admin-ingredients.html">
+                <i class="fas fa-carrot" style="width: 25px;"></i> Nguyên liệu & Calo
+            </a>
+
+            <a href="admin-categories.html">
+                <i class="fas fa-list" style="width: 25px;"></i> Danh mục Món ăn
+            </a>
+
+            <a href="admin-units.html">
+                <i class="fas fa-balance-scale" style="width: 25px;"></i> Đơn vị quy đổi
+            </a>
+
+            <a href="admin-tags.html">
+                <i class="fas fa-tags" style="width: 25px;"></i> Tag & Chế độ ăn
+            </a>
+
+            <p class="menu-label">Hệ thống</p>
+            <a href="admin-users.html"><i class="fas fa-user-cog"></i> Người dùng</a>
+            <a href="admin-banners.html"><i class="fas fa-images"></i> Quản lý Banner</a>
+            <a href="admin-settings.html"><i class="fas fa-cogs"></i> Cấu hình Website</a>
+            
+            <div class="mt-5 px-3">
+                <a href="admin-login.html" class="btn btn-outline-light w-100 text-start border-0">
+                    <i class="fas fa-sign-out-alt text-danger"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="content">
+        
+        <div class="top-navbar sticky-top bg-white p-3 shadow-sm d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button type="button" id="sidebarCollapse" class="btn btn-light border me-3"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 fw-bold text-secondary">Quản lý Cộng đồng & Báo cáo</h4>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-group d-none d-md-flex" style="width: 250px;">
+                    <input type="text" class="form-control bg-light border-0" placeholder="Tìm kiếm nhanh...">
+                    <button class="btn btn-light border-0"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="text-secondary position-relative me-2" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-0">
+                        <div class="card border-0" style="width: 300px;">
+                            <div class="card-header bg-white fw-bold">Thông báo mới</div>
+                            <div class="list-group list-group-flush">
+                                <a href="#" class="list-group-item list-group-item-action small py-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-dark">Bài viết mới</strong>
+                                        <small class="text-muted">5p</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary">User <strong>TuanAnh</strong> vừa gửi bài "Phở Bò".</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action small py-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-danger">Báo cáo vi phạm</strong>
+                                        <small class="text-muted">1h</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary">Có báo cáo spam tại bình luận.</p>
+                                </a>
+                            </div>
+                        </div>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
+                        <img src="https://placehold.co/40x40" class="rounded-circle me-2" alt="Admin">
+                        <div class="d-none d-md-block text-end me-1">
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Admin</span>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <li><a class="dropdown-item" href="admin-profile.html"><i class="fas fa-user-circle me-2"></i>Hồ sơ</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="admin-login.html"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid p-4">
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm border-start border-4 border-danger">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="text-muted small text-uppercase fw-bold">Report chưa xử lý</h5>
+                                    <h3 class="fw-bold mb-0 text-danger">12</h3>
+                                </div>
+                                <i class="fas fa-exclamation-circle fa-2x text-danger opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm border-start border-4 border-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="text-muted small text-uppercase fw-bold">Bình luận hôm nay</h5>
+                                    <h3 class="fw-bold mb-0">156</h3>
+                                </div>
+                                <i class="fas fa-comments fa-2x text-primary opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-2">
+                            <ul class="nav nav-pills nav-fill" id="statusFilters" data-theme="red">
+    
+                                <li class="nav-item">
+                                    <a class="nav-link active fw-bold bg-warning text-dark" href="#" data-filter="pending">
+                                        <i class="fas fa-fire me-2"></i>Chờ xử lý <span class="badge bg-white text-danger ms-1">12</span>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-secondary" href="#" data-filter="approved">
+                                        <i class="fas fa-check-circle me-2"></i>Đã giải quyết (Xong)
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-secondary" href="#" data-filter="rejected">
+                                        <i class="fas fa-trash-alt me-2"></i>Đã bỏ qua (Spam giả)
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <table class="table table-hover align-middle datatable" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Đối tượng bị báo cáo</th>
+                                <th>Lý do</th>
+                                <th>Người báo cáo</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th> <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-box bg-light rounded-circle me-3" style="width:40px;height:40px;">
+                                            <i class="fas fa-comment text-secondary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">Bình luận tại "Phở Bò"</h6>
+                                            <small class="text-muted fst-italic">"Click vào link này để nhận..."</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-danger">Spam / Quảng cáo</span></td>
+                                <td>User123</td>
+                                <td>10:00 AM<br>Hôm nay</td>
+                                <td><span class="badge bg-danger status-badge">Chờ duyệt</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#reportModal">
+                                        <i class="fas fa-gavel"></i> Xử lý
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-box bg-light rounded-circle me-3" style="width:40px;height:40px;">
+                                            <i class="fas fa-newspaper text-secondary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">Bài viết: "Thịt chó..."</h6>
+                                            <small class="text-muted">ID: #REC999</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-warning text-dark">Nội dung thô tục</span></td>
+                                <td>VeganLover</td>
+                                <td>09/02/2026</td>
+                                <td><span class="badge bg-success status-badge">Đã duyệt</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-eye"></i></button>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-box bg-light rounded-circle me-3" style="width:40px;height:40px;">
+                                            <i class="fas fa-user text-secondary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">User: TuanAnh</h6>
+                                            <small class="text-muted">Profile</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-secondary">Báo cáo sai</span></td>
+                                <td>Hater01</td>
+                                <td>08/02/2026</td>
+                                <td><span class="badge bg-secondary status-badge">Đã từ chối</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-eye"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Xử lý Vi phạm</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    
+                    <div class="alert alert-light border d-flex align-items-center mb-4">
+                        <i class="fas fa-info-circle fa-2x text-danger me-3"></i>
+                        <div>
+                            <strong>Lý do báo cáo:</strong> Spam / Quảng cáo trái phép<br>
+                            <small class="text-muted">Báo cáo bởi: <strong>User123</strong> vào lúc 10:00 AM</small>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Nội dung bị báo cáo:</h6>
+                    <div class="p-3 bg-light border rounded mb-4 text-muted fst-italic">
+                        "Các bạn ơi, hãy click vào link http://spam-link.com để nhận voucher 500k mua nồi chiên không dầu nhé! Số lượng có hạn..."
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Thông tin người vi phạm:</h6>
+                    <div class="d-flex align-items-center p-3 border rounded mb-4">
+                        <img src="https://placehold.co/50x50" class="rounded-circle me-3">
+                        <div>
+                            <h6 class="mb-0 fw-bold">SpammerKing</h6>
+                            <small class="text-danger">Đã bị báo cáo 3 lần trước đây</small>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="#" class="btn btn-sm btn-outline-primary">Xem hồ sơ</a>
+                        </div>
+                    </div>
+
+                    <hr>
+                    
+                    <h6 class="fw-bold mb-3">Quyết định của Admin:</h6>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-danger w-100 py-2 btn-delete-content" data-bs-dismiss="modal">
+                                <i class="fas fa-trash me-2"></i>Xóa nội dung
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-danger w-100 py-2 btn-ban-user" data-bs-dismiss="modal">
+                                <i class="fas fa-user-lock me-2"></i>Khóa tài khoản
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-secondary w-100 py-2" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Bỏ qua (Không lỗi)
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/vendor/jquery/jquery.min.js"></script>
+    <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <script src="assets/vendor/summernote/summernote-bs5.min.js"></script>
+    <script src="assets/vendor/datatables/js/datatables.min.js"></script>
+    <script src="assets/js/admin-main.js"></script>
+</body>
+</html>

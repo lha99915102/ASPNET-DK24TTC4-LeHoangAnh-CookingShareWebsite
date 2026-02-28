@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Công thức - CookingShare</title>
+    
+    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/vendor/font-awesome/css/all.min.css">
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <link href="assets/vendor/summernote/summernote-bs5.min.css" rel="stylesheet">
+    <link href="assets/vendor/datatables/css/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/admin-style.css">
+
+</head>
+<body>
+
+    <nav id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center">
+            <i class="fas fa-utensils me-2" style="color: #28a745;"></i> 
+            CookingShare
+        </div>
+
+        <div class="sidebar-menu">
+            <p class="menu-label">Tổng Quan</p>
+            <a href="admin-dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            
+            <p class="menu-label">Kiểm Duyệt</p>
+            <a href="admin-recipes.html">
+                <i class="fas fa-book-open"></i> Công thức 
+                <span class="badge bg-danger float-end rounded-pill">10</span>
+            </a>
+            <a href="admin-tips.html">
+                <i class="fas fa-lightbulb"></i> Mẹo vặt
+                <span class="badge bg-warning text-dark float-end rounded-pill">5</span>
+            </a>
+            <a href="admin-collections.html">
+                <i class="fas fa-layer-group"></i> Bộ sưu tập
+            </a>
+            <a href="admin-comments.html" class="active">
+                <i class="fas fa-comment"></i> Bình luận
+            </a>
+            <a href="admin-community.html"><i class="fas fa-users"></i> Cộng đồng & Report</a>
+
+            <p class="menu-label">Dữ liệu gốc (Master Data)</p>
+
+            <a href="admin-ingredients.html">
+                <i class="fas fa-carrot" style="width: 25px;"></i> Nguyên liệu & Calo
+            </a>
+
+            <a href="admin-categories.html">
+                <i class="fas fa-list" style="width: 25px;"></i> Danh mục Món ăn
+            </a>
+
+            <a href="admin-units.html">
+                <i class="fas fa-balance-scale" style="width: 25px;"></i> Đơn vị quy đổi
+            </a>
+
+            <a href="admin-tags.html">
+                <i class="fas fa-tags" style="width: 25px;"></i> Tag & Chế độ ăn
+            </a>
+
+            <p class="menu-label">Hệ thống</p>
+            <a href="admin-users.html"><i class="fas fa-user-cog"></i> Người dùng</a>
+            <a href="admin-banners.html"><i class="fas fa-images"></i> Quản lý Banner</a>
+            <a href="admin-settings.html"><i class="fas fa-cogs"></i> Cấu hình Website</a>
+            
+            <div class="mt-5 px-3">
+                <a href="admin-login.html" class="btn btn-outline-light w-100 text-start border-0">
+                    <i class="fas fa-sign-out-alt text-danger"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="content">
+        
+        <div class="top-navbar sticky-top bg-white p-3 shadow-sm d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button type="button" id="sidebarCollapse" class="btn btn-light border me-3"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 fw-bold text-secondary">Quản lý bình luận</h4>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-group d-none d-md-flex" style="width: 250px;">
+                    <input type="text" class="form-control bg-light border-0" placeholder="Tìm kiếm nhanh...">
+                    <button class="btn btn-light border-0"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="text-secondary position-relative me-2" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-0">
+                        <div class="card border-0" style="width: 300px;">
+                            <div class="card-header bg-white fw-bold">Thông báo mới</div>
+                            <div class="list-group list-group-flush">
+                                <a href="#" class="list-group-item list-group-item-action small py-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-dark">Bài viết mới</strong>
+                                        <small class="text-muted">5p</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary">User <strong>TuanAnh</strong> vừa gửi bài "Phở Bò".</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action small py-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-danger">Báo cáo vi phạm</strong>
+                                        <small class="text-muted">1h</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary">Có báo cáo spam tại bình luận.</p>
+                                </a>
+                            </div>
+                        </div>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
+                        <img src="https://placehold.co/40x40" class="rounded-circle me-2" alt="Admin">
+                        <div class="d-none d-md-block text-end me-1">
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Admin</span>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <li><a class="dropdown-item" href="admin-profile.html"><i class="fas fa-user-circle me-2"></i>Hồ sơ</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="admin-login.html"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid p-4">
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-primary text-white">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Tổng bình luận</h6>
+                                <h3 class="mb-0 fw-bold">15,420</h3>
+                            </div>
+                            <i class="fas fa-comments fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-danger text-white">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Bị báo cáo (Reported)</h6>
+                                <h3 class="mb-0 fw-bold">12</h3>
+                            </div>
+                            <i class="fas fa-flag fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-secondary text-white">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Đã ẩn / Xóa mờ</h6>
+                                <h3 class="mb-0 fw-bold">345</h3>
+                            </div>
+                            <i class="fas fa-eye-slash fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
+                <h6 class="mb-0 text-muted"><i class="fas fa-filter me-2"></i>Bộ lọc tìm kiếm</h6>
+                <div class="d-flex gap-3">
+                    <select class="form-select" id="filterSource">
+                        <option value="">-- Nguồn bình luận --</option>
+                        <option value="Công thức">Tại Công thức</option>
+                        <option value="Mẹo vặt">Tại Mẹo vặt</option>
+                        <option value="Cộng đồng">Tại Cộng đồng</option>
+                    </select>
+                    <select class="form-select" id="filterStatus">
+                        <option value="">-- Trạng thái --</option>
+                        <option value="Bình thường">Bình thường</option>
+                        <option value="Bị báo cáo">Bị báo cáo (Spam)</option>
+                        <option value="Đã ẩn">Đã bị ẩn</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <table class="table table-hover align-middle datatable" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Người gửi</th>
+                                <th>Nội dung (Trích đoạn)</th>
+                                <th>Nguồn</th>
+                                <th>Ngày gửi</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://placehold.co/35x35" class="rounded-circle me-2" alt="Avatar">
+                                        <a href="admin-user-detail.html" class="fw-bold text-dark text-decoration-none">Mai Phương</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="comment-text text-muted" title="Món này ngon quá, cảm ơn chef đã chia sẻ công thức chi tiết nha!">
+                                        "Món này ngon quá, cảm ơn chef đã chia sẻ công thức chi tiết nha!"
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary text-light mb-1">Công thức</span><br>
+                                    <a href="#" class="small text-decoration-none text-truncate d-inline-block" style="max-width: 150px;">Gà nướng tiêu xanh</a>
+                                </td>
+                                <td class="small">19/02/2026<br><span class="text-muted">10:30 AM</span></td>
+                                <td><span class="badge bg-success">Bình thường</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-info btn-view-comment" title="Xem chi tiết"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-outline-warning btn-hide-comment" title="Ẩn bình luận"><i class="fas fa-eye-slash"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete" title="Xóa vĩnh viễn"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+
+                            <tr class="table-danger">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://placehold.co/35x35/c0392b/white" class="rounded-circle me-2" alt="Avatar">
+                                        <a href="admin-user-detail.html" class="fw-bold text-dark text-decoration-none">Spammer99</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="comment-text fw-bold text-dark" title="Click vào link này để nhận tiền thưởng: http://link-rac.com">
+                                        "Click vào link này để nhận tiền thưởng: http://link-rac.com"
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success text-light mb-1">Mẹo vặt</span><br>
+                                    <a href="#" class="small text-decoration-none text-truncate d-inline-block" style="max-width: 150px;">Bảo quản hành lá</a>
+                                </td>
+                                <td class="small">19/02/2026<br><span class="text-muted">08:15 AM</span></td>
+                                <td><span class="badge bg-danger"><i class="fas fa-flag me-1"></i> Bị báo cáo</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-info btn-view-comment" title="Xem chi tiết"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-warning text-dark btn-hide-comment" title="Đang hiện -> Ấn để Ẩn"><i class="fas fa-eye-slash"></i></button>
+                                    <button class="btn btn-sm btn-danger btn-delete" title="Xóa vĩnh viễn"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+
+                            <tr class="opacity-75 bg-light">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://placehold.co/35x35" class="rounded-circle me-2" alt="Avatar">
+                                        <a href="admin-user-detail.html" class="fw-bold text-muted text-decoration-none">Lê Văn C</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="comment-text text-muted fst-italic">
+                                        "Nấu dở tệ, vứt đi cho rồi ***"
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-dark mb-1">Cộng đồng</span><br>
+                                    <span class="small text-muted">Bài thảo luận #412</span>
+                                </td>
+                                <td class="small">18/02/2026<br><span class="text-muted">22:00 PM</span></td>
+                                <td><span class="badge bg-secondary"><i class="fas fa-eye-slash me-1"></i> Đã ẩn</span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-info btn-view-comment" title="Xem chi tiết"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-outline-success btn-hide-comment" title="Đang ẩn -> Ấn để Hiện lại"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete" title="Xóa vĩnh viễn"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Chi tiết Bình luận</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <img src="https://placehold.co/50x50" class="rounded-circle me-3" id="modal-avatar" alt="Avatar">
+                        <div>
+                            <h6 class="mb-0 fw-bold" id="modal-author">Mai Phương</h6>
+                            <small class="text-muted" id="modal-date">19/02/2026 - 10:30 AM</small>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge bg-primary" id="modal-source-badge">Công thức</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small mb-1">Nội dung bình luận:</label>
+                        <div class="p-3 bg-light rounded border border-info" id="modal-content" style="font-size: 1.1rem;">
+                            Món này ngon quá, cảm ơn chef đã chia sẻ công thức chi tiết nha! Mình đã làm thử và thành công ngay lần đầu tiên.
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="fw-bold text-muted small mb-1">Vị trí đăng tải:</label>
+                        <div class="d-flex align-items-center p-2 border rounded bg-white">
+                            <i class="fas fa-link text-primary me-2"></i>
+                            <a href="#" class="text-decoration-none fw-bold" id="modal-target-link">Gà nướng tiêu xanh</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <a href="admin-user-detail.html" class="btn btn-warning text-dark"><i class="fas fa-user-lock me-1"></i> Xử lý người dùng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/vendor/jquery/jquery.min.js"></script>
+    <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <script src="assets/vendor/summernote/summernote-bs5.min.js"></script>
+    <script src="assets/vendor/datatables/js/datatables.min.js"></script>
+    <script src="assets/js/admin-main.js"></script> 
+    <script src="assets/js/admin-comments.js"></script>
+</body>
+</html>

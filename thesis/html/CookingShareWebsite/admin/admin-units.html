@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Công thức - CookingShare</title>
+    
+    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/vendor/font-awesome/css/all.min.css">
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <link href="assets/vendor/summernote/summernote-bs5.min.css" rel="stylesheet">
+    <link href="assets/vendor/datatables/css/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/admin-style.css">
+
+</head>
+<body>
+
+    <nav id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center">
+            <i class="fas fa-utensils me-2" style="color: #28a745;"></i> 
+            CookingShare
+        </div>
+
+        <div class="sidebar-menu">
+            <p class="menu-label">Tổng Quan</p>
+            <a href="admin-dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            
+            <p class="menu-label">Kiểm Duyệt</p>
+            <a href="admin-recipes.html">
+                <i class="fas fa-book-open"></i> Công thức 
+                <span class="badge bg-danger float-end rounded-pill">10</span>
+            </a>
+            <a href="admin-tips.html">
+                <i class="fas fa-lightbulb"></i> Mẹo vặt
+                <span class="badge bg-warning text-dark float-end rounded-pill">5</span>
+            </a>
+            <a href="admin-collections.html">
+                <i class="fas fa-layer-group"></i> Bộ sưu tập
+            </a>
+            <a href="admin-comments.html">
+                <i class="fas fa-comment"></i> Bình luận
+            </a>
+            <a href="admin-community.html"><i class="fas fa-users"></i> Cộng đồng & Report</a>
+
+            <p class="menu-label">Dữ liệu gốc (Master Data)</p>
+
+            <a href="admin-ingredients.html">
+                <i class="fas fa-carrot" style="width: 25px;"></i> Nguyên liệu & Calo
+            </a>
+
+            <a href="admin-categories.html">
+                <i class="fas fa-list" style="width: 25px;"></i> Danh mục Món ăn
+            </a>
+
+            <a href="admin-units.html" class="active">
+                <i class="fas fa-balance-scale" style="width: 25px;"></i> Đơn vị quy đổi
+            </a>
+
+            <a href="admin-tags.html">
+                <i class="fas fa-tags" style="width: 25px;"></i> Tag & Chế độ ăn
+            </a>
+
+            <p class="menu-label">Hệ thống</p>
+            <a href="admin-users.html"><i class="fas fa-user-cog"></i> Người dùng</a>
+            <a href="admin-banners.html"><i class="fas fa-images"></i> Quản lý Banner</a>
+            <a href="admin-settings.html"><i class="fas fa-cogs"></i> Cấu hình Website</a>
+            
+            <div class="mt-5 px-3">
+                <a href="admin-login.html" class="btn btn-outline-light w-100 text-start border-0">
+                    <i class="fas fa-sign-out-alt text-danger"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="content">
+        
+        <div class="top-navbar sticky-top bg-white p-3 shadow-sm d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button type="button" id="sidebarCollapse" class="btn btn-light border me-3"><i class="fas fa-bars"></i></button>
+                <h4 class="mb-0 fw-bold text-secondary">Đơn vị quy đổi</h4>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-group d-none d-md-flex" style="width: 250px;">
+                    <input type="text" class="form-control bg-light border-0" placeholder="Tìm kiếm nhanh...">
+                    <button class="btn btn-light border-0"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="text-secondary position-relative me-2" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-0">
+                        <div class="card border-0" style="width: 300px;">
+                            <div class="card-header bg-white fw-bold">Thông báo mới</div>
+                            <div class="list-group list-group-flush">
+                                <a href="#" class="list-group-item list-group-item-action small py-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-dark">Bài viết mới</strong>
+                                        <small class="text-muted">5p</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary">User <strong>TuanAnh</strong> vừa gửi bài "Phở Bò".</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action small py-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-danger">Báo cáo vi phạm</strong>
+                                        <small class="text-muted">1h</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary">Có báo cáo spam tại bình luận.</p>
+                                </a>
+                            </div>
+                        </div>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
+                        <img src="https://placehold.co/40x40" class="rounded-circle me-2" alt="Admin">
+                        <div class="d-none d-md-block text-end me-1">
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Admin</span>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <li><a class="dropdown-item" href="admin-profile.html"><i class="fas fa-user-circle me-2"></i>Hồ sơ</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="admin-login.html"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid p-4">
+
+            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
+                <i class="fas fa-info-circle fa-2x me-3 text-info"></i>
+                <div>
+                    <strong>Cơ chế tính Calo:</strong><br>
+                    Hệ thống sẽ dùng <strong>Hệ số quy đổi</strong> để tự động đưa mọi đơn vị về <strong>Gram</strong>.
+                    <br><small class="text-muted">Ví dụ: Nếu người dùng nhập "2 muỗng canh đường", hệ thống sẽ tính: 2 x 15g = 30g đường.</small>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#unitModal">
+                    <i class="fas fa-plus-circle me-2"></i>Thêm Đơn vị mới
+                </button>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <table class="table table-hover align-middle datatable" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tên Đơn vị</th>
+                                <th>Viết tắt</th>
+                                <th>Loại</th>
+                                <th>Hệ số quy đổi (sang Gram)</th>
+                                <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-active bg-light">
+                                <td><span class="fw-bold text-success"><i class="fas fa-star me-1"></i> Gram (Chuẩn)</span></td>
+                                <td>g</td>
+                                <td><span class="badge bg-success">Trọng lượng</span></td>
+                                <td><strong class="text-success">1</strong> (Mặc định)</td>
+                                <td class="text-end">
+                                    <span class="badge bg-secondary"><i class="fas fa-lock me-1"></i>Hệ thống</span>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-bold">Kilogram</td>
+                                <td>kg</td>
+                                <td><span class="badge bg-success">Trọng lượng</span></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="text-muted me-2">1 kg = </span>
+                                        <strong>1000</strong> <span class="small ms-1">g</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-bold">Muỗng canh / Thìa canh</td>
+                                <td>tbsp</td>
+                                <td><span class="badge bg-primary">Thể tích</span></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="text-muted me-2">1 tbsp ≈ </span>
+                                        <strong>15</strong> <span class="small ms-1">g</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-bold">Muỗng cà phê</td>
+                                <td>tsp</td>
+                                <td><span class="badge bg-primary">Thể tích</span></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="text-muted me-2">1 tsp ≈ </span>
+                                        <strong>5</strong> <span class="small ms-1">g</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-bold">Chén / Bát cơm</td>
+                                <td>cup</td>
+                                <td><span class="badge bg-primary">Thể tích</span></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="text-muted me-2">1 cup ≈ </span>
+                                        <strong>200</strong> <span class="small ms-1">g</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="fw-bold">Cái / Quả (Cỡ vừa)</td>
+                                <td>pc</td>
+                                <td><span class="badge bg-warning text-dark">Định lượng</span></td>
+                                <td>
+                                    <span class="text-muted fst-italic"><i class="fas fa-random me-1"></i>Tùy nguyên liệu</span>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="unitModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Thêm Đơn vị đo lường</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="unitForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tên đơn vị <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="unitName" placeholder="VD: Lạng, Cân, Lít...">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Viết tắt</label>
+                                <input type="text" class="form-control" id="unitAbbr" placeholder="VD: kg">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Loại</label>
+                                <select class="form-select" id="unitType">
+                                    <option value="weight">Khối lượng (kg, tạ...)</option>
+                                    <option value="volume">Thể tích (thìa, bát, lít...)</option>
+                                    <option value="quantity">Định lượng (Cái, con...)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 p-3 bg-light rounded border">
+                            <label class="form-label fw-bold text-primary">Quy đổi sang Gram (Mặc định)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">1 đơn vị = </span>
+                                <input type="number" class="form-control fw-bold text-danger text-center" id="conversionRate" value="0">
+                                <span class="input-group-text bg-white">gram</span>
+                            </div>
+                            <small class="text-muted d-block mt-2" id="conversionHelp">
+                                <i class="fas fa-lightbulb text-warning me-1"></i> 
+                                Nhập <b>0</b> nếu đơn vị này phụ thuộc vào từng nguyên liệu (VD: 1 quả trứng ≠ 1 quả dưa hấu).
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-unit">Lưu lại</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/vendor/jquery/jquery.min.js"></script>
+    <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <script src="assets/vendor/summernote/summernote-bs5.min.js"></script>
+    <script src="assets/vendor/datatables/js/datatables.min.js"></script>
+    <script src="assets/js/admin-main.js"></script>
+    <script src="assets/js/admin-units.js"></script>
+</body>
+</html>

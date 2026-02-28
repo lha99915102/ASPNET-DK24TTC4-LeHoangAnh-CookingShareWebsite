@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Có gì đó sai sai - CookingShare</title>
+    
+    <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/vendor/font-awesome/css/all.min.css">
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <link href="assets/vendor/summernote/summernote-bs5.min.css" rel="stylesheet">
+    <link href="assets/vendor/datatables/css/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/admin-auth.css">
+    <style>
+        .error-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 50px 30px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        .error-code {
+            font-size: 8rem;
+            font-weight: 900;
+            color: #f26b21; /* Màu cam logo */
+            line-height: 1;
+            text-shadow: 4px 4px 0px rgba(242, 107, 33, 0.2);
+            margin-bottom: 0;
+        }
+        .error-icon {
+            font-size: 4rem;
+            color: #2a9d46;
+            margin-bottom: 20px;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="container d-flex justify-content-center">
+        <div class="error-card border-0">
+            
+            <div class="mb-4">
+                <i class="fas fa-utensils me-1" style="color: #2a9d46; font-size: 1.5rem;"></i>
+                <span class="font-handwriting" style="color: #f26b21; font-weight: bold; font-size: 2rem;">CookingShare</span>
+            </div>
+
+            <i class="fas fa-temperature-empty error-icon"></i>
+            <h1 class="error-code">404</h1>
+            
+            <h3 class="fw-bold mt-3 text-dark">Ôi hỏng! Món này đã bị cháy...</h3>
+            <p class="text-muted mb-4 fs-5 mt-2">
+                Trang hoặc công thức bạn đang tìm kiếm không có trong thực đơn của hệ thống, hoặc đã bị gỡ bỏ.
+            </p>
+            
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <button onclick="history.back()" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-bold">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại
+                </button>
+                <a href="admin-dashboard.html" class="btn px-4 py-2 rounded-pill fw-bold text-white shadow-sm" style="background-color: #2a9d46;">
+                    <i class="fas fa-home me-2"></i> Về trang chủ Admin
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="../assets/vendor/jquery/jquery.min.js"></script>
+    <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="assets/vendor/chart/chart.umd.min.js"></script>
+    <script src="assets/vendor/summernote/summernote-bs5.min.js"></script>
+    <script src="assets/vendor/datatables/js/datatables.min.js"></script>
+    <script src="assets/js/admin-auth.js"></script> 
+</body>
+</html>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>CookingShare</title>
+	<link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="assets/vendor/owl-carousel/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="assets/vendor/owl-carousel/css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+	<header>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container">
+            
+            <a class="navbar-brand navbar-brand-custom d-flex align-items-center" href="index.html">
+                <i class="fas fa-utensils me-2" style="color: #28a745;"></i> 
+                CookingShare
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Trang chủ</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="recipes.html">Công thức</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="kitchen.html">Góc bếp</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="community.html">Cộng đồng</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center ms-lg-4 gap-2">
+
+                    <a href="#" class="text-dark me-2 search-icon" id="search-trigger">
+                        <i class="fas fa-search"></i>
+                    </a>
+
+                    <!-- Đăng nhập / Đăng ký khi chưa đăng nhập -->
+                    <a href="login.html" class="btn btn-outline-custom btn-sm rounded-pill px-3">Đăng nhập</a>
+                    
+                    <a href="signup.html" class="btn btn-orange btn-sm rounded-pill px-3 shadow-sm">Đăng ký</a>
+
+                    <!-- Hồ sơ người dùng khi đã đăng nhập -->
+                    <div class="d-flex align-items-center ms-lg-4 gap-2">
+                        <div class="dropdown">
+                            <a href="user-profile.html" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="https://placehold.co/40x40" alt="User" class="rounded-circle border border-2 border-success me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                <span class="fw-bold text-dark d-none d-md-inline">Hoàng Anh</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="user-profile.html"><i class="fas fa-user-circle me-2 text-success"></i>Trang cá nhân</a></li>
+                                <li><a class="dropdown-item" href="user-profile.html"><i class="fas fa-book-open me-2 text-success"></i>Công thức của tôi</a></li>
+                                <li><a class="dropdown-item" href="user-profile.html"><i class="fas fa-cog me-2 text-success"></i>Cài đặt</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                        <a href="post-recipe.html" class="btn btn-orange btn-sm rounded-circle shadow-sm ms-2" title="Đăng công thức mới">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+	</header>
+	
+    <main class="bg-light py-5">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-lg-3 mb-4">
+                    
+                    <div class="card border-0 shadow-sm rounded-3 mb-3">
+                        <div class="card-body text-center pt-5 pb-4">
+                            <div class="position-relative d-inline-block mb-3">
+                                <img src="https://placehold.co/100x100" class="rounded-circle border border-3 border-success p-1" alt="Avatar">
+                                <button class="btn btn-sm btn-light rounded-circle position-absolute bottom-0 end-0 border shadow-sm" title="Đổi ảnh">
+                                    <i class="fas fa-camera text-secondary"></i>
+                                </button>
+                            </div>
+                            <h5 class="fw-bold mb-1">Hoàng Anh</h5>
+                            <p class="text-muted small mb-3">@hoanganhdev • Thành viên từ 2026</p>
+                            
+                            <div class="d-flex justify-content-center gap-3 border-top pt-3">
+                                <div class="text-center">
+                                    <span class="d-block fw-bold h6 mb-0">12</span>
+                                    <small class="text-secondary" style="font-size: 0.75rem">Công thức</small>
+                                </div>
+                                <div class="text-center">
+                                    <span class="d-block fw-bold h6 mb-0">158</span>
+                                    <small class="text-secondary" style="font-size: 0.75rem">Người theo dõi</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="list-group shadow-sm rounded-3 border-0" id="profile-tabs" role="tablist">
+                        <a class="list-group-item list-group-item-action border-0 py-3 active fw-bold" 
+                        id="recipes-tab" data-bs-toggle="list" href="#my-recipes" role="tab">
+                            <i class="fas fa-utensils me-3 text-orange"></i> Công thức của tôi 
+                            <span class="badge bg-light text-dark float-end rounded-pill border">12</span>
+                        </a>
+                        
+                        <a class="list-group-item list-group-item-action border-0 py-3 text-secondary" 
+                        id="favorites-tab" data-bs-toggle="list" href="#my-favorites" role="tab">
+                            <i class="fas fa-heart me-3 text-danger"></i> Đã lưu / Yêu thích
+                        </a>
+                        
+                        <a class="list-group-item list-group-item-action border-0 py-3 text-secondary" 
+                        id="notifications-tab" data-bs-toggle="list" href="#my-notifications" role="tab">
+                            <i class="fas fa-bell me-3 text-warning"></i> Thông báo 
+                            <span class="badge bg-danger float-end rounded-pill">3</span>
+                        </a>
+                        
+                        <a class="list-group-item list-group-item-action border-0 py-3 text-secondary" 
+                        id="settings-tab" data-bs-toggle="list" href="#my-settings" role="tab">
+                            <i class="fas fa-cog me-3 text-secondary"></i> Cài đặt tài khoản
+                        </a>
+                        
+                        <a href="index.html" class="list-group-item list-group-item-action border-0 py-3 text-danger">
+                            <i class="fas fa-sign-out-alt me-3"></i> Đăng xuất
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-9">
+                    <div class="tab-content" id="nav-tabContent">
+                        
+                        <div class="tab-pane fade show active" id="my-recipes" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="fw-bold mb-0">Quản lý công thức</h3>
+                                <a href="post-recipe.html" class="btn btn-orange rounded-pill px-4 shadow-sm">
+                                    <i class="fas fa-plus me-2"></i> Viết bài mới
+                                </a>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <button class="btn btn-sm btn-dark rounded-pill px-3 me-2">Tất cả (12)</button>
+                                <button class="btn btn-sm btn-light border rounded-pill px-3 me-2 text-secondary">Đã duyệt (10)</button>
+                                <button class="btn btn-sm btn-light border rounded-pill px-3 me-2 text-secondary">Chờ duyệt (2)</button>
+                                <button class="btn btn-sm btn-light border rounded-pill px-3 me-2 text-secondary">Nháp (0)</button>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card recipe-card h-100 border-0 shadow-sm">
+                                        <div class="row g-0 h-100">
+                                            <div class="col-4">
+                                                <img src="https://placehold.co/200x200" class="img-fluid rounded-start h-100 object-fit-cover" alt="...">
+                                            </div>
+                                            <div class="col-8">
+                                                <div class="card-body">
+                                                    <h6 class="card-title fw-bold text-truncate">Gà Rán Sốt Cay</h6>
+                                                    <p class="card-text small text-muted mb-2"><i class="far fa-clock"></i> 20/01/2026</p>
+                                                    <span class="badge bg-success-subtle text-success mb-2">Đã duyệt</span>
+                                                    <div class="mt-2">
+                                                        <a href="#" class="btn btn-sm btn-outline-primary rounded-pill me-1"><i class="fas fa-edit"></i></a>
+                                                        <a href="#" class="btn btn-sm btn-outline-danger rounded-pill"><i class="fas fa-trash"></i></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="card recipe-card h-100 border-0 shadow-sm">
+                                        <div class="row g-0 h-100">
+                                            <div class="col-4">
+                                                <img src="https://placehold.co/200x200" class="img-fluid rounded-start h-100 object-fit-cover" alt="...">
+                                            </div>
+                                            <div class="col-8">
+                                                <div class="card-body">
+                                                    <h6 class="card-title fw-bold text-truncate">Bánh Xèo Miền Tây</h6>
+                                                    <p class="card-text small text-muted mb-2"><i class="far fa-clock"></i> Vừa xong</p>
+                                                    <span class="badge bg-warning-subtle text-warning mb-2">Chờ duyệt</span>
+                                                    <div class="mt-2">
+                                                        <a href="#" class="btn btn-sm btn-outline-primary rounded-pill me-1"><i class="fas fa-edit"></i></a>
+                                                        <a href="#" class="btn btn-sm btn-outline-danger rounded-pill"><i class="fas fa-trash"></i></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="my-favorites" role="tabpanel">
+                            <h3 class="fw-bold mb-4">Bộ sưu tập yêu thích</h3>
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="card recipe-card h-100 border-0 shadow-sm">
+                                        <img src="https://placehold.co/400x300" class="card-img-top" alt="...">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title fw-bold mb-0"><a href="#" class="text-dark text-decoration-none">Phở Bò</a></h6>
+                                            <small class="text-muted">Bởi Chef Tùng</small>
+                                        </div>
+                                        <button class="btn btn-sm btn-light text-danger position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" title="Bỏ lưu"><i class="fas fa-heart"></i></button>
+                                    </div>
+                                </div>
+                                </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="my-notifications" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="fw-bold mb-0">Thông báo</h3>
+                                <button class="btn btn-sm btn-link text-decoration-none">Đánh dấu đã đọc</button>
+                            </div>
+                            
+                            <div class="list-group border-0 shadow-sm rounded-3">
+                                <a href="#" class="list-group-item list-group-item-action p-3 border-0 border-bottom bg-light">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 text-success me-3"><i class="fas fa-check-circle fa-lg"></i></div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1 fw-bold text-dark">Bài viết "Gà Rán" của bạn đã được duyệt!</p>
+                                            <small class="text-muted">2 giờ trước</small>
+                                        </div>
+                                        <span class="badge bg-danger rounded-circle p-1" style="width: 10px; height: 10px;"></span>
+                                    </div>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action p-3 border-0 border-bottom">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 text-primary me-3"><i class="fas fa-comment fa-lg"></i></div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1 text-dark"><strong>Minh Tú</strong> đã bình luận về công thức của bạn.</p>
+                                            <small class="text-muted">5 giờ trước</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="my-settings" role="tabpanel">
+    <h3 class="fw-bold mb-4">Cài đặt tài khoản</h3>
+    
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold text-success mb-3"><i class="fas fa-user-circle me-2"></i>Thông tin cơ bản</h5>
+            <form>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Họ và tên</label>
+                        <input type="text" class="form-control" value="Hoàng Anh">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Email</label>
+                        <input type="email" class="form-control" value="anhlh@example.com" disabled>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Giới thiệu ngắn (Bio)</label>
+                    <textarea class="form-control" rows="2" placeholder="Sẽ hiển thị ngay dưới tên của bạn...">Yêu nấu ăn, thích chụp ảnh và đam mê du lịch.</textarea>
+                    <div class="form-text">Giới thiệu ngắn gọn hiển thị ở đầu trang cá nhân.</div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold text-orange mb-3"><i class="fas fa-book-open me-2"></i>Câu chuyện bếp núc</h5>
+            <p class="text-muted small mb-3">Phần này sẽ hiển thị ở tab "Câu chuyện" trên trang công khai của bạn.</p>
+            
+            <form>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Tiêu đề câu chuyện</label>
+                    <input type="text" class="form-control" value="Triết lý nấu ăn của tôi">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Nội dung chi tiết</label>
+                    <textarea class="form-control" rows="6" placeholder="Chia sẻ hành trình, cảm hứng hoặc triết lý nấu ăn của bạn...">Chào mọi người, mình là Hoàng Anh. Mình tin rằng nấu ăn không chỉ là tạo ra món ăn, mà là cách chúng ta chăm sóc những người thân yêu...</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Ảnh minh họa câu chuyện</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="https://placehold.co/150x100" class="rounded border" alt="Story Img" style="width: 150px; height: 100px; object-fit: cover;">
+                        <div>
+                            <input type="file" class="form-control form-control-sm mb-1">
+                            <small class="text-muted d-block">Khuyên dùng ảnh ngang (tỉ lệ 16:9)</small>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold text-danger mb-3"><i class="fas fa-notes-medical me-2"></i>Hồ sơ sức khỏe & Dị ứng</h5>
+            <p class="text-muted small">Chọn các thành phần bạn bị dị ứng. Chúng tôi sẽ tự động lọc bỏ các món ăn chứa thành phần này khi bạn tìm kiếm.</p>
+            
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="form-check bg-light p-3 rounded border">
+                        <input class="form-check-input" type="checkbox" id="setAllergy1" checked>
+                        <label class="form-check-label fw-bold" for="setAllergy1">Đậu phộng</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check bg-light p-3 rounded border">
+                        <input class="form-check-input" type="checkbox" id="setAllergy2">
+                        <label class="form-check-label fw-bold" for="setAllergy2">Hải sản (Tôm, Cua...)</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check bg-light p-3 rounded border">
+                        <input class="form-check-input" type="checkbox" id="setAllergy3">
+                        <label class="form-check-label fw-bold" for="setAllergy3">Sữa & Chế phẩm</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold text-danger mb-3"><i class="fas fa-shield-alt me-2"></i>Đổi mật khẩu</h5>
+            <form>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Mật khẩu cũ</label>
+                        <input type="password" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Mật khẩu mới</label>
+                        <input type="password" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Xác nhận</label>
+                        <input type="password" class="form-control">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end sticky-bottom bg-light py-3 border-top">
+        <button class="btn btn-light me-2">Hủy bỏ</button>
+        <button class="btn btn-orange rounded-pill px-5 shadow fw-bold">Lưu tất cả thay đổi</button>
+    </div>
+
+</div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    
+	<footer class="footer-section">
+    
+    <div class="footer-main bg-white pt-5 pb-4 border-top border-success border-3">
+        <div class="container text-md-start text-center">
+            <div class="row">
+                
+                <div class="col-md-4 col-lg-4 col-xl-4 mx-auto mt-3">
+                    <h5 class="mb-3 footer-brand">
+                        <i class="fas fa-utensils me-2 text-success"></i>CookingShare
+                    </h5>
+                    <p class="text-secondary pe-lg-5">
+                        Nền tảng chia sẻ công thức nấu ăn hàng đầu Việt Nam. Nơi kết nối những tâm hồn yêu bếp và lan tỏa hương vị yêu thương.
+                    </p>
+                    <form class="mt-4 position-relative">
+                        <input type="email" class="form-control rounded-pill ps-3 pe-5" placeholder="Nhập email để nhận công thức mới...">
+                        <button class="btn btn-orange rounded-pill position-absolute top-0 end-0 h-100 px-3" type="button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Khám phá</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="recipes.html" class="footer-link">Món ăn vặt</a></li>
+                        <li class="mb-2"><a href="recipes.html" class="footer-link">Thực đơn Healthy</a></li>
+                        <li class="mb-2"><a href="recipes.html" class="footer-link">Đặc sản vùng miền</a></li>
+                        <li class="mb-2"><a href="recipes.html" class="footer-link">Bếp bánh</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Hỗ trợ</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="user-profile.html" class="footer-link">Tài khoản</a></li>
+                        <li class="mb-2"><a href="signup.html" class="footer-link">Gửi bài viết</a></li>
+                        <li class="mb-2"><a href="404.html" class="footer-link">Chính sách bảo mật</a></li>
+                        <li class="mb-2"><a href="404.html" class="footer-link">Quy tắc cộng đồng</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Liên hệ</h6>
+                    <p class="text-secondary mb-2"><i class="fas fa-map-marker-alt me-2 text-warning"></i> 123 Cù Lao Giêng, An Giang</p>
+                    <p class="text-secondary mb-2"><i class="fas fa-envelope me-2 text-warning"></i> contact@cookingshare.com</p>
+                    <p class="text-secondary mb-4"><i class="fas fa-phone-alt me-2 text-warning"></i> 0912.345.678</p>
+                    
+                    <div>
+                        <a href="https://www.facebook.com" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.youtube.com" class="social-icon"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.tiktok.com" class="social-icon"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://www.instagram.com" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom bg-dark text-white py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-12 text-center">
+                    <p class="mb-0 small">
+                        &copy; 2026 <strong>CookingShare</strong>. All Rights Reserved. 
+                        <span class="d-none d-sm-inline mx-2">|</span> <br class="d-sm-none">
+                        Designed by <span class="text-success fw-bold">Hoang Anh</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+	</footer>
+
+    <div id="search-overlay" class="search-overlay">
+    <button type="button" class="btn-close-search" id="search-close">
+        <i class="fas fa-times"></i>
+    </button>
+    
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form action="#" class="text-center">
+                    <input type="text" class="search-input-transparent" placeholder="Gõ tên món ăn bạn muốn tìm..." autocomplete="off">
+                    <p class="text-white-50 mt-3">Nhấn <span class="text-warning fw-bold">Enter</span> để tìm kiếm hoặc <span class="text-warning fw-bold">ESC</span> để đóng</p>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <a href="#" id="back-to-top" class="back-to-top" title="Lên đầu trang">
+        <i class="fas fa-chevron-up"></i>
+    </a>
+
+	<script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/owl-carousel/js/owl.carousel.min.js"></script>
+    <script src="assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
