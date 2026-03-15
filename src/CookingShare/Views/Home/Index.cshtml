@@ -1,33 +1,253 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@model IEnumerable<CookingShare.Models.RECIPE>
+
+@{
+    ViewBag.Title = "Trang chủ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var categories = ViewBag.Categories as List<CookingShare.Models.CATEGORY> ?? new List<CookingShare.Models.CATEGORY>();
+
+    // Thuật toán tìm ID an toàn, không bị lỗi font Tiếng Việt
+    int idMonMan = categories.FirstOrDefault(c => c.Name.Contains("Mặn"))?.ID ?? 0;
+    int idMonChay = categories.FirstOrDefault(c => c.Name.Contains("Chay"))?.ID ?? 0;
+    int idBanhNgot = categories.FirstOrDefault(c => c.Name.Contains("Bánh") || c.Name.Contains("Ngọt"))?.ID ?? 0;
+    int idSinhTo = categories.FirstOrDefault(c => c.Name.Contains("Sinh"))?.ID ?? 0;
+    int idDoNuong = categories.FirstOrDefault(c => c.Name.Contains("Nướng"))?.ID ?? 0;
 }
 
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
+@{
+    // Nhận danh sách Banner từ Controller
+    var banners = ViewBag.Banners as List<CookingShare.Models.BANNER>;
+}
 
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+<section class="hero-section mb-5">
+    <div class="owl-carousel owl-theme" id="hero-slider">
+
+        @if (banners != null && banners.Count > 0)
+        {
+            foreach (var item in banners)
+            {
+                <div class="item position-relative">
+                    <img src="@item.ImageURL" alt="@item.Title" class="slider-img" onerror="this.src='https://placehold.co/1920x600/212529/FFF?text=Banner+CookingShare'">
+
+                    <div class="slider-overlay d-flex align-items-center">
+                        <div class="container text-white text-center text-md-start">
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    @if (!string.IsNullOrEmpty(item.Title))
+                                    {
+                                        <h1 class="display-3 fw-bold mb-4">@item.Title</h1>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(item.LinkURL))
+                                    {
+                                        <a href="@item.LinkURL" class="btn btn-orange btn-lg rounded-pill px-5 shadow">Khám phá ngay</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="item position-relative">
+                <img src="https://placehold.co/1920x600/212529/FFF?text=Chao+Mung+Den+Voi+CookingShare" alt="Welcome" class="slider-img">
+                <div class="slider-overlay d-flex align-items-center">
+                    <div class="container text-white text-center text-md-start">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h1 class="display-3 fw-bold mb-4">Chào mừng đến với <br> <span class="text-success font-handwriting">CookingShare</span></h1>
+                                <a href="/Recipe/Index" class="btn btn-orange btn-lg rounded-pill px-5 shadow">Xem công thức</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
     </div>
-</main>
+</section>
+
+<section class="container mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold section-title">Hôm nay ăn gì?</h2>
+        <p class="text-muted">Đừng để câu hỏi này làm khó bạn. Tìm kiếm ý tưởng ngay!</p>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8 col-lg-6">
+            <form action="/Recipe/Index" method="GET" class="position-relative search-box-wrapper">
+                <input type="text" name="search" class="form-control form-control-lg rounded-pill ps-4 pe-5 border-2"
+                       placeholder="Bạn đang thèm món gì? (VD: Sườn xào, Bánh mì...)"
+                       style="height: 60px; font-size: 1rem;" autocomplete="off">
+
+                <button type="submit" class="btn btn-orange rounded-pill position-absolute top-0 end-0 h-100 px-4 fw-bold"
+                        style="z-index: 5;">
+                    <i class="fas fa-search me-2"></i> Tìm kiếm
+                </button>
+            </form>
+            <div class="text-center mt-2 small text-muted">
+                <span>Gợi ý: </span>
+                <a href="/Recipe/Index?search=Thịt+kho" class="text-decoration-none text-success fw-bold">Thịt kho tàu</a>,
+                <a href="/Recipe/Index?search=Canh+chua" class="text-decoration-none text-success fw-bold">Canh chua</a>,
+                <a href="/Recipe/Index?search=Eat+Clean" class="text-decoration-none text-success fw-bold">Eat Clean</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center g-4">
+        <div class="col-6 col-md-4 col-lg-2 text-center">
+            <a href="@(idMonMan > 0 ? "/Recipe/Index?categoryId=" + idMonMan : "/Recipe/Index?search=Món Mặn")" class="category-item d-block text-decoration-none">
+                <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
+                    <i class="fas fa-drumstick-bite fa-2x text-orange"></i>
+                </div>
+                <h6 class="fw-bold text-dark">Món Mặn</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 text-center">
+            <a href="@(idMonChay > 0 ? "/Recipe/Index?categoryId=" + idMonChay : "/Recipe/Index?search=Món Chay")" class="category-item d-block text-decoration-none">
+                <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
+                    <i class="fas fa-carrot fa-2x text-success"></i>
+                </div>
+                <h6 class="fw-bold text-dark">Món Chay</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 text-center">
+            <a href="@(idBanhNgot > 0 ? "/Recipe/Index?categoryId=" + idBanhNgot : "/Recipe/Index?search=Bánh Ngọt")" class="category-item d-block text-decoration-none">
+                <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
+                    <i class="fas fa-cookie-bite fa-2x text-warning"></i>
+                </div>
+                <h6 class="fw-bold text-dark">Bánh Ngọt</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 text-center">
+            <a href="@(idSinhTo > 0 ? "/Recipe/Index?categoryId=" + idSinhTo : "/Recipe/Index?search=Sinh Tố")" class="category-item d-block text-decoration-none">
+                <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
+                    <i class="fas fa-blender fa-2x text-info"></i>
+                </div>
+                <h6 class="fw-bold text-dark">Sinh Tố</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 text-center">
+            <a href="@(idDoNuong > 0 ? "/Recipe/Index?categoryId=" + idDoNuong : "/Recipe/Index?search=Đồ Nướng")" class="category-item d-block text-decoration-none">
+                <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
+                    <i class="fas fa-fire fa-2x text-danger"></i>
+                </div>
+                <h6 class="fw-bold text-dark">Đồ Nướng</h6>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="fw-bold section-title mb-0">Công Thức <span class="text-danger font-handwriting">(Mới Nhất)</span></h2>
+            </div>
+            <a href="/Recipe/Index" class="btn btn-outline-success rounded-pill btn-sm">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+
+        <div class="row g-4">
+            @if (Model != null && Model.Count ()> 0)
+            {
+                foreach (var item in Model)
+                {
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card recipe-card h-100 border-0 shadow-sm position-relative">
+
+                            <div class="position-absolute top-0 end-0 mt-2 me-2 z-1">
+                                <span class="badge bg-danger shadow-sm px-2 py-1"><i class="fas fa-fire me-1"></i> Mới</span>
+                            </div>
+
+                            <div class="position-relative overflow-hidden">
+                                @{
+                                    // 1. Tạo chữ cái dự phòng nếu không có ảnh
+                                    string firstChar = !string.IsNullOrWhiteSpace(item.Name) ? item.Name.Substring(0, 1).ToUpper() : "M";
+                                    string fallbackImg = $"https://placehold.co/400x300/ff6600/FFFFFF?text={firstChar}";
+
+                                    // 2. Lấy đường dẫn ảnh gốc từ Database.
+                                    // Nếu trong DB đã lưu đầy đủ dạng "/Content/Images/..." thì chỉ cần gọi item.MainImage
+                                    string imgSrc = !string.IsNullOrWhiteSpace(item.MainImage) ? item.MainImage : fallbackImg;
+                                }
+
+                                <img src="@imgSrc" onerror="this.onerror=null; this.src='@fallbackImg';" class="card-img-top recipe-img" alt="@item.Name" style="height: 220px; object-fit: cover; transition: transform 0.3s ease;">
+                            </div>
+
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between text-muted small mb-2">
+                                    <span><i class="far fa-clock me-1 text-warning"></i> @item.CookTime phút</span>
+                                    <span class="badge bg-light text-dark border">@item.Difficulty</span>
+                                </div>
+
+                                <h5 class="card-title fw-bold mb-2">
+                                    <a href="/Recipe/Detail/@item.ID" class="text-decoration-none text-dark stretched-link">@item.Name</a>
+                                </h5>
+
+                                @{
+                                    string shortDesc = item.Describe ?? "Chưa có mô tả chi tiết cho món ăn này. Bạn hãy vào xem nguyên liệu và cách làm nhé!";
+                                    // Lọc bỏ các thẻ HTML lộn xộn nếu Admin vô tình copy từ Word vào
+                                    shortDesc = System.Text.RegularExpressions.Regex.Replace(shortDesc, "<.*?>", string.Empty);
+                                    if (shortDesc.Length > 90) { shortDesc = shortDesc.Substring(0, 90) + "..."; }
+                                }
+
+                                <p class="card-text text-secondary small flex-grow-1" style="line-height: 1.5;">@shortDesc</p>
+
+                                <div class="d-flex align-items-center justify-content-between border-top pt-3 mt-2">
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://placehold.co/30x30/28a745/FFF?text=C" class="rounded-circle me-2" alt="Author">
+                                        <small class="text-muted fw-bold">@(item.ACCOUNT != null ? item.ACCOUNT.UserName : "Đầu bếp")</small>
+                                    </div>
+                                    <div class="text-muted small">
+                                        <i class="far fa-eye me-1"></i> @item.Views
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Hiện tại chưa có công thức nào được phê duyệt.</h5>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    .recipe-card {
+        transition: all 0.3s ease;
+    }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+            .recipe-card:hover .recipe-img {
+                transform: scale(1.05);
+            }
+</style>
+
+<section class="cta-section py-5 position-relative text-white" style="background-color: #28a745; overflow: hidden;">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('https://placehold.co/1920x400/1e7e34/1e7e34') center/cover; opacity: 0.2;"></div>
+
+    <div class="container position-relative z-1 text-center">
+        <h2 class="display-5 fw-bold mb-3 font-handwriting">Bạn Có Công Thức Bí Mật?</h2>
+        <p class="lead mb-4">Chia sẻ công thức của bạn với hàng ngàn người yêu bếp khác. Cùng nhau xây dựng cộng đồng ẩm thực lớn nhất Việt Nam.</p>
+
+        @if (Session["Account"] == null)
+        {
+            <a href="/Account/Register" class="btn btn-light btn-lg rounded-pill px-5 text-success fw-bold shadow">Đăng Ký Thành Viên Ngay</a>
+        }
+        else
+        {
+            <a href="/Recipe/Create" class="btn btn-light btn-lg rounded-pill px-5 text-success fw-bold shadow"><i class="fas fa-plus me-2"></i> Đăng Công Thức Ngay</a>
+        }
+    </div>
+</section>

@@ -1,0 +1,141 @@
+﻿@model IEnumerable<CookingShare.Models.CATEGORY>
+@{
+    ViewBag.Title = "Quản lý Danh mục Món ăn";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int stt = 1; // Tạo biến đếm số thứ tự
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#categoryModal" onclick="resetCategoryForm()">
+        <i class="fas fa-plus-circle me-2"></i>Thêm Danh mục
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle datatable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;">TT</th>
+                    <th style="width: 100px;">Hình ảnh</th>
+                    <th>Tên Danh mục</th>
+                    <th>Số lượng bài viết</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">@(stt++)</span></td>
+                            <td>
+                                <img src="@(string.IsNullOrEmpty(item.ImageURL) ? "https://placehold.co/60x60" : item.ImageURL)"
+                                     class="rounded border object-fit-cover" style="width: 60px; height: 60px;" alt="@item.Name"
+                                     onerror="this.src='https://placehold.co/60x60'">
+                            </td>
+                            <td>
+                                <h6 class="mb-0 fw-bold text-primary">@item.Name</h6>
+                                <small class="text-muted">ID: @item.ID</small>
+                            </td>
+                            <td>
+                                <span class="text-muted">@item.RECIPE.Count công thức</span>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="editCategory(@item.ID, '@item.Name', '@item.ImageURL')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+
+                                <form action="/Admin/Category/Delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?');">
+                                    <input type="hidden" name="id" value="@item.ID" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalCatTitle">Thêm Danh Mục Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="/Admin/Category/Save" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" id="c_ID" value="0" />
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên danh mục <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="Name" id="c_Name" placeholder="VD: Món khai vị" required>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Ảnh đại diện (Thumbnail)</label>
+                        <input type="file" class="form-control mb-2" name="ImageFile" id="c_ImageInput" accept="image/*" onchange="previewCatImage(this)">
+                        <div class="p-2 border rounded bg-light text-center" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                            <img id="c_ImgPreview" src="https://placehold.co/300x150?text=Preview" class="img-fluid object-fit-cover" style="max-height: 100%;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Lưu lại</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Xử lý xem trước ảnh khi chọn file
+        function previewCatImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) { document.getElementById('c_ImgPreview').src = e.target.result; }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Đặt lại Form khi thêm mới
+        function resetCategoryForm() {
+            document.getElementById('modalCatTitle').innerText = "Thêm Danh Mục Mới";
+            document.getElementById('c_ID').value = "0";
+            document.getElementById('c_Name').value = "";
+            document.getElementById('c_ImageInput').value = "";
+            document.getElementById('c_ImgPreview').src = "https://placehold.co/300x150?text=Preview";
+        }
+
+        // Bắt dữ liệu đưa lên Modal khi ấn nút Sửa
+        function editCategory(id, name, imgUrl) {
+            resetCategoryForm();
+            document.getElementById('modalCatTitle').innerText = "Cập Nhật Danh Mục";
+            document.getElementById('c_ID').value = id;
+            document.getElementById('c_Name').value = name;
+
+            if(imgUrl && imgUrl !== '') {
+                document.getElementById('c_ImgPreview').src = imgUrl;
+            }
+
+            var myModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+            myModal.show();
+        }
+    </script>
+}

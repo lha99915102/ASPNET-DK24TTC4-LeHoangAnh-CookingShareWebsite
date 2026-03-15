@@ -1,0 +1,190 @@
+﻿@model IEnumerable<CookingShare.Models.RECIPE>
+
+@{
+    ViewBag.Title = "Giỏ đi chợ của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Lấy danh sách nguyên liệu đã gộp từ Controller
+    var danhSachDiCho = ViewBag.DanhSachDiCho as List<CookingShare.Controllers.RecipeController.ChotDonViewModel>;
+}
+
+<main class="bg-light py-5 min-vh-100">
+    <div class="container">
+
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-success" style="font-family: 'Dancing Script', cursive; font-size: 3rem;">
+                <i class="fas fa-shopping-cart me-2"></i>Giỏ Đi Chợ
+            </h2>
+            <p class="text-muted">Danh sách nguyên liệu đã được tổng hợp để bạn dễ dàng mua sắm.</p>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold text-dark mb-0"><i class="fas fa-clipboard-list text-warning me-2"></i>Cần mua</h5>
+
+                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" id="btn-export-word">
+                            <i class="fas fa-file-word me-1"></i> Tải danh sách về máy
+                        </button>
+                    </div>
+                    <div class="card-body p-4">
+
+                        @if (danhSachDiCho != null && danhSachDiCho.Count > 0)
+                        {
+                            <div class="row">
+                                @foreach (var item in danhSachDiCho)
+                                {
+                                    string uniqueId = Guid.NewGuid().ToString("N");
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check custom-checkbox-wrap p-3 bg-white border rounded-3 d-flex align-items-center transition-all h-100">
+                                            <input class="form-check-input grocery-check me-3 flex-shrink-0" type="checkbox" id="chk_@uniqueId" value="@item.TenNguyenLieu" style="width: 1.5em; height: 1.5em; cursor: pointer;">
+                                            <label class="form-check-label w-100 cursor-pointer text-dark" for="chk_@uniqueId" style="user-select: none;">
+                                                <span class="fw-bold text-success">@item.TongSoLuong @item.DonViTinh</span>
+                                                - @item.TenNguyenLieu
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-shopping-basket fa-4x text-muted opacity-25 mb-3"></i>
+                                <h5 class="text-muted">Giỏ đi chợ đang trống</h5>
+                                <a href="/Home/Index" class="btn btn-orange rounded-pill mt-3 px-4">Đi tìm món ngon ngay</a>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 sticky-sidebar" style="top: 90px;">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h6 class="fw-bold text-success mb-0"><i class="fas fa-utensils me-2"></i>Thực đơn của bạn</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model != null && Model.Any())
+                        {
+                            <ul class="list-group list-group-flush border-0">
+                                @foreach (var recipe in Model)
+                                {
+                                    <li class="list-group-item border-bottom py-3 d-flex align-items-center bg-transparent">
+                                        <img src="~/assets/images/@recipe.MainImage" class="rounded-3 object-fit-cover shadow-sm me-3" style="width: 50px; height: 50px;" alt="@recipe.Name" onerror="this.src='https://placehold.co/50x50?text=Món'">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-bold text-dark text-truncate" style="font-size: 0.9rem;"><a href="/Recipe/Detail/@recipe.ID" class="text-decoration-none text-dark">@recipe.Name</a></h6>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+
+                            <div class="p-3 bg-light text-center border-top rounded-bottom-4">
+                                <button id="btn-clear-cart" class="btn btn-outline-danger btn-sm rounded-pill w-100"><i class="fas fa-trash-alt me-1"></i> Xóa toàn bộ giỏ</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="p-4 text-center text-muted small">Chưa có thực đơn nào.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<style>
+    /* Hiệu ứng gạch ngang chữ khi tick chọn */
+    .custom-checkbox-wrap:hover {
+        background-color: #f8f9fa !important;
+    }
+
+    .grocery-check:checked + label {
+        text-decoration: line-through;
+        color: #adb5bd !important;
+    }
+
+        .grocery-check:checked + label span {
+            color: #adb5bd !important;
+        }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Xử lý nút Xóa toàn bộ giỏ hàng
+        var btnClear = document.getElementById('btn-clear-cart');
+        if (btnClear) {
+            btnClear.addEventListener('click', function () {
+                Swal.fire({
+                    title: 'Xóa giỏ đi chợ?',
+                    text: "Bạn có chắc chắn muốn xóa toàn bộ nguyên liệu không?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Xóa hết!',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('/Recipe/ClearGrocery', function(res) {
+                            if(res.success) {
+                                window.location.reload(); // Tải lại trang sau khi xóa
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        // 2. XỬ LÝ NÚT TẢI FILE WORD
+        var btnExport = document.getElementById('btn-export-word');
+        if (btnExport) {
+            btnExport.addEventListener('click', function () {
+
+                // Thu thập tất cả các ô checkbox KHÔNG BỊ CHỌN (not checked)
+                var uncheckedBoxes = document.querySelectorAll('.grocery-check:not(:checked)');
+
+                if (uncheckedBoxes.length === 0) {
+                    Swal.fire('Giỏ trống', 'Tuyệt vời, bạn đã nhặt đủ đồ nên không cần in danh sách nữa!', 'info');
+                    return;
+                }
+
+                // Hiệu ứng loading nút
+                var originalHtml = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang tạo file...';
+                this.disabled = true;
+
+                // TẠO FORM ẨN ĐỂ ĐẨY DỮ LIỆU SANG C# BẰNG PHƯƠNG THỨC POST
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/Recipe/ExportWord';
+
+                // Nhét từng tên nguyên liệu chưa mua vào Form
+                uncheckedBoxes.forEach(function (box) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'itemNames'; // Khớp 100% với tên biến trong hàm C#
+                    input.value = box.value;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit(); // Bấm nút gửi Form ngầm
+                document.body.removeChild(form); // Xóa form đi cho sạch
+
+                // Phục hồi lại nút
+                setTimeout(() => {
+                    this.innerHTML = originalHtml;
+                    this.disabled = false;
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tải file thành công!', showConfirmButton: false, timer: 3000 });
+                }, 2000);
+            });
+        }
+
+    });
+</script>

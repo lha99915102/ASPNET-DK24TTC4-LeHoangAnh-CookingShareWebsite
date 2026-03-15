@@ -1,0 +1,172 @@
+﻿@model IEnumerable<CookingShare.Models.TIP>
+@{
+    ViewBag.Title = "Quản lý Mẹo vặt nấu ăn";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int stt = 1;
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
+    <div class="d-flex align-items-center">
+        <h5 class="mb-0 fw-bold text-secondary me-3"><i class="fas fa-lightbulb text-warning me-2"></i>Tổng số: @ViewBag.TotalTips Mẹo vặt</h5>
+    </div>
+    <button class="btn btn-primary" onclick="resetTipForm()" data-bs-toggle="modal" data-bs-target="#tipModal">
+        <i class="fas fa-plus-circle me-2"></i>Đăng bài viết mới
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle datatable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;">TT</th>
+                    <th style="width: 100px;">Ảnh bìa</th>
+                    <th style="width: 250px;">Tiêu đề bài viết</th>
+                    <th>Nội dung tóm tắt</th>
+                    <th>Tác giả & Ngày đăng</th>
+                    <th class="text-end" style="width: 120px;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        // Chống lỗi khi truyền nội dung có dấu nháy vào JS
+                        string safeContent = System.Web.HttpUtility.JavaScriptStringEncode(item.Content ?? "");
+                        string authorName = item.ACCOUNT != null ? item.ACCOUNT.UserName : "Admin";
+
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">@(stt++)</span></td>
+                            <td>
+                                <img src="@(string.IsNullOrEmpty(item.ImageURL) ? "https://placehold.co/100x70" : item.ImageURL)"
+                                     class="rounded border object-fit-cover w-100" style="height: 60px;" alt="Tip Thumb"
+                                     onerror="this.src='https://placehold.co/100x70?text=No+Image'">
+                            </td>
+                            <td>
+                                <h6 class="mb-0 fw-bold text-dark text-break">@item.Title</h6>
+                                <small class="text-muted">ID: #TIP@(item.ID.ToString("D3"))</small>
+                            </td>
+                            <td>
+                                <span class="text-muted small text-truncate d-inline-block" style="max-width: 300px;">
+                                    @(string.IsNullOrEmpty(item.Content) ? "Không có nội dung..." : item.Content)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-primary d-block">@authorName</span>
+                                <small class="text-muted"><i class="far fa-clock me-1"></i>@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")</small>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="editTip(@item.ID, '@item.Title', `@safeContent`, '@item.ImageURL')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+
+                                <form action="/Admin/Tip/Delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa mẹo vặt này vĩnh viễn?');">
+                                    <input type="hidden" name="id" value="@item.ID" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="tipModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fas fa-lightbulb me-2"></i>Đăng Mẹo Vặt Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="/Admin/Tip/Save" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" id="tip_ID" value="0" />
+
+                <div class="modal-body bg-light">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Tiêu đề Mẹo vặt <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="Title" id="tip_Title" placeholder="VD: Cách bảo quản rau củ xanh tươi cả tuần..." required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Nội dung chi tiết</label>
+                                        <textarea class="form-control" name="Content" id="tip_Content" rows="8" placeholder="Viết nội dung mẹo vặt ở đây..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <label class="form-label fw-bold">Ảnh bìa minh họa</label>
+                                    <div class="p-2 border rounded bg-white text-center mb-3 position-relative overflow-hidden" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                        <img id="tip_Preview" src="https://placehold.co/400x300?text=Upload+Image" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover">
+                                    </div>
+                                    <input type="file" class="form-control form-control-sm" name="ImageFile" id="tip_ImageInput" accept="image/*" onchange="previewTipImg(this)">
+                                    <div class="alert alert-info small p-2 mt-3 mb-0">
+                                        <i class="fas fa-info-circle me-1"></i> Bài viết sẽ hiển thị tên của tài khoản Admin hiện tại làm Tác giả.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Lưu Bài Viết</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewTipImg(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) { document.getElementById('tip_Preview').src = e.target.result; }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function resetTipForm() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-lightbulb me-2"></i>Đăng Mẹo Vặt Mới';
+            document.getElementById('tip_ID').value = "0";
+            document.getElementById('tip_Title').value = "";
+            document.getElementById('tip_Content').value = "";
+            document.getElementById('tip_ImageInput').value = "";
+            document.getElementById('tip_Preview').src = "https://placehold.co/400x300?text=Upload+Image";
+        }
+
+        function editTip(id, title, content, imgUrl) {
+            resetTipForm();
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Cập Nhật Mẹo Vặt';
+            document.getElementById('tip_ID').value = id;
+            document.getElementById('tip_Title').value = title;
+            document.getElementById('tip_Content').value = content;
+
+            if(imgUrl && imgUrl !== '') {
+                document.getElementById('tip_Preview').src = imgUrl;
+            }
+
+            var myModal = new bootstrap.Modal(document.getElementById('tipModal'));
+            myModal.show();
+        }
+    </script>
+}

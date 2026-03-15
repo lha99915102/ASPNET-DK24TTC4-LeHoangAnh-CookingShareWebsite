@@ -1,0 +1,523 @@
+﻿@model CookingShare.Models.ACCOUNT
+
+@{
+    ViewBag.Title = "Trang cá nhân của " + Model.UserName;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Lấy thông tin mở rộng từ bảng PROFILE (nếu có)
+    var profile = Model.PROFILE;
+
+    // Xử lý logic ảnh Avatar
+    string avatarUrl = "https://placehold.co/150x150/png?text=" + Model.UserName.Substring(0, 1).ToUpper();
+    if (profile != null && !string.IsNullOrEmpty(profile.Avatar))
+    {
+        avatarUrl = "/assets/images/avatars/" + profile.Avatar;
+    }
+}
+
+<main class="bg-light py-5">
+    <div class="container">
+
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+
+                    <div class="col-md-auto text-center text-md-start mb-3 mb-md-0">
+                        <div class="avatar-wrapper rounded-circle border border-2 border-success p-1 bg-white mx-auto mx-md-0" style="width: 150px; height: 150px;">
+                            <img src="@avatarUrl" class="img-fluid rounded-circle w-100 h-100 object-fit-cover" alt="Avatar">
+                        </div>
+                    </div>
+
+                    <div class="col-md text-center text-md-start mb-3 mb-md-0 px-md-4">
+                        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-1">
+                            <h2 class="fw-bold mb-0">@(profile != null && !string.IsNullOrEmpty(profile.FullName) ? profile.FullName : Model.UserName)</h2>
+                            <i class="fas fa-check-circle text-primary" title="Đã xác minh" style="font-size: 1.2rem;"></i>
+                        </div>
+
+                        <p class="mb-0 fst-italic text-dark">
+                            "@(profile != null && !string.IsNullOrEmpty(profile.Bio) ? profile.Bio : "Đầu bếp này rất lười, chưa viết giới thiệu gì cả...")" 🍳👨‍🍳
+                        </p>
+                    </div>
+
+                    <div class="col-md-auto">
+                        <div class="d-flex justify-content-center justify-content-md-end gap-4 mb-3 border-bottom pb-3">
+                            <div class="text-center">
+                                <h5 class="fw-bold mb-0">@ViewBag.RecipeCount</h5>
+                                <small class="text-muted">Công thức</small>
+                            </div>
+                            <div class="text-center border-start ps-4">
+                                <h5 class="fw-bold mb-0">@ViewBag.FollowerCount</h5> <small class="text-muted">Followers</small>
+                            </div>
+                            <div class="text-center border-start ps-4">
+                                <h5 class="fw-bold mb-0">@ViewBag.FollowingCount</h5> <small class="text-muted">Following</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center justify-content-md-end gap-2">
+                            @if (ViewBag.IsSelf)
+                            {
+                                <a href="/User/MyProfile" class="btn btn-outline-success rounded-pill px-4 fw-bold shadow-sm btn-sm">
+                                    <i class="fas fa-user-edit me-1"></i> Chỉnh sửa thông tin
+                                </a>
+                            }
+                            else
+                            {
+                                if (ViewBag.IsFollowing == true)
+                                {
+                                    <button class="btn btn-secondary rounded-pill px-4 fw-bold shadow-sm btn-sm btn-follow" data-target-id="@Model.ID" data-status="followed">
+                                        <i class="fas fa-user-check me-1"></i> Đã theo dõi
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-orange rounded-pill px-4 fw-bold shadow-sm btn-sm btn-follow" data-target-id="@Model.ID" data-status="unfollow">
+                                        <i class="fas fa-user-plus me-1"></i> Theo dõi
+                                    </button>
+                                }
+
+                                <button class="btn btn-light rounded-circle border btn-sm text-secondary btn-report-user" data-target-id="@Model.ID" title="Báo cáo người dùng này">
+                                    <i class="fas fa-flag"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white border-0 fw-bold py-3">
+                        <i class="fas fa-info-circle me-2 text-orange"></i>Giới thiệu
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0 text-secondary">
+                            @if (profile != null && !string.IsNullOrEmpty(profile.JobTitle))
+                            {
+                                <li class="mb-3 d-flex">
+                                    <i class="fas fa-briefcase mt-1 me-3 text-secondary" style="width: 20px;"></i>
+                                    <span><strong>@profile.JobTitle</strong></span>
+                                </li>
+                            }
+                            @if (profile != null && !string.IsNullOrEmpty(profile.Education))
+                            {
+                                <li class="mb-3 d-flex">
+                                    <i class="fas fa-graduation-cap mt-1 me-3 text-secondary" style="width: 20px;"></i>
+                                    <span>Đã học tại <strong>@profile.Education</strong></span>
+                                </li>
+                            }
+                            <li class="mb-3 d-flex">
+                                <i class="fas fa-calendar-alt mt-1 me-3 text-secondary" style="width: 20px;"></i>
+                                <span>Tham gia từ <strong>Tháng @(Model.RegistDate.HasValue ? Model.RegistDate.Value.Month.ToString() + "/" + Model.RegistDate.Value.Year.ToString() : "Chưa rõ")</strong></span>
+                            </li>
+                            <li class="mb-3 d-flex">
+                                <i class="fas fa-envelope mt-1 me-3 text-secondary" style="width: 20px;"></i>
+                                <span>Email liên hệ: <strong>@Model.Email</strong></span>
+                            </li>
+                            @if (profile != null && !string.IsNullOrEmpty(profile.SocialLink))
+                            {
+                                <li class="mb-3 d-flex">
+                                    <i class="fas fa-link mt-1 me-3 text-secondary" style="width: 20px;"></i>
+                                    <a href="//@profile.SocialLink" target="_blank" class="text-success text-decoration-none">Kết nối với tôi</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white border-0 fw-bold py-3">
+                        <i class="fas fa-trophy me-2 text-warning"></i>Thành tích
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex gap-2 flex-wrap">
+
+                            <span class="badge bg-light text-dark p-2 border d-flex align-items-center" title="Thành viên CookingShare">
+                                <i class="fas fa-seedling text-success me-1"></i> Đầu bếp mới
+                            </span>
+
+                            @if (ViewBag.RecipeCount >= 5 && ViewBag.RecipeCount < 20)
+                            {
+                                <span class="badge bg-light text-dark p-2 border d-flex align-items-center" title="Đã chia sẻ 5+ công thức">
+                                    <i class="fas fa-pen-nib text-info me-1"></i> Top Writer
+                                </span>
+                            }
+                            @if (ViewBag.RecipeCount >= 20)
+                            {
+                                <span class="badge bg-light text-dark p-2 border d-flex align-items-center" title="Đã chia sẻ 20+ công thức">
+                                    <i class="fas fa-utensils text-danger me-1"></i> Master Chef
+                                </span>
+                            }
+
+                            @if (ViewBag.FollowerCount >= 10)
+                            {
+                                <span class="badge bg-light text-dark p-2 border d-flex align-items-center" title="Có hơn 10 người theo dõi">
+                                    <i class="fas fa-star text-warning me-1"></i> Ngôi sao ẩm thực
+                                </span>
+                            }
+
+                            @if (ViewBag.CooksnapCount >= 3)
+                            {
+                                <span class="badge bg-light text-dark p-2 border d-flex align-items-center" title="Hay đi thực hành món người khác">
+                                    <i class="fas fa-camera text-primary me-1"></i> Chăm chỉ
+                                </span>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-body p-2">
+                        <ul class="nav nav-pills nav-fill" id="publicProfileTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active fw-bold" id="pills-recipes-tab" data-bs-toggle="pill" data-bs-target="#pills-recipes" type="button" role="tab">
+                                    Công thức (@ViewBag.RecipeCount)
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-bold" id="pills-photos-tab" data-bs-toggle="pill" data-bs-target="#pills-photos" type="button" role="tab">
+                                    Hình ảnh (@ViewBag.CooksnapCount)
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-bold" id="pills-story-tab" data-bs-toggle="pill" data-bs-target="#pills-story" type="button" role="tab">
+                                    Câu chuyện bếp núc
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="publicProfileTabContent">
+
+                    <div class="tab-pane fade show active" id="pills-recipes" role="tabpanel">
+                        <div class="row g-4">
+                            @{ var approvedRecipes = Model.RECIPE.Where(r => r.Status == 1).OrderByDescending(r => r.CreateDate).ToList(); }
+                            @if (approvedRecipes.Count > 0)
+                            {
+                                foreach (var recipe in approvedRecipes)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="card recipe-card h-100 border-0 shadow-sm">
+                                            <div class="position-relative">
+                                                <img src="~/assets/images/@recipe.MainImage" class="card-img-top object-fit-cover" style="height: 200px;" alt="@recipe.Name" onerror="this.src='https://placehold.co/400x300?text=@recipe.Name'">
+
+                                                @if (recipe.Views > 100)
+                                                {
+                                                    <span class="badge bg-danger position-absolute top-0 start-0 m-3">Hot 🔥</span>
+                                                }
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between text-muted small mb-2">
+                                                    <span><i class="far fa-clock me-1"></i> @recipe.CookTime phút</span>
+                                                    <span><i class="fas fa-signal me-1"></i> @recipe.Difficulty</span>
+                                                </div>
+                                                <h5 class="card-title fw-bold"><a href="/Recipe/Detail/@recipe.ID" class="text-decoration-none text-dark stretched-link">@recipe.Name</a></h5>
+                                            </div>
+                                            <div class="card-footer bg-white border-0 pt-0 pb-3">
+                                                <div class="d-flex justify-content-between text-muted small">
+                                                    <span><i class="fas fa-eye text-warning"></i> @recipe.Views views</span>
+                                                    <span><i class="far fa-comment-alt text-secondary"></i> @recipe.COMMENT.Count()</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12 text-center py-5">
+                                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Đầu bếp này chưa chia sẻ công thức nào.</h5>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="pills-photos" role="tabpanel">
+                        <div class="row g-3">
+                            @if (ViewBag.Cooksnaps != null && ViewBag.CooksnapCount > 0)
+                            {
+                                foreach (var snap in ViewBag.Cooksnaps)
+                                {
+                                    <div class="col-6 col-md-4">
+                                        <div class="card border-0 shadow-sm h-100 overflow-hidden rounded-3 position-relative">
+
+                                            <div class="w-100 bg-light"
+                                                 style="background-image: url('/assets/images/cooksnaps/@snap.ImageName'); background-size: cover; background-position: center; padding-bottom: 100%; cursor: pointer;"
+                                                 onclick="openCooksnap(@snap.ID)"
+                                                 title="Xem chi tiết thành quả">
+                                            </div>
+
+                                            <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-white text-truncate" style="font-size: 0.85rem; pointer-events: none;" title="Đã nấu: @(snap.RECIPE != null ? snap.RECIPE.Name : "Công thức")">
+                                                <i class="fas fa-utensils me-1 text-warning"></i> @(snap.RECIPE != null ? snap.RECIPE.Name : "Công thức")
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12 text-center py-5 text-muted">
+                                    <i class="fas fa-camera-retro fa-3x mb-3 text-secondary opacity-50"></i>
+                                    <p>Đầu bếp này chưa đăng tải hình ảnh trả bài nào.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="pills-story" role="tabpanel">
+                        <div class="card border-0 shadow-sm rounded-3">
+                            <div class="card-body p-4">
+                                <h4 class="fw-bold text-orange mb-3" style="font-family: 'Dancing Script';">Triết lý nấu ăn của tôi</h4>
+                                @if (profile != null && !string.IsNullOrEmpty(profile.CookingPhilosophy))
+                                {
+                                    <p class="text-secondary" style="white-space: pre-wrap;">@profile.CookingPhilosophy</p>
+                                    if (!string.IsNullOrEmpty(profile.KitchenImage))
+                                    {
+                                        <img src="~/assets/images/profiles/@profile.KitchenImage" class="img-fluid rounded my-3 w-100" alt="My Kitchen">
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-secondary">Đầu bếp này đang bận rộn trong bếp nên chưa kịp viết triết lý nấu ăn của mình...</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="pills-photos" role="tabpanel">
+        <div class="row g-3">
+            @if (ViewBag.Cooksnaps != null && ViewBag.CooksnapCount > 0)
+            {
+                foreach (var snap in ViewBag.Cooksnaps)
+                {
+                    <div class="col-6 col-md-4">
+                        <div class="card border-0 shadow-sm h-100 overflow-hidden rounded-3 position-relative">
+                            <div class="w-100 bg-light"
+                                 style="background-image: url('/assets/images/cooksnaps/@snap.ImageName'); background-size: cover; background-position: center; padding-bottom: 100%; cursor: pointer;"
+                                 onclick="openCooksnap(@snap.ID)"
+                                 title="Xem chi tiết thành quả">
+                            </div>
+
+                            <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-white text-truncate" style="font-size: 0.85rem;" title="Đã nấu: @(snap.RECIPE != null ? snap.RECIPE.Name : "Công thức")">
+                                <i class="fas fa-utensils me-1 text-warning"></i> @(snap.RECIPE != null ? snap.RECIPE.Name : "Công thức")
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5 text-muted">
+                    <i class="fas fa-camera-retro fa-3x mb-3 text-secondary opacity-50"></i>
+                    <p>Đầu bếp này chưa đăng tải hình ảnh trả bài nào.</p>
+                </div>
+            }
+        </div>
+    </div>
+    </div> </div> </div> </div> <div class="modal fade" id="viewCooksnapModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content overflow-hidden border-0 shadow-lg">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 shadow-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div id="cooksnap-modal-content">
+                    <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-3x text-orange"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  <script>
+        // 1. HÀM MỞ MODAL XEM CHI TIẾT COOKSNAP (Dùng chung với trang Món ăn)
+        function openCooksnap(snapId) {
+            // Hiển thị khung Modal lên màn hình
+            var myModal = new bootstrap.Modal(document.getElementById('viewCooksnapModal'));
+            myModal.show();
+
+            // Hiển thị icon xoay xoay trong lúc chờ dữ liệu
+            $('#cooksnap-modal-content').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-3x text-orange"></i></div>');
+
+            // Gọi xuống C# để lấy giao diện chi tiết
+            $.ajax({
+                url: '/Recipe/GetCooksnapDetail?id=' + snapId,
+                type: 'GET',
+                success: function (result) {
+                    // Nhét nội dung C# trả về vào trong Modal
+                    $('#cooksnap-modal-content').html(result);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Lỗi tải Cooksnap: ", xhr.responseText);
+                    $('#cooksnap-modal-content').html('<div class="text-center py-5 text-danger"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><br>Có lỗi xảy ra khi tải dữ liệu!</div>');
+                }
+            });
+        }
+
+        // 2. CÁC SỰ KIỆN CLICK (THEO DÕI, BÁO CÁO)
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Lấy trạng thái đăng nhập từ C#
+            const daDangNhap = ('@(Session["Account"] != null)' === 'True');
+
+            // Hàm hiển thị Popup yêu cầu đăng nhập
+            function showLoginPopup() {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Yêu cầu đăng nhập',
+                    text: 'Bạn cần đăng nhập để thực hiện chức năng này!',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ff6600',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Đi tới Đăng nhập',
+                    cancelButtonText: 'Đóng',
+                    customClass: { title: 'fw-bold' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/Account/Login';
+                    }
+                });
+            }
+
+            // Bắt sự kiện Click toàn trang
+            document.body.addEventListener('click', function (e) {
+
+                // ==========================================
+                // XỬ LÝ NÚT THEO DÕI
+                // ==========================================
+                const btnFollow = e.target.closest('.btn-follow');
+                if (btnFollow) {
+                    e.preventDefault();
+
+                    // Chưa đăng nhập -> Bật popup
+                    if (!daDangNhap) {
+                        showLoginPopup();
+                        return;
+                    }
+
+                    const targetId = btnFollow.getAttribute('data-target-id');
+                    const currentStatus = btnFollow.getAttribute('data-status');
+
+                    btnFollow.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+                    btnFollow.disabled = true;
+
+                    const formData = new FormData();
+                    formData.append('targetId', targetId);
+
+                    fetch('/User/ToggleFollow', { method: 'POST', body: formData })
+                        .then(response => response.json())
+                        .then(res => {
+                            if (res.success) {
+                                if (res.isFollowing) {
+                                    btnFollow.innerHTML = '<i class="fas fa-user-check me-1"></i> Đã theo dõi';
+                                    btnFollow.classList.replace('btn-orange', 'btn-secondary');
+                                    btnFollow.setAttribute('data-status', 'followed');
+                                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Đã theo dõi!', showConfirmButton: false, timer: 3000 });
+                                } else {
+                                    btnFollow.innerHTML = '<i class="fas fa-user-plus me-1"></i> Theo dõi';
+                                    btnFollow.classList.replace('btn-secondary', 'btn-orange');
+                                    btnFollow.setAttribute('data-status', 'unfollow');
+                                    Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Đã hủy theo dõi!', showConfirmButton: false, timer: 3000 });
+                                }
+                            } else {
+                                Swal.fire('Lỗi!', res.message, 'error');
+                                if (currentStatus === 'followed') {
+                                    btnFollow.innerHTML = '<i class="fas fa-user-check me-1"></i> Đã theo dõi';
+                                } else {
+                                    btnFollow.innerHTML = '<i class="fas fa-user-plus me-1"></i> Theo dõi';
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Lỗi API:', error);
+                            Swal.fire('Lỗi!', 'Không kết nối được đến máy chủ.', 'error');
+                        })
+                        .finally(() => {
+                            btnFollow.disabled = false;
+                        });
+                }
+
+                // ==========================================
+                // XỬ LÝ NÚT BÁO CÁO (CỜ)
+                // ==========================================
+                const btnReport = e.target.closest('.btn-report-user');
+                if (btnReport) {
+                    e.preventDefault();
+
+                    if (!daDangNhap) {
+                        showLoginPopup();
+                        return;
+                    }
+
+                    const targetId = btnReport.getAttribute('data-target-id');
+
+                    Swal.fire({
+                        title: 'Báo cáo tài khoản',
+                        html: `
+                            <div class="text-start mt-3">
+                                <label class="form-label fw-bold text-muted small">Lý do báo cáo:</label>
+                                <select id="swal-report-reason" class="form-select mb-3">
+                                    <option value="Tài khoản giả mạo">Tài khoản giả mạo, lừa đảo</option>
+                                    <option value="Ngôn từ kích động">Sử dụng ngôn từ thô tục, chửi thề</option>
+                                    <option value="Spam / Quảng cáo">Spam hoặc quảng cáo rác</option>
+                                    <option value="Khác">Lý do khác...</option>
+                                </select>
+
+                                <label class="form-label fw-bold text-muted small">Mô tả chi tiết sai phạm:</label>
+                                <textarea id="swal-report-desc" class="form-control" rows="4" placeholder="Vui lòng cung cấp thêm thông tin để Quản trị viên dễ dàng xử lý..."></textarea>
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Gửi báo cáo',
+                        cancelButtonText: 'Hủy',
+                        confirmButtonColor: '#d33',
+                        preConfirm: () => {
+                            const reason = document.getElementById('swal-report-reason').value;
+                            const desc = document.getElementById('swal-report-desc').value.trim();
+
+                            if (reason === 'Khác' && desc === '') {
+                                Swal.showValidationMessage('Vui lòng nhập mô tả chi tiết khi bạn chọn lý do "Khác"!');
+                                return false;
+                            }
+
+                            return desc !== '' ? `${reason} - Chi tiết: ${desc}` : reason;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const finalReason = result.value;
+
+                            const formData = new FormData();
+                            formData.append('targetId', targetId);
+                            formData.append('reason', finalReason);
+                            formData.append('type', 2);
+
+                            fetch('/User/SubmitReport', { method: 'POST', body: formData })
+                                .then(response => response.json())
+                                .then(res => {
+                                    if (res.success) {
+                                        Swal.fire('Thành công!', 'Cảm ơn bạn! Đã gửi báo cáo cho Admin xử lý.', 'success');
+                                    } else {
+                                        Swal.fire('Lỗi!', res.message, 'error');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Lỗi API:', error);
+                                    Swal.fire('Lỗi!', 'Không thể kết nối đến máy chủ.', 'error');
+                                });
+                        }
+                    });
+                }
+            });
+        });
+   </script>
+</main>

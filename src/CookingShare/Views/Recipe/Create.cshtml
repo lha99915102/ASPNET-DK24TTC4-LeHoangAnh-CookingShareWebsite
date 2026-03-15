@@ -1,0 +1,275 @@
+﻿@model CookingShare.Models.RECIPE
+
+@{
+    ViewBag.Title = "Chia sẻ công thức";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<main class="bg-light py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold" style="font-family: 'Dancing Script'; font-size: 3rem; color: #FF6600;">Chia sẻ công thức</h2>
+                    <p class="text-muted">Lan tỏa hương vị món ngon đến cộng đồng CookingShare</p>
+                </div>
+
+                <form action="/Recipe/Create" method="POST" enctype="multipart/form-data" id="recipeForm">
+
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-body p-4 p-lg-5">
+                            <h5 class="fw-bold text-success mb-4"><i class="fas fa-info-circle me-2"></i>Thông tin chung</h5>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Tên món ăn <span class="text-danger">*</span></label>
+                                <input type="text" name="Name" class="form-control form-control-lg" placeholder="Ví dụ: Phở bò gia truyền Nam Định..." required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Mô tả ngắn</label>
+                                <textarea name="Describe" class="form-control" rows="3" placeholder="Hãy chia sẻ đôi chút về nguồn gốc hoặc hương vị đặc biệt của món ăn này..." required></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Ảnh đại diện món ăn <span class="text-danger">*</span></label>
+                                <div class="upload-box text-center p-5 rounded-3" id="main-upload-trigger" style="border: 2px dashed #ccc; cursor: pointer;">
+                                    <div id="main-placeholder">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-secondary mb-3"></i>
+                                        <p class="text-muted mb-0">Nhấn để tải ảnh đại diện lên</p>
+                                    </div>
+                                    <input type="file" name="ImageFile" class="d-none" id="main-file-input" accept="image/*" required>
+                                    <div id="main-preview-container" class="d-none">
+                                        <img id="main-preview-img" src="" class="img-fluid rounded shadow-sm object-fit-cover" style="height: 300px; width: 100%;">
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="btn-remove-main-img">Xóa ảnh</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Danh mục</label>
+                                    <select name="CategoryID" class="form-select" required>
+                                        <option value="">-- Chọn danh mục --</option>
+                                        @foreach (var cat in ViewBag.Categories)
+                                        {
+                                            <option value="@cat.ID">@cat.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Độ khó</label>
+                                    <select name="Difficulty" class="form-select">
+                                        <option value="Dễ">Dễ</option>
+                                        <option value="Trung bình">Trung bình</option>
+                                        <option value="Khó">Khó</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Thời gian (Phút)</label>
+                                    <input type="number" name="CookTime" class="form-control" placeholder="VD: 45" required min="1">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Khẩu phần (Người)</label>
+                                    <input type="number" name="Servings" class="form-control" placeholder="VD: 4" required min="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-body p-4 p-lg-5">
+                            <h5 class="fw-bold text-success mb-4"><i class="fas fa-carrot me-2"></i>Nguyên liệu</h5>
+                            <div id="ingredient-list">
+                                <div class="row g-2 mb-2 align-items-center ingredient-item">
+                                    <div class="col-5">
+                                        <select name="IngredientIDs[]" class="form-select" required>
+                                            <option value="">-- Nguyên liệu --</option>
+                                            @foreach (var ing in ViewBag.Ingredients)
+                                            {
+                                                <option value="@ing.ID">@ing.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-3">
+                                        <input type="number" step="0.1" name="IngredientQuantities[]" class="form-control" placeholder="SL" required min="0.1">
+                                    </div>
+                                    <div class="col-3">
+                                        <select name="UnitIDs[]" class="form-select" required>
+                                            @foreach (var u in ViewBag.Units)
+                                            {
+                                                <option value="@u.ID">@u.UnitName</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-1 text-center">
+                                        <button type="button" class="btn btn-light text-danger btn-remove-row invisible"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-success btn-sm mt-3 rounded-pill fw-bold" id="add-ingredient">
+                                <i class="fas fa-plus me-1"></i> Thêm nguyên liệu
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-body p-4 p-lg-5">
+                            <h5 class="fw-bold text-success mb-4"><i class="fas fa-list-ol me-2"></i>Cách làm</h5>
+                            <div id="step-list">
+                                <div class="step-item mb-4 border p-3 rounded-3 bg-light position-relative">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <label class="fw-bold text-orange step-label">Bước 1</label>
+                                        <button type="button" class="btn btn-sm text-danger btn-remove-step invisible"><i class="fas fa-times"></i> Xóa bước</button>
+                                    </div>
+                                    <textarea name="StepContents[]" class="form-control mb-2" rows="3" placeholder="Mô tả chi tiết các thao tác..." required></textarea>
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <label class="small fw-bold text-muted">Ảnh bước làm (tùy chọn):</label>
+                                            <input type="file" name="StepImages[]" class="form-control form-control-sm" accept="image/*">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-success btn-sm mt-2 rounded-pill fw-bold" id="add-step">
+                                <i class="fas fa-plus me-1"></i> Thêm bước tiếp theo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3 mb-5">
+                        <a href="/Home/Index" class="btn btn-light btn-lg px-4 fw-bold text-secondary">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-orange btn-lg px-5 fw-bold rounded-pill shadow">Đăng công thức</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // --- NGĂN CHẶN LOAD TRÙNG LẶP SCRIPT ---
+        if (window.isCreateScriptInit) return;
+        window.isCreateScriptInit = true;
+
+        // 1. XỬ LÝ ẢNH ĐẠI DIỆN
+        const mainUploadTrigger = document.getElementById('main-upload-trigger');
+        const mainFileInput = document.getElementById('main-file-input');
+        const mainPreviewImg = document.getElementById('main-preview-img');
+        const mainPreviewCont = document.getElementById('main-preview-container');
+        const mainPlaceholder = document.getElementById('main-placeholder');
+        const btnRemoveMainImg = document.getElementById('btn-remove-main-img');
+
+        if (mainUploadTrigger) {
+            mainUploadTrigger.onclick = function (e) {
+                if (e.target !== btnRemoveMainImg) mainFileInput.click();
+            };
+        }
+
+        if (mainFileInput) {
+            mainFileInput.onchange = function () {
+                const file = this.files[0];
+                if (file) {
+                    mainPlaceholder.classList.add('d-none');
+                    mainPreviewImg.src = URL.createObjectURL(file);
+                    mainPreviewCont.classList.remove('d-none');
+                    mainUploadTrigger.style.border = "none";
+                }
+            };
+        }
+
+        if (btnRemoveMainImg) {
+            btnRemoveMainImg.onclick = function (e) {
+                e.stopPropagation();
+                mainFileInput.value = "";
+                mainPreviewCont.classList.add('d-none');
+                mainPlaceholder.classList.remove('d-none');
+                mainUploadTrigger.style.border = "2px dashed #ccc";
+            };
+        }
+
+        // 2. XỬ LÝ THÊM/XÓA NGUYÊN LIỆU (KHẮC PHỤC NHẢY ĐÔI)
+        const btnAddIng = document.getElementById('add-ingredient');
+        const ingList = document.getElementById('ingredient-list');
+
+        if (btnAddIng) {
+            btnAddIng.onclick = function (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation(); // Cực kỳ quan trọng để chặn nhảy đôi
+
+                const firstRow = ingList.querySelector('.ingredient-item');
+                const newRow = firstRow.cloneNode(true);
+
+                // Reset giá trị
+                newRow.querySelector('input').value = "";
+                newRow.querySelector('select').selectedIndex = 0;
+
+                // Hiện nút xóa
+                const btnDel = newRow.querySelector('.btn-remove-row');
+                btnDel.classList.remove('invisible');
+
+                ingList.appendChild(newRow);
+            };
+        }
+
+        ingList.onclick = function (e) {
+            const btn = e.target.closest('.btn-remove-row');
+            if (btn) {
+                e.target.closest('.ingredient-item').remove();
+            }
+        };
+
+        // 3. XỬ LÝ THÊM/XÓA BƯỚC LÀM (KHẮC PHỤC NHẢY ĐÔI)
+        const btnAddStep = document.getElementById('add-step');
+        const stepList = document.getElementById('step-list');
+
+        if (btnAddStep) {
+            btnAddStep.onclick = function (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+
+                const firstStep = stepList.querySelector('.step-item');
+                const newStep = firstStep.cloneNode(true);
+
+                // Reset giá trị
+                newStep.querySelector('textarea').value = "";
+                newStep.querySelector('input[type="file"]').value = "";
+
+                // Hiện nút xóa
+                const btnDel = newStep.querySelector('.btn-remove-step');
+                btnDel.classList.remove('invisible');
+
+                stepList.appendChild(newStep);
+                updateNumbers();
+            };
+        }
+
+        stepList.onclick = function (e) {
+            const btn = e.target.closest('.btn-remove-step');
+            if (btn) {
+                e.target.closest('.step-item').remove();
+                updateNumbers();
+            }
+        };
+
+        function updateNumbers() {
+            const items = stepList.querySelectorAll('.step-item');
+            items.forEach((item, i) => {
+                item.querySelector('.step-label').textContent = 'Bước ' + (i + 1);
+            });
+        }
+    });
+</script>
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .upload-box:hover {
+        background-color: #f8f9fa;
+        border-color: #FF6600 !important;
+    }
+</style>

@@ -1,0 +1,201 @@
+﻿@model IEnumerable<CookingShare.Models.REPORT>
+@{
+    ViewBag.Title = "Cộng đồng & Báo cáo";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int? currentFilter = ViewBag.CurrentFilter as int?;
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-danger">
+            <div class="card-body">
+                <h5 class="text-muted small text-uppercase fw-bold">Cần xử lý ngay</h5>
+                <h3 class="fw-bold mb-0 text-danger">@ViewBag.PendingReports <small class="fs-6 text-muted fw-normal">báo cáo</small></h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-success">
+            <div class="card-body">
+                <h5 class="text-muted small text-uppercase fw-bold">Đã giải quyết</h5>
+                <h3 class="fw-bold mb-0 text-success">@ViewBag.ResolvedReports <small class="fs-6 text-muted fw-normal">báo cáo</small></h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
+    <h5 class="mb-0 fw-bold text-secondary"><i class="fas fa-flag text-danger me-2"></i>Danh sách vi phạm</h5>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small fw-bold">Lọc theo:</span>
+        <form action="/Admin/Community/Index" method="get" id="filterForm">
+            <select class="form-select w-auto" name="statusFilter" onchange="document.getElementById('filterForm').submit();">
+                <option value="">Tất cả báo cáo</option>
+                <option value="0" @(currentFilter == 0 ? "selected" : "")>Chờ xử lý (Mới)</option>
+                <option value="1" @(currentFilter == 1 ? "selected" : "")>Đã xử lý (Phạt)</option>
+                <option value="2" @(currentFilter == 2 ? "selected" : "")>Đã bỏ qua</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle datatable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th>Người báo cáo</th>
+                    <th>Loại vi phạm</th>
+                    <th>ID Mục tiêu</th>
+                    <th>Lý do (Trích dẫn)</th>
+                    <th>Ngày gửi</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        string reporterName = item.ACCOUNT != null ? item.ACCOUNT.UserName : "Ẩn danh";
+                        string reportTypeTxt = "Khác";
+                        string reportTypeBadge = "bg-secondary";
+                        string icon = "fa-question";
+
+                        if (item.ReportType == 1) { reportTypeTxt = "Công thức"; reportTypeBadge = "bg-primary"; icon = "fa-utensils"; }
+                        else if (item.ReportType == 2) { reportTypeTxt = "Bình luận"; reportTypeBadge = "bg-info text-dark"; icon = "fa-comment"; }
+                        else if (item.ReportType == 3) { reportTypeTxt = "Người dùng"; reportTypeBadge = "bg-dark"; icon = "fa-user"; }
+
+                        // Chống lỗi ngoặc kép khi truyền vào JS
+                        string safeReason = System.Web.HttpUtility.JavaScriptStringEncode(item.Reason ?? "");
+
+                        <tr class="@(item.Status == 0 ? "fw-bold bg-light" : "")">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-shield text-secondary me-2"></i>
+                                    <span class="text-dark">@reporterName</span>
+                                </div>
+                            </td>
+                            <td><span class="badge @reportTypeBadge"><i class="fas @icon me-1"></i> @reportTypeTxt</span></td>
+                            <td><span class="text-primary fw-bold">#@item.TargetID</span></td>
+                            <td>
+                                <span class="text-truncate d-inline-block text-danger" style="max-width: 250px;"><i class="fas fa-quote-left me-1 opacity-50"></i>@item.Reason</span>
+                            </td>
+                            <td class="small">@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")</td>
+                            <td>
+                                @if (item.Status == 0)
+                                {<span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>Chờ xử lý</span> }
+                                else if (item.Status == 1)
+                                { <span class="badge bg-success"><i class="fas fa-check me-1"></i>Đã xử lý</span> }
+                                else
+                                { <span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Bỏ qua</span>}
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="reviewReport(@item.ID, '@reporterName', '@reportTypeTxt', @item.TargetID, `@safeReason`, @item.Status, '@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")')">
+                                    <i class="fas fa-gavel"></i> Xử lý
+                                </button>
+
+                                <form action="/Admin/Community/Delete" method="post" style="display:inline;" onsubmit="return confirm('Xóa bản ghi báo cáo này khỏi hệ thống?');">
+                                    <input type="hidden" name="id" value="@item.ID" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-balance-scale me-2"></i>Chi tiết Báo cáo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body bg-light">
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="row mb-2 border-bottom pb-2">
+                            <div class="col-4 text-muted small fw-bold">Người gửi:</div>
+                            <div class="col-8 text-dark fw-bold" id="r_Reporter"></div>
+                        </div>
+                        <div class="row mb-2 border-bottom pb-2">
+                            <div class="col-4 text-muted small fw-bold">Thời gian:</div>
+                            <div class="col-8 text-secondary small" id="r_Date"></div>
+                        </div>
+                        <div class="row mb-2 border-bottom pb-2">
+                            <div class="col-4 text-muted small fw-bold">Đối tượng:</div>
+                            <div class="col-8">
+                                <span class="badge bg-dark" id="r_Type"></span> ID: <span class="text-primary fw-bold" id="r_TargetID"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 text-danger small fw-bold mb-1">Nội dung khiếu nại:</div>
+                            <div class="col-12">
+                                <div class="p-3 bg-white border border-danger rounded text-danger fst-italic" id="r_Reason"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="/Admin/Community/UpdateStatus" method="post" id="actionForm">
+                    <input type="hidden" name="id" id="r_ID" value="0" />
+
+                    <h6 class="fw-bold mb-2">Hành động của Admin:</h6>
+
+                    <div class="d-grid mb-3">
+                        <a href="#" id="btnGoToTarget" class="btn btn-outline-primary border-dashed">
+                            <i class="fas fa-external-link-alt me-2"></i>Đi tới mục bị báo cáo để kiểm tra
+                        </a>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="status" value="1" class="btn btn-success flex-grow-1 fw-bold">
+                            <i class="fas fa-check-circle me-1"></i> Đã Xử Lý (Phạt)
+                        </button>
+                        <button type="submit" name="status" value="2" class="btn btn-secondary flex-grow-1 fw-bold">
+                            <i class="fas fa-times-circle me-1"></i> Bỏ Qua (Sai sự thật)
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function reviewReport(id, reporter, type, targetId, reason, status, date) {
+            document.getElementById('r_ID').value = id;
+            document.getElementById('r_Reporter').innerText = reporter;
+            document.getElementById('r_Type').innerText = type;
+            document.getElementById('r_TargetID').innerText = "#" + targetId;
+            document.getElementById('r_Reason').innerText = '"' + reason + '"';
+            document.getElementById('r_Date').innerText = date;
+
+            // Gắn link điều hướng đến khu vực tương ứng để Admin kiểm tra
+            let btnGoToTarget = document.getElementById('btnGoToTarget');
+            if(type === "Công thức") {
+                btnGoToTarget.href = "/Admin/Recipe/Index"; // Có thể nối string URL tìm kiếm ID sau
+            } else if(type === "Bình luận") {
+                btnGoToTarget.href = "/Admin/Comment/Index";
+            } else {
+                btnGoToTarget.href = "/Admin/User/Index";
+            }
+
+            var myModal = new bootstrap.Modal(document.getElementById('reportModal'));
+            myModal.show();
+        }
+    </script>
+}

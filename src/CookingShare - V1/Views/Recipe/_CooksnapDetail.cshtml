@@ -1,0 +1,125 @@
+﻿@model CookingShare.Models.COOKSNAP
+
+@{
+    // 1. Khởi tạo giá trị an toàn tuyệt đối
+    string authorChar = "U";
+    string authorAvatar = "https://placehold.co/40x40/png?text=U";
+    string authorName = "Ẩn danh";
+
+    // 2. Chỉ trích xuất khi ACCOUNT không rỗng
+    if (Model.ACCOUNT != null)
+    {
+        authorChar = !string.IsNullOrEmpty(Model.ACCOUNT.UserName) ? Model.ACCOUNT.UserName.Substring(0, 1).ToUpper() : "U";
+        authorAvatar = "https://placehold.co/40x40/png?text=" + authorChar;
+        authorName = Model.ACCOUNT.UserName;
+
+        if (Model.ACCOUNT.PROFILE != null)
+        {
+            if (!string.IsNullOrEmpty(Model.ACCOUNT.PROFILE.Avatar) && Model.ACCOUNT.PROFILE.Avatar != "default-avatar.png")
+            {
+                authorAvatar = "/assets/images/avatars/" + Model.ACCOUNT.PROFILE.Avatar;
+            }
+            if (!string.IsNullOrEmpty(Model.ACCOUNT.PROFILE.FullName))
+            {
+                authorName = Model.ACCOUNT.PROFILE.FullName;
+            }
+        }
+    }
+}
+
+<div class="row g-0 h-100">
+    <div class="col-md-7 bg-dark d-flex align-items-center justify-content-center position-relative" style="min-height: 500px;">
+        <img src="~/assets/images/cooksnaps/@Model.ImageName" class="img-fluid max-h-100 object-fit-contain" alt="Cooksnap"
+             onerror="this.onerror=null; this.src='https://placehold.co/600x600/e9ecef/6c757d?text=Thành+Quả';">
+    </div>
+
+    <div class="col-md-5 d-flex flex-column bg-white" style="max-height: 600px;">
+
+        <div class="d-flex align-items-center p-3 border-bottom">
+            <img src="@authorAvatar" class="rounded-circle me-2 object-fit-cover border" style="width: 40px; height: 40px;"
+                 onerror="this.onerror=null; this.src='https://placehold.co/40x40/png?text=@authorChar';">
+            <div>
+                <h6 class="mb-0 fw-bold">@authorName</h6>
+                <small class="text-muted" style="font-size: 0.75rem;">@(String.Format("{0:dd/MM/yyyy HH:mm}", Model.CreateDate))</small>
+            </div>
+        </div>
+
+        <div class="p-3 flex-grow-1 overflow-auto" style="height: 350px;">
+
+            @if (!string.IsNullOrEmpty(Model.Content))
+            {
+                <div class="d-flex mb-4">
+                    <img src="@authorAvatar" class="rounded-circle me-2 object-fit-cover mt-1" style="width: 32px; height: 32px;"
+                         onerror="this.onerror=null; this.src='https://placehold.co/32x32/png?text=@authorChar';">
+                    <div>
+                        <span class="fw-bold me-1 text-dark" style="font-size: 0.9rem;">@authorName</span>
+                        <span class="text-dark" style="font-size: 0.9rem;">@Model.Content</span>
+                    </div>
+                </div>
+            }
+
+            <hr class="text-muted opacity-25">
+
+            @if (Model.COOKSNAP_COMMENT != null && Model.COOKSNAP_COMMENT.Count > 0)
+            {
+                foreach (var cmt in Model.COOKSNAP_COMMENT.OrderBy(c => c.CreateDate))
+                {
+                    string cmtChar = cmt.ACCOUNT != null && !string.IsNullOrEmpty(cmt.ACCOUNT.UserName) ? cmt.ACCOUNT.UserName.Substring(0, 1).ToUpper() : "U";
+                    string cmtAva = "https://placehold.co/32x32/png?text=" + cmtChar;
+                    string cmtName = cmt.ACCOUNT != null ? cmt.ACCOUNT.UserName : "User";
+
+                    if (cmt.ACCOUNT != null && cmt.ACCOUNT.PROFILE != null)
+                    {
+                        if (!string.IsNullOrEmpty(cmt.ACCOUNT.PROFILE.Avatar) && cmt.ACCOUNT.PROFILE.Avatar != "default-avatar.png")
+                        {
+                            cmtAva = "/assets/images/avatars/" + cmt.ACCOUNT.PROFILE.Avatar;
+                        }
+
+                        if (!string.IsNullOrEmpty(cmt.ACCOUNT.PROFILE.FullName))
+                        {
+                            cmtName = cmt.ACCOUNT.PROFILE.FullName;
+                        }
+                    }
+
+                    <div class="d-flex mb-3">
+                        <img src="@cmtAva" class="rounded-circle me-2 object-fit-cover mt-1" style="width: 32px; height: 32px;"
+                             onerror="this.onerror=null; this.src='https://placehold.co/32x32/png?text=@cmtChar';">
+                        <div>
+                            <span class="fw-bold me-1 text-dark" style="font-size: 0.9rem;">@cmtName</span>
+                            <span class="text-secondary" style="font-size: 0.9rem;">@cmt.Content</span>
+                            <div class="text-muted mt-1" style="font-size: 0.7rem;">@(String.Format("{0:dd/MM HH:mm}", cmt.CreateDate))</div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center text-muted py-4 small">Chưa có bình luận nào. Hãy là người đầu tiên!</div>
+            }
+        </div>
+
+        <div class="p-3 border-top bg-light">
+            @if (Session["Account"] != null)
+            {
+                // ĐÃ ĐĂNG NHẬP: Hiện Form bình luận
+                <form action="/Recipe/AddCooksnapComment" method="POST" class="d-flex align-items-center">
+                    <input type="hidden" name="CooksnapID" value="@Model.ID" />
+                    <input type="hidden" name="RecipeID" value="@Model.RecipeID" />
+
+                    <input type="text" name="Content" class="form-control border-0 bg-transparent shadow-none" placeholder="Thêm bình luận..." required autocomplete="off">
+                    <button type="submit" class="btn btn-link text-decoration-none fw-bold text-orange px-2">Đăng</button>
+                </form>
+            }
+            else
+            {
+                // CHƯA ĐĂNG NHẬP: Ẩn Form, hiện thông báo
+                <div class="text-center py-1">
+                    <span class="text-muted small">Vui lòng </span>
+                    <a href="/Account/Login" class="text-orange fw-bold text-decoration-none">Đăng nhập</a>
+                    <span class="text-muted small"> để bình luận.</span>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

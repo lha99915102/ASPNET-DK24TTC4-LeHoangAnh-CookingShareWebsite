@@ -1,0 +1,202 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - CookingShare</title>
+    <link rel="stylesheet" href="~/assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/assets/vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="~/assets/css/style.css">
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <style>
+        body, html {
+            height: 100%;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .auth-bg {
+            background: url('https://placehold.co/800x1200?text=Food+Background') center/cover no-repeat;
+            position: relative;
+        }
+
+        .auth-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            z-index: 10;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+            .back-home:hover {
+                color: #FF6600;
+                transform: translateX(-5px);
+            }
+
+        .form-floating > .form-control:focus ~ label {
+            color: #28a745;
+        }
+
+        .form-floating > .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="row g-0 h-100">
+        <div class="col-lg-6 d-none d-lg-block position-relative auth-bg">
+            <div class="auth-overlay"></div>
+            <a href="/Home/Index" class="back-home"><i class="fas fa-arrow-left me-2"></i> Quay về trang chủ</a>
+            <div class="position-absolute bottom-0 start-0 p-5 text-white w-100">
+                <h1 class="mb-3" style="font-family: 'Dancing Script', cursive; font-size: 4rem;">CookingShare</h1>
+                <h3 class="fw-bold">Khơi nguồn cảm hứng nấu nướng</h3>
+                <p class="lead mb-4">Tham gia cộng đồng ẩm thực lớn nhất Việt Nam để chia sẻ và khám phá hàng ngàn công thức độc đáo.</p>
+            </div>
+        </div>
+
+        <div class="col-lg-6 d-flex align-items-center justify-content-center bg-white">
+            <div class="w-100 p-5" style="max-width: 550px;">
+                <div class="text-center mb-4 d-lg-none">
+                    <h2 class="text-orange" style="font-family: 'Dancing Script', cursive; font-size: 3rem;">CookingShare</h2>
+                </div>
+
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold">Tạo tài khoản mới</h3>
+                    <p class="text-muted">Điền thông tin bên dưới để bắt đầu hành trình của bạn.</p>
+                </div>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger mb-4 rounded-3 border-0 shadow-sm"><i class="fas fa-exclamation-triangle me-2"></i> @ViewBag.Error</div>
+                }
+                @if (ViewBag.Success != null)
+                {
+                    <div class="alert alert-success mb-4 rounded-3 border-0 shadow-sm"><i class="fas fa-check-circle me-2"></i> @ViewBag.Success</div>
+                }
+
+                <form action="/Account/Register" method="POST">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Nguyen Van A" required>
+                        <label for="fullName">Họ và tên</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                        <label for="email">Địa chỉ Email</label>
+                    </div>
+
+                    <div class="form-floating mb-3 position-relative">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                        <label for="password">Mật khẩu</label>
+                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer toggle-password" toggle="#password" style="z-index: 10;">
+                            <i class="far fa-eye text-secondary"></i>
+                        </span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Password" required>
+                        <label for="confirmPassword">Nhập lại mật khẩu</label>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" value="" id="termsCheck" required>
+                        <label class="form-check-label small text-secondary" for="termsCheck">
+                            Tôi đồng ý với <a href="#" class="text-success text-decoration-none fw-bold">Điều khoản sử dụng</a> và <a href="#" class="text-success text-decoration-none fw-bold">Chính sách bảo mật</a>.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-orange w-100 py-3 rounded-pill fw-bold shadow mb-4">Đăng Ký Tài Khoản</button>
+                </form>
+                <div class="text-center position-relative mb-4">
+                    <hr class="text-secondary opacity-25">
+                    <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">Hoặc</span>
+                </div>
+
+                <div class="d-flex justify-content-center w-100 mb-4">
+
+                    <div id="g_id_onload"
+                         data-client_id="199660909704-5cqdsfchtf001n084eng6457flmvnc3j.apps.googleusercontent.com"
+                         data-context="signin"
+                         data-ux_mode="popup"
+                         data-callback="handleGoogleLogin"
+                         data-auto_prompt="false">
+                    </div>
+
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="outline"
+                         data-text="continue_with"
+                         data-size="large"
+                         data-logo_alignment="center"
+                         data-width="380"> </div>
+
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted">Bạn đã có tài khoản? <a href="/Account/Login" class="text-orange fw-bold text-decoration-none">Đăng nhập ngay</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/assets/vendor/jquery/jquery.min.js"></script>
+    <script src="~/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(".toggle-password").click(function () {
+            $(this).find("i").toggleClass("fa-eye fa-eye-slash");
+            var input = $($(this).attr("toggle"));
+            if (input.attr("type") == "password") {
+                input.attr("type", "text");
+            } else {
+                input.attr("type", "password");
+            }
+        });
+
+        // Hàm này tự động chạy khi người dùng chọn tài khoản Google xong
+        function handleGoogleLogin(response) {
+            // Lấy Token do Google cấp
+            const token = response.credential;
+
+            // Gọi AJAX gửi Token xuống Backend C#
+            $.ajax({
+                url: '/Account/GoogleLogin',
+                type: 'POST',
+                data: { credential: token },
+                success: function (res) {
+                    if (res.success) {
+                        // Thành công -> Chuyển hướng về Trang chủ
+                        window.location.href = res.redirectUrl;
+                    } else {
+                        // Thất bại (Ví dụ: Bị khóa acc) -> Hiện thông báo
+                        alert(res.message);
+                    }
+                },
+                error: function () {
+                    alert("Đã xảy ra lỗi kết nối tới máy chủ.");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

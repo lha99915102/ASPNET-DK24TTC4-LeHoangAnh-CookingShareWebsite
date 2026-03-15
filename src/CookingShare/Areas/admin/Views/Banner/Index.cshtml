@@ -1,0 +1,179 @@
+﻿@model IEnumerable<CookingShare.Models.BANNER>
+@{
+    ViewBag.Title = "Quản lý Banner";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    bool? currentFilter = ViewBag.CurrentFilter as bool?;
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
+    <button class="btn btn-primary" onclick="resetBannerForm()" data-bs-toggle="modal" data-bs-target="#bannerModal">
+        <i class="fas fa-plus-circle me-2"></i>Thêm Banner Mới
+    </button>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small fw-bold">Trạng thái:</span>
+        <form action="/Admin/Banner/Index" method="get" id="filterForm">
+            <select class="form-select w-auto" name="isActiveFilter" onchange="document.getElementById('filterForm').submit();">
+                <option value="">Tất cả</option>
+                <option value="true" @(currentFilter == true ? "selected" : "")>Đang hiển thị</option>
+                <option value="false" @(currentFilter == false ? "selected" : "")>Đang ẩn</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle datatable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 70px;">Thứ tự</th>
+                    <th style="width: 300px;">Hình ảnh Banner</th>
+                    <th>Tiêu đề & Đường dẫn (Link)</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="@(item.IsActive == false ? "opacity-75" : "")">
+                        <td><span class="badge bg-dark fs-6">@item.Position</span></td>
+                        <td>
+                            <img src="@item.ImageURL" class="img-thumbnail w-100 object-fit-cover" style="height: 100px;" alt="Banner" onerror="this.src='https://placehold.co/800x300?text=No+Image'">
+                        </td>
+                        <td>
+                            <h6 class="mb-1 fw-bold @(item.IsActive == false ? "text-muted" : "text-dark")">@item.Title</h6>
+                            <a href="@item.LinkURL" target="_blank" class="small text-decoration-none text-muted"><i class="fas fa-link me-1"></i>@item.LinkURL</a>
+                        </td>
+                        <td>
+                            @if (item.IsActive == true)
+                            {<span class="badge bg-success">Hiển thị</span> }
+                            else
+                            { <span class="badge bg-secondary">Đang ẩn</span>}
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary me-1"
+                                    onclick="editBanner(@item.ID, '@item.Title', '@item.LinkURL', @item.Position, @(item.IsActive == true ? "true" : "false"), '@item.ImageURL')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="/Admin/Banner/Delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa banner này?');">
+                                <input type="hidden" name="id" value="@item.ID" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="bannerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalTitle">Cập nhật Banner</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="/Admin/Banner/Save" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" id="b_ID" value="0" />
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-7 mb-3">
+                            <label class="form-label fw-bold">Hình ảnh Banner <span class="text-danger">*</span></label>
+
+                            <div class="mb-2 position-relative overflow-hidden w-100 rounded d-flex align-items-center justify-content-center"
+                                 style="height: 200px; background-color: #f8f9fa; border: 2px dashed #ced4da;">
+                                <img id="bannerPreview" src="https://placehold.co/800x300?text=Upload+Image+(1920x600)"
+                                     class="position-absolute top-0 start-0 w-100 h-100"
+                                     style="object-fit: cover;" alt="Preview">
+                            </div>
+
+                            <input class="form-control form-control-sm" type="file" name="ImageFile" id="bannerImage" accept="image/*" onchange="previewImg(this)">
+                            <small class="text-muted d-block mt-1"><i class="fas fa-info-circle"></i> Khuyến nghị: 1920 x 600px. Khi sửa, nếu không chọn ảnh mới hệ thống sẽ giữ ảnh cũ.</small>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tên chiến dịch / Tiêu đề</label>
+                                <input type="text" class="form-control" name="Title" id="b_Title" placeholder="VD: Món ngon ngày Tết">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Đường dẫn khi click (URL)</label>
+                                <input type="text" class="form-control" name="LinkURL" id="b_LinkURL" placeholder="VD: /cuoc-thi-tet">
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold">Thứ tự ưu tiên</label>
+                                    <input type="number" class="form-control" name="Position" id="b_Position" value="1" min="1">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold">Trạng thái</label>
+                                    <select class="form-select" name="IsActive" id="b_IsActive">
+                                        <option value="true">Hiển thị</option>
+                                        <option value="false">Ẩn</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Lưu Banner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Hàm load ảnh xem trước
+        function previewImg(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) { document.getElementById('bannerPreview').src = e.target.result; }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Reset form khi bấm Thêm mới
+        function resetBannerForm() {
+            document.getElementById('modalTitle').innerText = "Thêm Banner Mới";
+            document.getElementById('b_ID').value = "0";
+            document.getElementById('b_Title').value = "";
+            document.getElementById('b_LinkURL').value = "";
+            document.getElementById('b_Position').value = "1";
+            document.getElementById('b_IsActive').value = "true";
+            document.getElementById('bannerImage').value = ""; // Clear file input
+            document.getElementById('bannerPreview').src = "https://placehold.co/800x300?text=Upload+Image+(1920x600)";
+        }
+
+        // Nạp dữ liệu khi bấm Sửa
+        function editBanner(id, title, link, position, isActive, imgUrl) {
+            resetBannerForm();
+            document.getElementById('modalTitle').innerText = "Sửa Thông Tin Banner";
+            document.getElementById('b_ID').value = id;
+            document.getElementById('b_Title').value = title;
+            document.getElementById('b_LinkURL').value = link;
+            document.getElementById('b_Position').value = position;
+            document.getElementById('b_IsActive').value = isActive.toString();
+
+            if(imgUrl && imgUrl !== '') {
+                document.getElementById('bannerPreview').src = imgUrl;
+            }
+
+            var myModal = new bootstrap.Modal(document.getElementById('bannerModal'));
+            myModal.show();
+        }
+    </script>
+}

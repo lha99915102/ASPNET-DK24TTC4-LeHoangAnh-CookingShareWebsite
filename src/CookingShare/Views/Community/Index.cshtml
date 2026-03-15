@@ -1,0 +1,246 @@
+﻿@model List<CookingShare.Models.COOKSNAP>
+
+@{
+    ViewBag.Title = "Cộng đồng Yêu Bếp";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var topChefs = ViewBag.TopChefs as List<CookingShare.Models.ACCOUNT>;
+}
+
+<main class="bg-light py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+
+            <div class="col-lg-8">
+
+                <div class="card border-0 shadow-sm rounded-3 mb-4 bg-orange text-white" style="background-image: url('https://www.transparenttextures.com/patterns/food.png');">
+                    <div class="card-body p-4 text-center">
+                        <h4 class="fw-bold mb-2" style="font-family: 'Dancing Script'; font-size: 2.5rem;"><i class="fas fa-camera-retro me-2"></i>Khoe tài nấu nướng</h4>
+                        <p class="mb-0 text-white-50">Cùng ngắm nhìn những thành quả tuyệt vời từ cộng đồng CookingShare. Để chia sẻ ảnh của bạn, hãy vào xem một công thức bất kỳ và bấm <strong>Gửi ảnh thực hành</strong> nhé!</p>
+                    </div>
+                </div>
+
+                @if (Model != null && Model.Count > 0)
+                {
+                    foreach (var snap in Model)
+                    {
+                        // Đã xóa dấu @{ } thừa ở đây, viết C# trực tiếp luôn
+                        string snapAuthorName = snap.ACCOUNT != null ? snap.ACCOUNT.UserName : "Đầu bếp ẩn danh";
+                        string snapAuthorAva = "https://placehold.co/50x50/png?text=U";
+
+                        if (snap.ACCOUNT != null && snap.ACCOUNT.PROFILE != null)
+                        {
+                            var p = snap.ACCOUNT.PROFILE;
+                            if (!string.IsNullOrEmpty(p.FullName))
+                            {
+                                snapAuthorName = p.FullName;
+                            }
+                            if (!string.IsNullOrEmpty(p.Avatar))
+                            {
+                                snapAuthorAva = "/assets/images/avatars/" + p.Avatar;
+                            }
+                        }
+
+                        <div class="card border-0 shadow-sm rounded-4 mb-5 feed-post overflow-hidden">
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center p-4">
+                                <div class="d-flex align-items-center">
+                                    <img src="@snapAuthorAva" class="rounded-circle me-3 border border-2 border-success p-1 object-fit-cover" style="width: 50px; height: 50px;" onerror="this.src='https://placehold.co/50x50/png?text=U'">
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-dark">
+                                            <a href="/User/PublicProfile/@snap.AccountID" class="text-dark text-decoration-none">@snapAuthorName</a>
+                                        </h6>
+                                        <small class="text-muted">
+                                            @(snap.CreateDate.HasValue ? snap.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "") • <i class="fas fa-globe-americas"></i>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-body p-0">
+                                @if (!string.IsNullOrEmpty(snap.Content))
+                                {
+                                    <p class="px-4 mb-3 text-dark fs-6" style="line-height: 1.6;">@snap.Content</p>
+                                }
+
+                                <img src="~/assets/images/cooksnaps/@snap.ImageName" class="w-100 object-fit-cover" style="max-height: 600px;" alt="Thành quả" onerror="this.src='https://placehold.co/800x600?text=Thành+Quả'">
+
+                                @if (snap.RECIPE != null)
+                                {
+                                    <div class="m-4 p-3 bg-light rounded-3 border d-flex align-items-center recipe-ref-box">
+                                        <div class="rounded p-3 me-3 text-white" style="background-color: #ff6600;">
+                                            <i class="fas fa-utensils fa-lg"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">Thực hành từ công thức</small>
+                                            <a href="/Recipe/Detail/@snap.RecipeID" class="fw-bold text-dark text-decoration-none stretched-link fs-5 ref-link">@snap.RECIPE.Name</a>
+                                        </div>
+                                        <i class="fas fa-chevron-right ms-auto text-secondary fa-lg"></i>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    if (ViewBag.TotalPages > 1)
+                    {
+                        <nav class="mt-5 mb-5 d-flex justify-content-center">
+                            <ul class="pagination pagination-sm">
+                                <li class="page-item custom-page-item @(ViewBag.CurrentPage == 1 ? "disabled d-none" : "")">
+                                    <a class="page-link custom-page-link text-orange rounded-start-pill" href="/Community/Index?page=@(ViewBag.CurrentPage - 1)">Trước</a>
+                                </li>
+
+                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    <li class="page-item custom-page-item @(i == ViewBag.CurrentPage ? "active custom-active" : "") mx-1">
+                                        <a class="page-link custom-page-link @(i == ViewBag.CurrentPage ? "text-white" : "text-orange") rounded-circle border-0 fw-bold d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;" href="/Community/Index?page=@i">@i</a>
+                                    </li>
+                                }
+
+                                <li class="page-item custom-page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled d-none" : "")">
+                                    <a class="page-link custom-page-link text-orange rounded-end-pill" href="/Community/Index?page=@(ViewBag.CurrentPage + 1)">Sau</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-5 my-5">
+                        <i class="fas fa-camera text-muted fa-4x mb-4 opacity-25"></i>
+                        <h4 class="text-muted fw-bold">Cộng đồng đang chờ đón bức ảnh đầu tiên!</h4>
+                        <p class="text-secondary">Hãy là người tiên phong chia sẻ món ăn của bạn.</p>
+                    </div>
+                }
+
+            </div>
+
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="sticky-sidebar" style="top: 90px;">
+
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-header bg-white border-0 fw-bold py-4 text-uppercase text-muted d-flex align-items-center">
+                            <i class="fas fa-crown text-warning fa-lg me-2"></i> Top Đầu Bếp Đóng Góp
+                        </div>
+                        <div class="list-group list-group-flush pb-2">
+                            @if (topChefs != null && topChefs.Count > 0)
+                            {
+                                int rank = 1;
+                                foreach (var chef in topChefs)
+                                {
+                                    // Đã xóa dấu @{ } thừa ở đây, viết C# trực tiếp luôn
+                                    string chefName = chef.UserName;
+                                    string chefAva = "https://placehold.co/40x40/png?text=C";
+
+                                    var chefProfile = chef.PROFILE;
+                                    if (chefProfile != null)
+                                    {
+                                        if (!string.IsNullOrEmpty(chefProfile.FullName)) { chefName = chefProfile.FullName; }
+                                        if (!string.IsNullOrEmpty(chefProfile.Avatar)) { chefAva = "/assets/images/avatars/" + chefProfile.Avatar; }
+                                    }
+                                    int countRecipe = chef.RECIPE.Count(r => r.Status == 1);
+
+                                    <div class="list-group-item border-0 d-flex align-items-center px-4 py-3 hover-bg-light">
+                                        <span class="fw-bold fs-5 @(rank == 1 ? "text-warning" : (rank == 2 ? "text-secondary" : (rank == 3 ? "text-orange" : "text-muted"))) me-3" style="min-width: 20px;">@rank</span>
+                                        <img src="@chefAva" class="rounded-circle me-3 object-fit-cover shadow-sm" style="width: 45px; height: 45px;" alt="User" onerror="this.src='https://placehold.co/45x45/png?text=C'">
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold mb-1 text-dark">
+                                                <a href="/User/PublicProfile/@chef.ID" class="text-dark text-decoration-none custom-link-hover">@chefName</a>
+                                            </h6>
+                                            <small class="text-muted"><i class="fas fa-book-open me-1 text-success"></i> @countRecipe Công thức</small>
+                                        </div>
+                                    </div>
+                                    rank++;
+                                }
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<style>
+    /* CSS Bài viết Feed */
+    .feed-post {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .feed-post:hover {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+            transform: translateY(-2px);
+        }
+
+    /* CSS Thẻ Link Công Thức */
+    .recipe-ref-box {
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative; /* Bắt buộc để stretched-link hoạt động đúng phạm vi */
+    }
+
+        .recipe-ref-box:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+            .recipe-ref-box:hover .ref-link {
+                color: #ff6600 !important; /* Chỉ đổi màu chữ khi hover vào box */
+            }
+
+    /* CSS Cột phải */
+    .hover-bg-light {
+        transition: background-color 0.2s;
+    }
+
+        .hover-bg-light:hover {
+            background-color: #f8f9fa !important;
+        }
+
+    .custom-link-hover {
+        transition: color 0.2s;
+    }
+
+        .custom-link-hover:hover {
+            color: #ff6600 !important;
+        }
+
+    /* CSS cho Phân trang */
+    .text-orange {
+        color: #ff6600 !important;
+    }
+
+    .custom-page-item {
+        margin: 0 5px;
+    }
+
+    .custom-page-link {
+        color: #ff6600;
+        background-color: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+        .custom-page-link:hover {
+            background-color: #e9ecef;
+            color: #ff6600;
+        }
+
+    .custom-page-item.custom-active .custom-page-link {
+        background-color: #28a745 !important;
+        color: white !important;
+        border: 2px solid #ff6600 !important;
+        box-shadow: 0 4px 8px rgba(255, 102, 0, 0.3);
+    }
+
+    .rounded-start-pill {
+        border-top-left-radius: 50rem !important;
+        border-bottom-left-radius: 50rem !important;
+    }
+
+    .rounded-end-pill {
+        border-top-right-radius: 50rem !important;
+        border-bottom-right-radius: 50rem !important;
+    }
+</style>

@@ -1,0 +1,92 @@
+/* Cấu hình Font Montserrat (File .otf -> format opentype) */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../../../assets/fonts/Montserrat-Regular.otf') format('opentype');
+    font-weight: 400; /* Normal */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../../../assets/fonts/Montserrat-Italic.otf') format('opentype');
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../../../assets/fonts/Montserrat-Bold.otf') format('opentype');
+    font-weight: 700; /* Bold */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../../../assets/fonts/Montserrat-BoldItalic.otf') format('opentype');
+    font-weight: 700;
+    font-style: italic;
+}
+
+/* Cấu hình Font Dancing Script (File .ttf -> format truetype) --- */
+@font-face {
+    font-family: 'Dancing Script'; /* Đặt tên ngắn gọn dễ gọi */
+    src: url('../../../assets/fonts/SVN-Dancing-script.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+
+/* Class hỗ trợ gọi font viết tay nhanh */
+.font-handwriting {
+    font-family: 'Dancing Script', cursive;
+}
+
+/* Tùy chỉnh Background cho trang Đăng nhập */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-image: linear-gradient(rgba(30, 41, 59, 0.7), rgba(30, 41, 59, 0.7)), 
+                      url('https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=1920&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-text {
+  color: #E67E22 !important; 
+  font-family: 'Satisfy', cursive; 
+  font-size: 24px;
+  font-weight: normal; 
+}
+
+.logo-icon {
+  color: #2ECC71 !important; 
+  font-size: 24px;
+}
+
+.login-card, .auth-card {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3) !important; /* Đổ bóng to và đậm hơn */
+}
+.login-header {
+    background-color: #28a745;
+    padding: 30px 20px;
+    text-align: center;
+    color: white;
+}
+.password-toggle {
+    cursor: pointer;
+}
+ /* Ẩn con mắt mặc định của trình duyệt (Edge/IE) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}

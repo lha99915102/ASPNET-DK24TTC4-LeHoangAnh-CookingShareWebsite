@@ -1,0 +1,748 @@
+/* Cấu hình Font Montserrat (File .otf -> format opentype) */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../fonts/Montserrat-Regular.otf') format('opentype');
+    font-weight: 400; /* Normal */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../fonts/Montserrat-Italic.otf') format('opentype');
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../fonts/Montserrat-Bold.otf') format('opentype');
+    font-weight: 700; /* Bold */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../fonts/Montserrat-BoldItalic.otf') format('opentype');
+    font-weight: 700;
+    font-style: italic;
+}
+
+/* Cấu hình Font Dancing Script (File .ttf -> format truetype) --- */
+@font-face {
+    font-family: 'Dancing Script'; /* Đặt tên ngắn gọn dễ gọi */
+    src: url('../fonts/SVN-Dancing-script.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* Thiết lập mặc định cho toàn web */
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
+    font-size: 16px;
+    line-height: 1.6;
+    padding-top: 80px; /* Để tránh bị che bởi navbar cố định */
+}
+
+/* Class hỗ trợ gọi font viết tay nhanh */
+.font-handwriting {
+    font-family: 'Dancing Script', cursive;
+}
+
+/* =========================================
+   NAVBAR STYLES
+========================================= */
+
+/* Tùy chỉnh Logo (Kết hợp 2 màu) */
+.navbar-brand-custom {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #FF6600 !important; /* Tên web màu Cam cho nổi */
+}
+
+/* Link Menu */
+.navbar-nav .nav-link {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    color: #444; /* Màu chữ đen xám nhẹ */
+    transition: all 0.3s ease;
+}
+
+/* Hiệu ứng Hover: Dùng màu Cam để kích thích */
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: #FF6600 !important;
+}
+
+/* Tùy chỉnh Dropdown */
+.dropdown-item:hover {
+    background-color: #FFF3E0; /* Nền cam rất nhạt */
+    color: #FF6600;
+}
+
+/* Nút Đăng nhập (Viền Xanh - Nhẹ nhàng) */
+.btn-outline-custom {
+    color: #28a745;
+    border-color: #28a745;
+    font-weight: 600;
+}
+.btn-outline-custom:hover {
+    background-color: #28a745;
+    color: #fff;
+}
+
+/* Nút Đăng ký (Nền Cam - Kêu gọi hành động mạnh) */
+.btn-orange {
+    background-color: #FF6600;
+    border-color: #FF6600;
+    color: white;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+.btn-orange:hover {
+    background-color: #e65c00; /* Màu cam đậm hơn khi di chuột */
+    border-color: #e65c00;
+}
+
+/* Hiệu ứng trượt cho Navbar */
+.navbar {
+    transition: transform 0.3s ease-in-out; /* Thời gian trượt 0.3s */
+}
+
+/* Class ẩn menu (khi cuộn xuống) */
+.scrolled-down {
+    transform: translateY(-100%); /* Kéo menu lên trên khuất khỏi màn hình */
+}
+
+/* Class hiện menu (khi cuộn lên) */
+.scrolled-up {
+    transform: translateY(0); /* Trả về vị trí cũ */
+}
+
+
+/* =========================================
+   FOOTER STYLES
+========================================= */
+
+/* Phần nền trắng */
+.footer-main {
+    font-family: 'Montserrat', sans-serif;
+    color: #555; /* Màu chữ xám đen trên nền trắng */
+}
+
+/* Logo Thương hiệu */
+.footer-brand {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #FF6600; /* Màu Cam */
+}
+
+/* Tiêu đề cột (Khám phá, Liên hệ...) */
+.footer-heading {
+    letter-spacing: 0.5px;
+    font-size: 0.95rem;
+    color: #28a745 !important; /* Màu xanh lá tạo cảm giác tươi mới */
+}
+
+/* Đường dẫn Link */
+.footer-link {
+    text-decoration: none;
+    color: #6c757d; /* Màu xám nhạt */
+    transition: all 0.3s ease;
+    display: inline-block;
+    font-size: 0.9rem;
+}
+
+.footer-link:hover {
+    color: #FF6600; /* Hover đổi màu Cam */
+    padding-left: 5px; /* Hiệu ứng trượt sang phải */
+}
+
+/* Nút Social Icons (Hình tròn) */
+.social-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #f1f1f1; /* Nền xám rất nhạt */
+    color: #555;
+    margin-right: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: #FF6600; /* Hover nền Cam */
+    color: #fff; /* Chữ trắng */
+    transform: translateY(-3px);
+}
+
+/* Nút trong form đăng ký */
+.btn-orange {
+    background-color: #FF6600;
+    color: white;
+    border: none;
+}
+.btn-orange:hover {
+    background-color: #e65c00;
+    color: white;
+}
+
+/* Phần nền đen (Copyright) */
+.footer-bottom {
+    font-family: 'Montserrat', sans-serif;
+    border-top: 1px solid rgba(255,255,255,0.1); /* Đường kẻ mờ ngăn cách nhẹ */
+}
+
+.footer-bottom p {
+    font-size: 0.85rem;
+    opacity: 0.9; /* Làm dịu màu trắng tuyệt đối đi 1 chút cho sang */
+}
+
+/* =========================================
+   MAIN CONTENT STYLES
+========================================= */
+
+/* Custom Colors */
+.text-orange { color: #FF6600 !important; }
+.bg-orange { background-color: #FF6600 !important; color: white; }
+
+/* Hero Slider (Banner) --- */
+.hero-section {
+    position: relative;
+}
+
+.slider-img {
+    width: 100%;
+    height: 550px; /* Chiều cao cố định cho banner */
+    object-fit: cover; /* Cắt ảnh tự động để không bị méo */
+}
+
+/* Lớp phủ đen mờ trên banner để chữ trắng nổi bật */
+.slider-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.1));
+}
+
+/* Category Icons (Danh mục tròn) */
+.category-item:hover .category-icon {
+    background-color: #FF6600 !important; /* Đổi nền cam khi hover */
+    transform: translateY(-5px); /* Nhảy lên nhẹ */
+}
+.category-item:hover .category-icon i {
+    color: white !important; /* Đổi icon sang trắng */
+}
+
+.category-icon {
+    width: 80px;
+    height: 80px;
+    transition: all 0.3s ease;
+}
+
+/* Recipe Cards (Thẻ món ăn) */
+.recipe-card {
+    transition: all 0.3s ease;
+    border-radius: 15px; /* Bo tròn góc thẻ */
+    overflow: hidden;
+}
+
+.recipe-card:hover {
+    transform: translateY(-5px); /* Nhảy lên khi hover */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; /* Đổ bóng sâu hơn */
+}
+
+.recipe-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+/* Zoom ảnh nhẹ khi hover vào thẻ */
+.recipe-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Cắt chữ nếu quá dài (Line clamp) */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Section Titles */
+.section-title {
+    position: relative;
+    padding-bottom: 10px;
+    color: #333;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #FF6600; /* Đường gạch dưới màu cam */
+    border-radius: 2px;
+}
+/* Hiệu ứng khi bấm vào ô tìm kiếm */
+.search-box-wrapper input.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25); /* Viền sáng xanh */
+    border-color: #28a745;
+}
+
+/* Nút tìm kiếm bên trong */
+.search-box-wrapper .btn-orange {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    transition: all 0.3s ease;
+}
+
+.search-box-wrapper .btn-orange:hover {
+    background-color: #e65c00;
+    transform: none; /* Tắt hiệu ứng nhảy lên của nút thường để tránh vỡ layout input */
+}
+
+/* =========================================
+   SEARCH OVERLAY STYLES
+========================================= */
+
+.search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Nền đen trong suốt 90% tạo độ sâu */
+    background-color: rgba(0, 0, 0, 0.9); 
+    /* Hiệu ứng Blur (làm mờ trang web phía sau giống kính mờ) */
+    backdrop-filter: blur(5px); 
+    z-index: 9999; /* Luôn nằm trên cùng, cao hơn cả Navbar */
+    
+    /* Mặc định ẩn đi */
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease; /* Hiện ra từ từ */
+    
+    /* Căn giữa ô input */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Class kích hoạt (Khi hiện lên) */
+.search-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Ô nhập liệu trong suốt */
+.search-input-transparent {
+    width: 100%;
+    background: transparent; /* Nền trong suốt */
+    border: none;
+    border-bottom: 2px solid #555; /* Chỉ có gạch chân */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2.5rem; /* Chữ to rõ ràng */
+    color: white;
+    padding: 15px 0;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+/* Khi gõ chữ vào thì gạch chân đổi màu cam */
+.search-input-transparent:focus {
+    border-bottom-color: #FF6600;
+}
+
+/* Nút đóng (X) góc phải */
+.btn-close-search {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.btn-close-search:hover {
+    color: #FF6600;
+    transform: rotate(90deg); /* Xoay nhẹ khi di chuột */
+}
+
+
+/* =========================================
+   BACK TO TOP BUTTON STYLES
+========================================= */
+
+.back-to-top {
+    position: fixed;
+    bottom: 30px; /* Cách đáy 30px */
+    right: 30px;  /* Cách phải 30px */
+    z-index: 99;  /* Nằm trên nội dung nhưng dưới Search Overlay */
+    
+    width: 50px;
+    height: 50px;
+    line-height: 50px; /* Để icon căn giữa theo chiều dọc */
+    text-align: center;
+    border-radius: 50%; /* Bo tròn hoàn hảo */
+    
+    background-color: #FF6600; /* Màu Cam chủ đạo */
+    color: #fff;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4); /* Đổ bóng màu cam */
+    
+    display: none; /* Mặc định ẩn đi */
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+/* Hiệu ứng khi di chuột vào */
+.back-to-top:hover {
+    background-color: #28a745; /* Đổi sang màu xanh lá */
+    color: #fff;
+    transform: translateY(-5px); /* Nhảy lên nhẹ */
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4); /* Bóng đổi màu xanh */
+}
+
+/* Responsive: Trên điện thoại nút nhỏ lại xíu cho đỡ vướng */
+@media (max-width: 768px) {
+    .back-to-top {
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        bottom: 20px;
+        right: 20px;
+        font-size: 1rem;
+    }
+}
+
+/* =========================================
+   RECIPE DETAIL STYLES
+========================================= */
+
+/* 1. Checklist Nguyên liệu */
+.ingredient-check .form-check-input {
+    width: 1.3em;
+    height: 1.3em;
+    border-color: #28a745; /* Viền xanh */
+    cursor: pointer;
+}
+
+.ingredient-check .form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* Khi check vào thì gạch ngang chữ */
+.ingredient-check .form-check-input:checked + .form-check-label {
+    text-decoration: line-through;
+    color: #adb5bd; /* Màu xám nhạt */
+    transition: all 0.2s ease;
+}
+
+.ingredient-check .form-check-label {
+    margin-left: 0.5rem;
+    padding-top: 2px;
+    cursor: pointer;
+}
+
+/* 2. Số thứ tự bước làm (Hình tròn màu cam) */
+.step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(255, 102, 0, 0.2);
+}
+
+.step-box img {
+    transition: transform 0.3s ease;
+}
+.step-box img:hover {
+    transform: scale(1.02); /* Zoom nhẹ ảnh khi di chuột */
+}
+
+/* 3. Sticky Sidebar (Trượt theo khi cuộn) */
+.sticky-sidebar {
+    position: -webkit-sticky; /* Cho Safari */
+    position: sticky;
+    top: 100px; /* Cách đỉnh màn hình 100px (để tránh navbar che mất) */
+    z-index: 10;
+}
+
+/* 4. Hiệu ứng hover cho món liên quan bên phải */
+.recipe-small-item {
+    transition: background-color 0.2s;
+}
+.recipe-small-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* 5. Nút tròn trên ảnh bìa */
+.action-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    line-height: 40px;
+    border: none;
+    transition: transform 0.2s;
+}
+.action-btn:hover {
+    transform: scale(1.1);
+}
+/* =========================================
+   TABS STYLES (Bình luận & Món thực hành)
+========================================= */
+
+
+/* 1. Trạng thái bình thường (Chưa chọn) */
+.recipe-tab-nav .nav-link {
+    border: none; /* Xóa viền khung của Bootstrap */
+    border-bottom: 3px solid transparent; /* Tạo gạch chân tàng hình trước để không bị nhảy layout */
+    color: #6c757d; /* Màu chữ xám nhạt */
+    font-weight: 600;
+    background-color: transparent;
+    padding-bottom: 10px;
+    margin-right: 20px;
+    transition: all 0.3s ease;
+}
+
+/* 2. Trạng thái ĐANG CHỌN (.active) hoặc DI CHUỘT (.hover) */
+.recipe-tab-nav .nav-link.active,
+.recipe-tab-nav .nav-link:hover {
+    border-bottom-color: #FF6600; /* Hiện gạch chân màu Cam */
+    color: #333; /* Chữ đổi màu đậm đen */
+    background-color: transparent; /* Nền trong suốt */
+}
+
+/* =========================================
+   PAGINATION STYLES (Custom Colors)
+========================================= */
+
+.pagination .page-link {
+    color: #28a745; /* Màu chữ xanh lá */
+    border: none;
+    margin: 0 5px; /* Cách nhau ra 1 chút */
+    border-radius: 50%; /* Nút hình tròn */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    background-color: #e9ecef;
+    color: #FF6600;
+}
+
+/* Nút đang chọn (Active) */
+.pagination .page-item.active .page-link {
+    background-color: #28a745; /* Nền xanh */
+    border-color: #28a745;
+    color: white;
+    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+}
+
+/* Sidebar Filter Checkbox Color */
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* =========================================
+   TIPS / BLOG PAGE STYLES
+========================================= */
+
+/* Hiệu ứng Zoom ảnh bài viết */
+.blog-card .card-img-top {
+    transition: transform 0.5s ease;
+}
+
+.blog-card:hover .card-img-top {
+    transform: scale(1.1); /* Phóng to ảnh khi hover */
+}
+
+/* Nút filter tags */
+.hover-orange {
+    transition: all 0.3s ease;
+}
+.hover-orange:hover {
+    background-color: #FF6600 !important;
+    color: white !important;
+    border-color: #FF6600 !important;
+}
+
+/* =========================================
+   USER PROFILE TABS STYLES
+========================================= */
+
+/* Trạng thái tab đang chọn (Active) */
+#profile-tabs .list-group-item.active {
+    background-color: #f0fff4; /* Nền xanh rất nhạt */
+    color: #28a745 !important; /* Chữ xanh lá */
+    border-left: 4px solid #28a745 !important; /* Vạch màu bên trái */
+    font-weight: bold;
+}
+
+/* Icon trong tab active cũng đổi màu theo */
+#profile-tabs .list-group-item.active i {
+    color: #28a745 !important;
+}
+
+/* Hiệu ứng hover cho các tab chưa chọn */
+#profile-tabs .list-group-item:not(.active):hover {
+    background-color: #f8f9fa;
+    color: #FF6600 !important; /* Hover đổi chữ thành cam */
+}
+
+
+/* =========================================
+   USER AVATAR STYLES  
+========================================= */
+
+/* 1. Avatar Wrapper */
+.avatar-wrapper {
+    width: 120px;  /* Kích thước vừa phải, không quá to */
+    height: 120px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    /* Không cần margin-top âm nữa vì đã bỏ ảnh bìa */
+}
+
+/* Responsive: Trên điện thoại cho nhỏ lại xíu cho cân đối */
+@media (max-width: 768px) {
+    .avatar-wrapper {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* =========================================
+   NAV PILLS STYLES (Cho trang Public Profile)
+========================================= */
+
+/* Khi nút tab được kích hoạt (Active) */
+.nav-pills .nav-link.active {
+    background-color: #FF6600 !important; /* Màu cam */
+    color: white !important;
+}
+
+/* Các nút tab bình thường */
+.nav-pills .nav-link {
+    color: #6c757d; /* Màu xám */
+    transition: all 0.3s ease;
+}
+
+/* Khi di chuột vào tab chưa chọn */
+.nav-pills .nav-link:not(.active):hover {
+    color: #FF6600;
+    background-color: rgba(255, 102, 0, 0.1); /* Nền cam rất nhạt */
+}
+
+/* Tỉ lệ khung hình vuông cho phần Gallery ảnh */
+.aspect-ratio-1x1 {
+    aspect-ratio: 1 / 1;
+}
+
+/* =========================================
+   CONTACT PAGE STYLES
+========================================= */
+
+/* Định nghĩa màu nền nhạt cho icon */
+.bg-orange-subtle {
+    background-color: #fff5eb !important;
+    color: #FF6600 !important;
+}
+
+.bg-success-subtle {
+    background-color: #d1e7dd !important;
+    color: #0f5132 !important;
+}
+
+.bg-info-subtle {
+    background-color: #cff4fc !important;
+    color: #055160 !important;
+}
+
+/* Hiệu ứng focus cho form floating */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-select:focus ~ label {
+    color: #FF6600;
+}
+.form-floating > .form-control:focus,
+.form-floating > .form-select:focus {
+    border-color: #FF6600;
+    box-shadow: 0 0 0 0.25rem rgba(255, 102, 0, 0.25);
+}
+
+/* =========================================
+   ABOUT PAGE STYLES
+========================================= */
+
+/* Hiệu ứng nhấc bổng thẻ khi hover */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Background lấp lánh (nếu cần) */
+.letter-spacing-2 {
+    letter-spacing: 2px;
+}
+
+/* =========================================
+   404 PAGE STYLES
+========================================= */
+
+/* Chữ 404 lớn */
+.display-1 {
+    font-size: 8rem;
+    text-shadow: 4px 4px 0px rgba(255, 102, 0, 0.1);
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .display-1 {
+        font-size: 5rem;
+    }
+}
+
+/* =========================================
+   KITCHEN PAGE STYLES
+========================================= */
+
+.hover-up {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-up:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* Background cho các icon tròn */
+.bg-info-subtle { background-color: #cff4fc; color: #055160; }
+.bg-warning-subtle { background-color: #fff3cd; color: #664d03; }

@@ -1,0 +1,55 @@
+﻿@{
+    ViewBag.Title = "Đang phát triển";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<main class="bg-light py-5">
+    <div class="container">
+        <div class="row justify-content-center align-items-center text-center" style="min-height: 65vh;">
+
+            <div class="col-lg-8">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-warning-subtle text-orange mb-3 shadow-sm" style="width: 130px; height: 130px;">
+                        <i class="fas fa-tools fa-4x spin-icon"></i>
+                    </div>
+                </div>
+
+                <h1 class="display-3 fw-bold text-dark mb-3" style="font-family: 'Dancing Script', cursive; color: #ff6600 !important;">
+                    Tính năng đang được "nấu"!
+                </h1>
+
+                <p class="text-muted lead mb-5 px-md-5">
+                    Các lập trình viên (và cả đầu bếp) của CookingShare đang làm việc hết công suất để hoàn thiện khu vực này. <br>
+                    Sẽ sớm có những điều tuyệt vời ra lò. Bạn vui lòng quay lại sau nhé!
+                </p>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="/Home/Index" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                        <i class="fas fa-home me-2"></i> Về trang chủ
+                    </a>
+                    <a href="/Recipe/Index" class="btn btn-orange text-white rounded-pill px-4 py-2 fw-bold shadow-sm">
+                        <i class="fas fa-utensils me-2"></i> Khám phá công thức
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<style>
+    .text-orange { color: #ff6600 !important; }
+    .bg-warning-subtle { background-color: #fff3cd !important; }
+
+    .btn-orange { background-color: #ff6600; border: none; transition: 0.3s; }
+    .btn-orange:hover { background-color: #e65c00; transform: translateY(-2px); }
+
+    /* Hiệu ứng xoay tròn liên tục cho icon mỏ lết */
+    .spin-icon {
+        animation: spin 4s linear infinite;
+    }
+
+    @@keyframes spin {
+        100% { transform: rotate(360deg); }
+    }
+</style>

@@ -1,0 +1,290 @@
+﻿@model IEnumerable<CookingShare.Models.RECIPE>
+@{
+    ViewBag.Title = "Quản lý Công thức";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int? currentFilter = ViewBag.CurrentFilter as int?;
+
+    // Lấy danh sách category từ Controller
+    var categories = ViewBag.Categories as IEnumerable<CookingShare.Models.CATEGORY>;
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-warning"><div class="card-body"><h5 class="text-muted small text-uppercase fw-bold">Tổng số công thức</h5><h3 class="fw-bold mb-0">@ViewBag.TotalRecipes</h3></div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-danger"><div class="card-body"><h5 class="text-muted small text-uppercase fw-bold">Cần duyệt ngay</h5><h3 class="fw-bold mb-0 text-danger">@ViewBag.PendingRecipes</h3></div></div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-2">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item"><a class="nav-link @(!currentFilter.HasValue ? "active fw-bold bg-primary text-white" : "text-secondary")" href="/Admin/Recipe/Index"><i class="fas fa-list me-2"></i>Tất cả</a></li>
+            <li class="nav-item"><a class="nav-link @(currentFilter == 0 ? "active fw-bold bg-warning text-dark" : "text-secondary")" href="/Admin/Recipe/Index?statusFilter=0"><i class="fas fa-clock me-2"></i>Chờ phê duyệt @if (ViewBag.PendingRecipes > 0)
+            {<span class="badge bg-danger ms-1">@ViewBag.PendingRecipes</span>}</a></li>
+            <li class="nav-item"><a class="nav-link @(currentFilter == 1 ? "active fw-bold bg-success text-white" : "text-secondary")" href="/Admin/Recipe/Index?statusFilter=1"><i class="fas fa-check-circle me-2"></i>Đã đăng (Public)</a></li>
+            <li class="nav-item"><a class="nav-link @(currentFilter == 2 ? "active fw-bold bg-danger text-white" : "text-secondary")" href="/Admin/Recipe/Index?statusFilter=2"><i class="fas fa-ban me-2"></i>Đã từ chối</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle datatable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th>Món ăn</th>
+                    <th>Người đăng</th>
+                    <th>Danh mục</th>
+                    <th>Ngày gửi</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    string statusBadge = item.Status == 1 ? "bg-success" : (item.Status == 2 ? "bg-secondary" : "bg-warning text-dark");
+                    string statusText = item.Status == 1 ? "Đã duyệt" : (item.Status == 2 ? "Từ chối" : "Chờ duyệt");
+                    string imgUrl = string.IsNullOrEmpty(item.MainImage) ? "https://placehold.co/60x60" : item.MainImage;
+
+                    // Xử lý chuỗi Description an toàn để truyền vào JS
+                    string safeDesc = HttpUtility.JavaScriptStringEncode(item.Describe ?? "");
+                    string safeReason = HttpUtility.JavaScriptStringEncode(item.RejectReason ?? "");
+
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="@imgUrl" class="rounded me-3 object-fit-cover" style="width:60px; height:60px;" alt="Dish">
+                                <div><h6 class="mb-0 fw-bold @(item.Status == 0 ? "text-primary" : "text-dark")">@item.Name</h6><small class="text-muted">ID: #REC@(item.ID.ToString("D3"))</small></div>
+                            </div>
+                        </td>
+                        <td><div class="d-flex align-items-center"><img src="https://placehold.co/30x30" class="rounded-circle me-2" alt="User"><span>@(item.ACCOUNT != null ? item.ACCOUNT.UserName : "Ẩn danh")</span></div></td>
+                        <td><span class="badge bg-light text-dark border">@(item.CATEGORY != null ? item.CATEGORY.Name : "Chưa phân loại")</span></td>
+                        <td>@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy") : "")</td>
+                        <td><span class="badge @statusBadge status-badge">@statusText</span></td>
+                        <td class="text-end">
+
+                            <button class="btn btn-sm btn-primary me-1"
+                                    onclick="openEditModal(this)"
+                                    data-id="@item.ID" data-name="@item.Name" data-status="@item.Status"
+                                    data-category="@item.CategoryID" data-preptime="@item.PrepTime"
+                                    data-cooktime="@item.CookTime" data-servings="@item.Servings"
+                                    data-difficulty="@item.Difficulty" data-image="@imgUrl"
+                                    data-desc="@safeDesc" data-reason="@safeReason">
+                                <i class="fas fa-edit"></i> Edit / Duyệt
+                            </button>
+
+                            <form action="/Admin/Recipe/Delete" method="post" style="display:inline;" onsubmit="return confirm('Xóa công thức này?');">
+                                <input type="hidden" name="id" value="@item.ID" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="editRecipeModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Chi tiết bài viết: <span id="modalTitleName" class="text-primary"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="/Admin/Recipe/Edit" method="post" enctype="multipart/form-data" id="recipeForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" id="m_ID" value="0" />
+
+                <div class="modal-body p-0">
+                    <div class="row g-0 h-100">
+
+                        <div class="col-lg-8 p-4 bg-white border-end">
+                            <h6 class="fw-bold mb-3 border-bottom pb-2">Thông tin Công thức</h6>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Tên món ăn <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control fw-bold text-orange" name="Name" id="m_Name" required>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Danh mục</label>
+                                    <select class="form-select" name="CategoryID" id="m_CategoryID">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        @if (categories != null)
+                                        {
+                                            foreach (var cat in categories)
+                                            {
+                                                <option value="@cat.ID">@cat.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Độ khó</label>
+                                    <select class="form-select" name="Difficulty" id="m_Difficulty">
+                                        <option value="Dễ">Dễ</option>
+                                        <option value="Trung bình">Trung bình</option>
+                                        <option value="Khó">Khó</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">T/gian chuẩn bị (phút)</label>
+                                    <input type="number" class="form-control" name="PrepTime" id="m_PrepTime">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">T/gian nấu (phút)</label>
+                                    <input type="number" class="form-control" name="CookTime" id="m_CookTime">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">Khẩu phần (người)</label>
+                                    <input type="number" class="form-control" name="Servings" id="m_Servings">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Hình ảnh đại diện (Tải lên ảnh mới để thay thế)</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img id="m_PreviewImg" src="" class="rounded border object-fit-cover" style="width:100px; height:100px;" alt="Current Image">
+                                    <input type="file" class="form-control" name="ImageFile" accept="image/*" onchange="previewNewImage(this)">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Mô tả & Cách làm</label>
+                                <textarea class="form-control" name="Describe" id="m_Describe" rows="6"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 p-4 admin-action-panel bg-light">
+                            <h6 class="fw-bold text-uppercase text-secondary mb-3">Bảng Điều Khiển</h6>
+
+                            <div class="card mb-3 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <label class="fw-bold small mb-2">Trạng thái hiện tại:</label>
+                                    <div id="m_StatusBadge" class="mb-2"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4" id="rejectReasonBox">
+                                <label class="fw-bold small mb-2 text-danger">Ghi chú (Bắt buộc nếu Từ chối):</label>
+                                <textarea class="form-control" name="rejectReason" id="m_RejectReason" rows="4" placeholder="Nhập lý do..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+
+                                <button type="submit" name="actionType" value="save" class="btn btn-primary fw-bold py-2 mb-2 shadow-sm">
+                                    <i class="fas fa-save me-2"></i> LƯU NỘI DUNG
+                                </button>
+                                <hr class="my-1">
+
+                                <button type="submit" name="actionType" value="approve" id="btnApprove" class="btn btn-success fw-bold py-2 action-btn">
+                                    <i class="fas fa-check-circle me-2"></i> PHÊ DUYỆT (PUBLIC)
+                                </button>
+
+                                <button type="submit" name="actionType" value="reject" id="btnReject" class="btn btn-danger fw-bold py-2 action-btn" onclick="return requireReason();">
+                                    <i class="fas fa-ban me-2"></i> TỪ CHỐI
+                                </button>
+
+                                <button type="submit" name="actionType" value="pending" id="btnPending" class="btn btn-warning fw-bold py-2 text-dark action-btn">
+                                    <i class="fas fa-undo me-2"></i> ĐƯA VỀ CHỜ DUYỆT
+                                </button>
+
+                                <button type="button" class="btn btn-secondary py-2 mt-2" data-bs-dismiss="modal">Đóng cửa sổ</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // JS Để review ảnh ngay khi chọn
+        function previewNewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) { document.getElementById('m_PreviewImg').src = e.target.result; }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Bật Modal và Fill Dữ liệu
+        function openEditModal(btn) {
+            // Lấy dữ liệu từ các thuộc tính data-*
+            let id = btn.getAttribute('data-id');
+            let status = parseInt(btn.getAttribute('data-status'));
+
+            document.getElementById('m_ID').value = id;
+            document.getElementById('modalTitleName').innerText = btn.getAttribute('data-name');
+            document.getElementById('m_Name').value = btn.getAttribute('data-name');
+            document.getElementById('m_CategoryID').value = btn.getAttribute('data-category');
+            document.getElementById('m_Difficulty').value = btn.getAttribute('data-difficulty');
+            document.getElementById('m_PrepTime').value = btn.getAttribute('data-preptime');
+            document.getElementById('m_CookTime').value = btn.getAttribute('data-cooktime');
+            document.getElementById('m_Servings').value = btn.getAttribute('data-servings');
+            document.getElementById('m_PreviewImg').src = btn.getAttribute('data-image');
+            document.getElementById('m_Describe').value = btn.getAttribute('data-desc');
+            document.getElementById('m_RejectReason').value = btn.getAttribute('data-reason');
+
+            // Xử lý UI Trạng thái
+            let badge = document.getElementById('m_StatusBadge');
+            let btnApprove = document.getElementById('btnApprove');
+            let btnReject = document.getElementById('btnReject');
+            let btnPending = document.getElementById('btnPending');
+            let reasonBox = document.getElementById('rejectReasonBox');
+
+            // Reset ẩn hết các nút hành động (trừ nút Lưu nội dung)
+            btnApprove.style.display = 'none';
+            btnReject.style.display = 'none';
+            btnPending.style.display = 'none';
+
+            if (status === 0) { // Chờ duyệt
+                badge.innerHTML = '<span class="badge bg-warning text-dark px-3 py-2 fs-6">Chờ duyệt</span>';
+                btnApprove.style.display = 'block';
+                btnReject.style.display = 'block';
+                reasonBox.style.display = 'block';
+            }
+            else if (status === 1) { // Đã duyệt
+                badge.innerHTML = '<span class="badge bg-success px-3 py-2 fs-6">Đã duyệt (Đang hiển thị)</span>';
+                reasonBox.style.display = 'none'; // Đã duyệt thì ko cần hiện khung lý do từ chối
+            }
+            else if (status === 2) { // Từ chối
+                badge.innerHTML = '<span class="badge bg-secondary px-3 py-2 fs-6">Đã Từ chối</span>';
+                btnApprove.style.display = 'block'; // Cho phép duyệt lại
+                btnPending.style.display = 'block'; // Hoặc cho phép đưa về trạng thái chờ
+                reasonBox.style.display = 'block';
+            }
+
+            var myModal = new bootstrap.Modal(document.getElementById('editRecipeModal'));
+            myModal.show();
+        }
+
+        // Bắt buộc nhập lý do nếu ấn nút Từ chối
+        function requireReason() {
+            var reason = document.getElementById('m_RejectReason').value.trim();
+            if (reason === "") {
+                alert("Vui lòng nhập Ghi chú/Lý do để tác giả biết vì sao bị từ chối!");
+                document.getElementById('m_RejectReason').focus();
+                return false;
+            }
+            return true;
+        }
+    </script>
+}

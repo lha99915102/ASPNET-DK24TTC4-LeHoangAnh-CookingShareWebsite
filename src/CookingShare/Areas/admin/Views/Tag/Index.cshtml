@@ -1,0 +1,152 @@
+﻿@model IEnumerable<CookingShare.Models.TAG>
+@{
+    ViewBag.Title = "Quản lý Tag & Chế độ ăn";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    string currentFilter = ViewBag.CurrentFilter as string;
+    int stt = 1;
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
+    <button class="btn btn-primary" onclick="resetTagForm()" data-bs-toggle="modal" data-bs-target="#tagModal">
+        <i class="fas fa-plus-circle me-2"></i>Thêm Tag Mới
+    </button>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small fw-bold">Lọc theo loại:</span>
+        <form action="/Admin/Tag/Index" method="get" id="filterForm">
+            <select class="form-select w-auto" name="typeFilter" onchange="document.getElementById('filterForm').submit();">
+                <option value="">Tất cả</option>
+                <option value="Dị ứng" @(currentFilter == "Dị ứng" ? "selected" : "")>Cảnh báo Dị ứng</option>
+                <option value="Chế độ ăn" @(currentFilter == "Chế độ ăn" ? "selected" : "")>Chế độ ăn (Diet)</option>
+                <option value="Xu hướng" @(currentFilter == "Xu hướng" ? "selected" : "")>Xu hướng (Trending)</option>
+                <option value="Khác" @(currentFilter == "Khác" ? "selected" : "")>Khác</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <table class="table table-hover align-middle datatable" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">TT</th>
+                            <th>Tên Tag (Từ khóa)</th>
+                            <th>Phân loại</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                                string badgeColor = "bg-secondary";
+                                string icon = "fa-tag";
+
+                                if (item.TagType == "Dị ứng") { badgeColor = "bg-danger"; icon = "fa-exclamation-triangle"; }
+                                else if (item.TagType == "Chế độ ăn") { badgeColor = "bg-success"; icon = "fa-leaf"; }
+                                else if (item.TagType == "Xu hướng") { badgeColor = "bg-warning text-dark"; icon = "fa-fire"; }
+
+                                <tr>
+                                    <td><span class="badge bg-light text-dark border">@(stt++)</span></td>
+                                    <td>
+                                        <h6 class="mb-0 fw-bold text-dark">#@item.TagName</h6>
+                                        <small class="text-muted">ID: @item.ID</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge @badgeColor"><i class="fas @icon me-1"></i>@item.TagType</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-primary me-1"
+                                                onclick="editTag(@item.ID, '@item.TagName', '@item.TagType')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+
+                                        <form action="/Admin/Tag/Delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa Tag này không?');">
+                                            <input type="hidden" name="id" value="@item.ID" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="tagModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fas fa-tags me-2"></i>Thêm Tag Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="/Admin/Tag/Save" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" id="t_ID" value="0" />
+
+                <div class="modal-body bg-light">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tên Tag (Không cần nhập dấu #) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="TagName" id="t_TagName" placeholder="VD: EatClean, HaiSan,..." required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Phân loại Tag</label>
+                                <select class="form-select" name="TagType" id="t_TagType">
+                                    <option value="Khác">Khác (Chung chung)</option>
+                                    <option value="Dị ứng">Cảnh báo Dị ứng</option>
+                                    <option value="Chế độ ăn">Chế độ ăn (Diet)</option>
+                                    <option value="Xu hướng">Xu hướng (Trending)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Lưu Dữ Liệu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function resetTagForm() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-tags me-2"></i>Thêm Tag Mới';
+            document.getElementById('t_ID').value = "0";
+            document.getElementById('t_TagName').value = "";
+            document.getElementById('t_TagType').value = "Khác";
+        }
+
+        function editTag(id, name, type) {
+            resetTagForm();
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Cập Nhật Tag';
+            document.getElementById('t_ID').value = id;
+            document.getElementById('t_TagName').value = name;
+
+            // Xử lý selected cho dropdown
+            if(type && type !== '') {
+                document.getElementById('t_TagType').value = type;
+            }
+
+            var myModal = new bootstrap.Modal(document.getElementById('tagModal'));
+            myModal.show();
+        }
+    </script>
+}

@@ -1,0 +1,78 @@
+﻿@{
+    Layout = null; // Từ chối dùng Layout chung để đảm bảo an toàn tuyệt đối
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Không tìm thấy trang | CookingShare</title>
+
+    <link href="~/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/assets/vendor/font-awesome/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .error-container {
+            text-align: center;
+            background: #ffffff;
+            padding: 50px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            color: #f26b21;
+            line-height: 1;
+            margin-bottom: 0;
+            text-shadow: 3px 3px 0px rgba(242, 107, 33, 0.2);
+        }
+
+        .error-icon {
+            font-size: 60px;
+            color: #2a9d46;
+            margin: 20px 0;
+        }
+
+        .error-message {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="error-container">
+        <div class="error-code">404</div>
+
+        <div class="error-icon">
+            <i class="fas fa-dumpster-fire"></i>
+        </div>
+
+        <h3 class="fw-bold text-dark mb-3">Món này bị "cháy" rồi!</h3>
+        <p class="error-message">
+            Đường dẫn bạn đang tìm kiếm không tồn tại, hoặc món ăn này đã bị xóa khỏi thực đơn của hệ thống.
+        </p>
+
+        <a href="/Admin/Home/Index" class="btn btn-success px-4 py-2 fw-bold shadow-sm rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i> Về Bếp Chính (Dashboard)
+        </a>
+    </div>
+
+</body>
+</html>

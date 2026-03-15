@@ -1,0 +1,193 @@
+﻿@model IEnumerable<CookingShare.Models.COMMENT>
+@{
+    ViewBag.Title = "Kiểm duyệt Bình luận";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int? currentFilter = ViewBag.CurrentFilter as int?;
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-primary">
+            <div class="card-body">
+                <h5 class="text-muted small text-uppercase fw-bold">Tổng số bình luận</h5>
+                <h3 class="fw-bold mb-0">@ViewBag.TotalComments</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-danger">
+            <div class="card-body">
+                <h5 class="text-muted small text-uppercase fw-bold">Bình luận bị ẩn / Vi phạm</h5>
+                <h3 class="fw-bold mb-0 text-danger">@ViewBag.HiddenComments</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
+    <h5 class="mb-0 fw-bold text-secondary"><i class="fas fa-comments me-2"></i>Danh sách Bình luận</h5>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small fw-bold">Lọc trạng thái:</span>
+        <form action="/Admin/Comment/Index" method="get" id="filterForm">
+            <select class="form-select w-auto" name="statusFilter" onchange="document.getElementById('filterForm').submit();">
+                <option value="">Tất cả bình luận</option>
+                <option value="1" @(currentFilter == 1 ? "selected" : "")>Đang hiển thị</option>
+                <option value="0" @(currentFilter == 0 ? "selected" : "")>Bị ẩn (Spam/Vi phạm)</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle datatable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 200px;">Người bình luận</th>
+                    <th style="width: 250px;">Bình luận cho Món ăn</th>
+                    <th>Nội dung & Đánh giá</th>
+                    <th style="width: 120px;">Trạng thái</th>
+                    <th class="text-end" style="width: 150px;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        string userName = item.ACCOUNT != null ? item.ACCOUNT.UserName : "Người dùng Ẩn danh";
+                        string recipeName = item.RECIPE != null ? item.RECIPE.Name : "Bài viết đã xóa";
+                        string imgUrl = (item.RECIPE != null && !string.IsNullOrEmpty(item.RECIPE.MainImage)) ? item.RECIPE.MainImage : "https://placehold.co/40x40";
+
+                        <tr class="@(item.Status == 0 ? "opacity-75 bg-light" : "")">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-circle fa-2x text-secondary me-2"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold @(item.Status == 0 ? "text-muted text-decoration-line-through" : "text-dark")">@userName</h6>
+                                        <small class="text-muted">@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="@imgUrl" class="rounded me-2 object-fit-cover" style="width: 40px; height: 40px;" alt="Recipe">
+                                    <small class="fw-bold text-primary text-truncate d-inline-block" style="max-width: 180px;">@recipeName</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-warning small mb-1">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= item.Rating)
+                                        {<i class="fas fa-star"></i> }
+                                        else
+                                        { <i class="far fa-star text-muted"></i>}
+                                    }
+                                </div>
+                                <p class="mb-0 small text-truncate" style="max-width: 350px;">@item.Content</p>
+                            </td>
+                            <td>
+                                @if (item.Status == 1)
+                                {<span class="badge bg-success">Hiển thị</span> }
+                                else
+                                { <span class="badge bg-danger">Bị Ẩn</span>}
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-info me-1" title="Xem chi tiết"
+                                        onclick="viewComment('@userName', '@recipeName', `@item.Content`, @item.Rating, '@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")')">
+                                    <i class="fas fa-search"></i>
+                                </button>
+
+                                <form action="/Admin/Comment/ToggleStatus" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" value="@item.ID" />
+                                    @if (item.Status == 1)
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-warning me-1" title="Ẩn bình luận này" onclick="return confirm('Bạn muốn ẨN bình luận này khỏi bài viết?');"><i class="fas fa-eye-slash"></i></button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-success me-1" title="Khôi phục hiển thị" onclick="return confirm('Cho phép hiển thị lại bình luận này?');"><i class="fas fa-eye"></i></button>
+                                    }
+                                </form>
+
+                                <form action="/Admin/Comment/Delete" method="post" style="display:inline;" onsubmit="return confirm('Xóa vĩnh viễn bình luận này?');">
+                                    <input type="hidden" name="id" value="@item.ID" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa vĩnh viễn"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="viewCommentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-comment-dots me-2 text-info"></i>Chi tiết Bình luận</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
+                    <div>
+                        <small class="text-muted d-block">Người đăng:</small>
+                        <strong class="text-dark" id="vc_UserName"></strong>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block">Thời gian:</small>
+                        <span id="vc_Date" class="small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3 border-bottom pb-3">
+                    <small class="text-muted d-block mb-1">Món ăn:</small>
+                    <strong class="text-primary" id="vc_RecipeName"></strong>
+                </div>
+
+                <div class="mb-2">
+                    <small class="text-muted d-block mb-1">Đánh giá:</small>
+                    <div id="vc_Rating" class="text-warning fs-5"></div>
+                </div>
+
+                <div>
+                    <small class="text-muted d-block mb-2">Nội dung:</small>
+                    <div class="p-3 bg-light rounded border text-break" style="white-space: pre-wrap;" id="vc_Content"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function viewComment(user, recipe, content, rating, date) {
+            document.getElementById('vc_UserName').innerText = user;
+            document.getElementById('vc_RecipeName').innerText = recipe;
+            document.getElementById('vc_Content').innerText = content;
+            document.getElementById('vc_Date').innerText = date;
+
+            // Vẽ sao
+            let starsHtml = '';
+            for(let i=1; i<=5; i++) {
+                if(i <= rating) starsHtml += '<i class="fas fa-star me-1"></i>';
+                else starsHtml += '<i class="far fa-star text-muted me-1"></i>';
+            }
+            document.getElementById('vc_Rating').innerHTML = starsHtml;
+
+            var myModal = new bootstrap.Modal(document.getElementById('viewCommentModal'));
+            myModal.show();
+        }
+    </script>
+}
