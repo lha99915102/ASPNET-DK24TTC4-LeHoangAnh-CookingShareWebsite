@@ -66,7 +66,7 @@
     <div class="row g-0 h-100">
         <div class="col-lg-6 d-none d-lg-block position-relative auth-bg">
             <div class="auth-overlay"></div>
-            <a href="/Home/Index" class="back-home"><i class="fas fa-arrow-left me-2"></i> Quay về trang chủ</a>
+            <a href="@Url.Action("Index", "Home")" class="back-home"><i class="fas fa-arrow-left me-2"></i> Quay về trang chủ</a>
             <div class="position-absolute bottom-0 start-0 p-5 text-white w-100">
                 <h1 class="mb-3" style="font-family: 'Dancing Script', cursive; font-size: 4rem;">CookingShare</h1>
                 <h3 class="fw-bold">Khơi nguồn cảm hứng nấu nướng</h3>
@@ -94,7 +94,9 @@
                     <div class="alert alert-success mb-4 rounded-3 border-0 shadow-sm"><i class="fas fa-check-circle me-2"></i> @ViewBag.Success</div>
                 }
 
-                <form action="/Account/Register" method="POST">
+                <form action="@Url.Action("Register", "Account")" method="POST">
+                    @Html.AntiForgeryToken()
+
                     <div class="form-floating mb-3">
                         <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Nguyen Van A" required>
                         <label for="fullName">Họ và tên</label>
@@ -113,9 +115,12 @@
                         </span>
                     </div>
 
-                    <div class="form-floating mb-4">
+                    <div class="form-floating mb-4 position-relative">
                         <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Password" required>
                         <label for="confirmPassword">Nhập lại mật khẩu</label>
+                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer toggle-password" toggle="#confirmPassword" style="z-index: 10;">
+                            <i class="far fa-eye text-secondary"></i>
+                        </span>
                     </div>
 
                     <div class="form-check mb-4">
@@ -125,8 +130,9 @@
                         </label>
                     </div>
 
-                    <button type="submit" class="btn btn-orange w-100 py-3 rounded-pill fw-bold shadow mb-4">Đăng Ký Tài Khoản</button>
+                    <button type="submit" class="btn btn-orange w-100 py-3 rounded-pill fw-bold shadow mb-4" style="background-color: #ff6600; color: white; border: none;">Đăng Ký Tài Khoản</button>
                 </form>
+
                 <div class="text-center position-relative mb-4">
                     <hr class="text-secondary opacity-25">
                     <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">Hoặc</span>
@@ -154,7 +160,7 @@
                 </div>
 
                 <div class="text-center mt-4">
-                    <p class="text-muted">Bạn đã có tài khoản? <a href="/Account/Login" class="text-orange fw-bold text-decoration-none">Đăng nhập ngay</a></p>
+                    <p class="text-muted">Bạn đã có tài khoản? <a href="@Url.Action("Login", "Account")" style="color: #ff6600;" class="fw-bold text-decoration-none">Đăng nhập ngay</a></p>
                 </div>
             </div>
         </div>
@@ -180,7 +186,8 @@
 
             // Gọi AJAX gửi Token xuống Backend C#
             $.ajax({
-                url: '/Account/GoogleLogin',
+                // Dùng Url.Action
+                url: '@Url.Action("GoogleLogin", "Account")',
                 type: 'POST',
                 data: { credential: token },
                 success: function (res) {

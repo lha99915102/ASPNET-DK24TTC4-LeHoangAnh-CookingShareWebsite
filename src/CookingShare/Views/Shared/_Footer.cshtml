@@ -5,40 +5,52 @@
 
                 <div class="col-md-4 col-lg-4 col-xl-4 mx-auto mt-3">
                     <h5 class="mb-3 footer-brand">
-                        <i class="fas fa-utensils me-2 text-success"></i>CookingShare
+                        <i class="fas fa-utensils me-2 text-success"></i>@CookingShare.Helpers.SettingHelper.GetValue("SiteName", "CookingShare")
                     </h5>
-                    <p class="text-secondary pe-lg-5">
+                    <p class="text-secondary pe-lg-5 mb-3">
                         Nền tảng chia sẻ công thức nấu ăn hàng đầu Việt Nam. Nơi kết nối những tâm hồn yêu bếp và lan tỏa hương vị yêu thương.
                     </p>
-                    
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-outline-primary btn-sm rounded-circle me-2" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="btn btn-outline-danger btn-sm rounded-circle me-2" title="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="btn btn-outline-dark btn-sm rounded-circle me-2" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="btn btn-outline-info btn-sm rounded-circle" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
                 </div>
 
                 <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
                     <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Khám phá</h6>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="/Tip/Index" class="footer-link">Mẹo vặt</a></li>
-                        <li class="mb-2"><a href="/Error/UnderConstruction" class="footer-link">Thực đơn Healthy</a></li>
-                        <li class="mb-2"><a href="/Error/UnderConstruction" class="footer-link">Đặc sản vùng miền</a></li>
-                        <li class="mb-2"><a href="/Error/UnderConstruction" class="footer-link">Bếp bánh</a></li>
+                        <li class="mb-2"><a href="@Url.Action("Index", "Tip")" class="footer-link text-decoration-none text-secondary">Mẹo vặt</a></li>
+                        <li class="mb-2"><a href="@Url.Action("UnderConstruction", "Error")" class="footer-link text-decoration-none text-secondary">Thực đơn Healthy</a></li>
+                        <li class="mb-2"><a href="@Url.Action("UnderConstruction", "Error")" class="footer-link text-decoration-none text-secondary">Đặc sản vùng miền</a></li>
+                        <li class="mb-2"><a href="@Url.Action("UnderConstruction", "Error")" class="footer-link text-decoration-none text-secondary">Bếp bánh</a></li>
                     </ul>
                 </div>
 
                 <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
                     <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Hỗ trợ</h6>
                     <ul class="list-unstyled">
-
-                        <li class="mb-2"><a href="/Error/UnderConstruction" class="footer-link">Giới thiệu</a></li>
-                        <li class="mb-2"><a href="/Error/UnderConstruction" class="footer-link">Hỗ trợ</a></li>
-                        <li class="mb-2"><a href="/Error/UnderConstruction" class="footer-link">Chính sách bảo mật</a></li>
-                        <li class="mb-2"><a href="/Error/UnderConstruction" class="footer-link">Quy tắc cộng đồng</a></li>
+                        <li class="mb-2"><a href="@Url.Action("UnderConstruction", "Error")" class="footer-link text-decoration-none text-secondary">Giới thiệu</a></li>
+                        <li class="mb-2"><a href="@Url.Action("UnderConstruction", "Error")" class="footer-link text-decoration-none text-secondary">Hỗ trợ</a></li>
+                        <li class="mb-2"><a href="@Url.Action("UnderConstruction", "Error")" class="footer-link text-decoration-none text-secondary">Chính sách bảo mật</a></li>
+                        <li class="mb-2"><a href="@Url.Action("UnderConstruction", "Error")" class="footer-link text-decoration-none text-secondary">Quy tắc cộng đồng</a></li>
                     </ul>
                 </div>
 
                 <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
                     <h6 class="text-uppercase mb-4 fw-bold text-success footer-heading">Liên hệ</h6>
                     <p class="text-secondary mb-2"><i class="fas fa-map-marker-alt me-2 text-warning"></i> 123 Cù Lao Giêng, An Giang</p>
-                    <p class="text-secondary mb-2"><i class="fas fa-envelope me-2 text-warning"></i> contact@cookingshare.com</p>
-                    <p class="text-secondary mb-4"><i class="fas fa-phone-alt me-2 text-warning"></i> 0912.345.678</p>
+
+                    <p class="text-secondary mb-2">
+                        <i class="fas fa-envelope me-2 text-warning"></i>
+                        @CookingShare.Helpers.SettingHelper.GetValue("ContactEmail", "contact@cookingshare.com")
+                    </p>
+
+                    <p class="text-secondary mb-4">
+                        <i class="fas fa-phone-alt me-2 text-warning"></i>
+                        @CookingShare.Helpers.SettingHelper.GetValue("Hotline", "0912.345.678")
+                    </p>
                 </div>
 
             </div>
@@ -50,7 +62,7 @@
             <div class="row align-items-center">
                 <div class="col-md-12 text-center">
                     <p class="mb-0 small">
-                        &copy; 2026 <strong>CookingShare</strong>. All Rights Reserved.
+                        &copy; @DateTime.Now.Year <strong>@CookingShare.Helpers.SettingHelper.GetValue("SiteName", "CookingShare")</strong>. All Rights Reserved.
                         <span class="d-none d-sm-inline mx-2">|</span> <br class="d-sm-none">
                         Designed by <span class="text-success fw-bold">Hoang Anh</span>
                     </p>
@@ -59,3 +71,14 @@
         </div>
     </div>
 </footer>
+
+<style>
+    .footer-link {
+        transition: all 0.3s ease;
+    }
+
+        .footer-link:hover {
+            color: #ff6600 !important;
+            padding-left: 5px;
+        }
+</style>

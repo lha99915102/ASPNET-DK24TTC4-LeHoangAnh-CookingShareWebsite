@@ -69,6 +69,7 @@
           <Property Name="ImageName" Type="nvarchar" MaxLength="255" Nullable="false" />
           <Property Name="Content" Type="nvarchar" MaxLength="500" />
           <Property Name="CreateDate" Type="datetime" />
+          <Property Name="Status" Type="int" />
         </EntityType>
         <EntityType Name="COOKSNAP_COMMENT">
           <Key>
@@ -79,6 +80,7 @@
           <Property Name="AccountID" Type="int" Nullable="false" />
           <Property Name="Content" Type="nvarchar" MaxLength="500" Nullable="false" />
           <Property Name="CreateDate" Type="datetime" />
+          <Property Name="Status" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="FAVORITE">
           <Key>
@@ -344,6 +346,20 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK__COOKSNAP__Recipe__3C34F16F">
+          <End Role="RECIPE" Type="Self.RECIPE" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="COOKSNAP" Type="Self.COOKSNAP" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="RECIPE">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="COOKSNAP">
+              <PropertyRef Name="RecipeID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK__FAVORITE__Accoun__0D7A0286">
           <End Role="ACCOUNT" Type="Self.ACCOUNT" Multiplicity="1" />
           <End Role="FAVORITE" Type="Self.FAVORITE" Multiplicity="*" />
@@ -358,6 +374,20 @@
         </Association>
         <Association Name="FK__FAVORITE__Recipe__0E6E26BF">
           <End Role="RECIPE" Type="Self.RECIPE" Multiplicity="1" />
+          <End Role="FAVORITE" Type="Self.FAVORITE" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="RECIPE">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="FAVORITE">
+              <PropertyRef Name="RecipeID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__FAVORITE__Recipe__3A4CA8FD">
+          <End Role="RECIPE" Type="Self.RECIPE" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="FAVORITE" Type="Self.FAVORITE" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="RECIPE">
@@ -406,6 +436,20 @@
         </Association>
         <Association Name="FK__GROCERY__RecipeI__17F790F9">
           <End Role="RECIPE" Type="Self.RECIPE" Multiplicity="1" />
+          <End Role="GROCERY" Type="Self.GROCERY" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="RECIPE">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="GROCERY">
+              <PropertyRef Name="RecipeID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__GROCERY__RecipeI__3B40CD36">
+          <End Role="RECIPE" Type="Self.RECIPE" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="GROCERY" Type="Self.GROCERY" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="RECIPE">
@@ -627,11 +671,19 @@
             <End Role="RECIPE" EntitySet="RECIPE" />
             <End Role="COOKSNAP" EntitySet="COOKSNAP" />
           </AssociationSet>
+          <AssociationSet Name="FK__COOKSNAP__Recipe__3C34F16F" Association="Self.FK__COOKSNAP__Recipe__3C34F16F">
+            <End Role="RECIPE" EntitySet="RECIPE" />
+            <End Role="COOKSNAP" EntitySet="COOKSNAP" />
+          </AssociationSet>
           <AssociationSet Name="FK__FAVORITE__Accoun__0D7A0286" Association="Self.FK__FAVORITE__Accoun__0D7A0286">
             <End Role="ACCOUNT" EntitySet="ACCOUNT" />
             <End Role="FAVORITE" EntitySet="FAVORITE" />
           </AssociationSet>
           <AssociationSet Name="FK__FAVORITE__Recipe__0E6E26BF" Association="Self.FK__FAVORITE__Recipe__0E6E26BF">
+            <End Role="RECIPE" EntitySet="RECIPE" />
+            <End Role="FAVORITE" EntitySet="FAVORITE" />
+          </AssociationSet>
+          <AssociationSet Name="FK__FAVORITE__Recipe__3A4CA8FD" Association="Self.FK__FAVORITE__Recipe__3A4CA8FD">
             <End Role="RECIPE" EntitySet="RECIPE" />
             <End Role="FAVORITE" EntitySet="FAVORITE" />
           </AssociationSet>
@@ -648,6 +700,10 @@
             <End Role="GROCERY" EntitySet="GROCERY" />
           </AssociationSet>
           <AssociationSet Name="FK__GROCERY__RecipeI__17F790F9" Association="Self.FK__GROCERY__RecipeI__17F790F9">
+            <End Role="RECIPE" EntitySet="RECIPE" />
+            <End Role="GROCERY" EntitySet="GROCERY" />
+          </AssociationSet>
+          <AssociationSet Name="FK__GROCERY__RecipeI__3B40CD36" Association="Self.FK__GROCERY__RecipeI__3B40CD36">
             <End Role="RECIPE" EntitySet="RECIPE" />
             <End Role="GROCERY" EntitySet="GROCERY" />
           </AssociationSet>
@@ -1156,6 +1212,7 @@
           <NavigationProperty Name="ACCOUNT" Relationship="CookingShareDBModel.FK__COOKSNAP__Accoun__04E4BC85" FromRole="COOKSNAP" ToRole="ACCOUNT" />
           <NavigationProperty Name="RECIPE" Relationship="CookingShareDBModel.FK__COOKSNAP__Recipe__03F0984C" FromRole="COOKSNAP" ToRole="RECIPE" />
           <NavigationProperty Name="COOKSNAP_COMMENT" Relationship="CookingShareDBModel.FK__COOKSNAP___Cooks__08B54D69" FromRole="COOKSNAP" ToRole="COOKSNAP_COMMENT" />
+          <Property Name="Status" Type="Int32" />
         </EntityType>
         <Association Name="FK__COOKSNAP__Accoun__04E4BC85">
           <End Type="CookingShareDBModel.ACCOUNT" Role="ACCOUNT" Multiplicity="1" />
@@ -1192,6 +1249,7 @@
           <Property Name="CreateDate" Type="DateTime" Precision="3" />
           <NavigationProperty Name="ACCOUNT" Relationship="CookingShareDBModel.FK__COOKSNAP___Accou__09A971A2" FromRole="COOKSNAP_COMMENT" ToRole="ACCOUNT" />
           <NavigationProperty Name="COOKSNAP" Relationship="CookingShareDBModel.FK__COOKSNAP___Cooks__08B54D69" FromRole="COOKSNAP_COMMENT" ToRole="COOKSNAP" />
+          <Property Name="Status" Type="Int32" Nullable="false" />
         </EntityType>
         <Association Name="FK__COOKSNAP___Accou__09A971A2">
           <End Type="CookingShareDBModel.ACCOUNT" Role="ACCOUNT" Multiplicity="1" />
@@ -1560,6 +1618,7 @@
           <EntitySetMapping Name="COOKSNAP">
             <EntityTypeMapping TypeName="CookingShareDBModel.COOKSNAP">
               <MappingFragment StoreEntitySet="COOKSNAP">
+                <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
                 <ScalarProperty Name="Content" ColumnName="Content" />
                 <ScalarProperty Name="ImageName" ColumnName="ImageName" />
@@ -1572,6 +1631,7 @@
           <EntitySetMapping Name="COOKSNAP_COMMENT">
             <EntityTypeMapping TypeName="CookingShareDBModel.COOKSNAP_COMMENT">
               <MappingFragment StoreEntitySet="COOKSNAP_COMMENT">
+                <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
                 <ScalarProperty Name="Content" ColumnName="Content" />
                 <ScalarProperty Name="AccountID" ColumnName="AccountID" />

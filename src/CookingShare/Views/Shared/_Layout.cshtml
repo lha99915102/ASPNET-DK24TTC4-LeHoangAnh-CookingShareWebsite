@@ -1,9 +1,11 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - CookingShare</title>
+    <title>@ViewBag.Title - @CookingShare.Helpers.SettingHelper.GetValue("SiteName", "CookingShare")</title>
+
+    <link rel="icon" type="image/png" href="~/assets/images/favicon.png" onerror="this.href='https://cdn-icons-png.flaticon.com/512/7486/7486754.png'">
 
     <link rel="stylesheet" href="~/assets/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="~/assets/vendor/font-awesome/css/all.min.css">
@@ -11,6 +13,19 @@
     <link rel="stylesheet" href="~/assets/vendor/owl-carousel/css/owl.theme.default.min.css">
     <link rel="stylesheet" href="~/assets/css/style.css">
 
+    <style>
+        /*  Navbar fixed-top không đè lên nội dung phần đầu trang */
+        body {
+            padding-top: 76px; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1; /* Đẩy footer luôn nằm gọn dưới cùng màn hình dù trang ngắn */
+        }
+    </style>
 </head>
 <body>
     @Html.Partial("_Header")
@@ -21,21 +36,21 @@
 
     @Html.Partial("_Footer")
 
-<div id="search-overlay" class="search-overlay">
-    <button type="button" class="btn-close-search" id="search-close">
-        <i class="fas fa-times"></i>
-    </button>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <form action="/Recipe/Index" method="GET" class="text-center">
-                    <input type="text" name="search" class="search-input-transparent" placeholder="Gõ tên món ăn bạn muốn tìm..." autocomplete="off" required>
-                    <p class="text-white-50 mt-3">Nhấn <span class="text-warning fw-bold">Enter</span> để tìm kiếm hoặc <span class="text-warning fw-bold">ESC</span> để đóng</p>
-                </form>
+    <div id="search-overlay" class="search-overlay">
+        <button type="button" class="btn-close-search" id="search-close">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="container h-100">
+            <div class="row h-100 justify-content-center align-items-center">
+                <div class="col-lg-8">
+                    <form action="@Url.Action("Index", "Recipe")" method="GET" class="text-center">
+                        <input type="text" name="search" class="search-input-transparent w-100 text-center border-0 border-bottom border-warning text-white" placeholder="Gõ tên món ăn bạn muốn tìm..." autocomplete="off" required style="background: transparent; font-size: 2rem; outline: none; padding-bottom: 10px;">
+                        <p class="text-white-50 mt-4">Nhấn <span class="text-warning fw-bold">Enter</span> để tìm kiếm hoặc <span class="text-warning fw-bold">ESC</span> để đóng</p>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <a href="#" id="back-to-top" class="back-to-top" title="Lên đầu trang">
         <i class="fas fa-chevron-up"></i>

@@ -1,9 +1,9 @@
 ﻿using CookingShare.Models;
+using CookingShare.Helpers; 
 using System;
+using System.Data.Entity; 
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
@@ -14,135 +14,123 @@ namespace CookingShare.Areas.Admin.Controllers
     {
         CookingShareDBEntities db = new CookingShareDBEntities();
 
-        // Hàm băm mật khẩu
-        private string HashPasswordSHA256(string rawData)
-        {
-            if (string.IsNullOrEmpty(rawData)) return string.Empty;
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++) builder.Append(bytes[i].ToString("x2"));
-                return builder.ToString();
-            }
-        }
-
-        // ==========================================
-        // 1. HIỂN THỊ TRANG HỒ SƠ
-        // ==========================================
+        // HIỂN THỊ TRANG PROFILE
         public ActionResult Index()
         {
             var currentAcc = Session["Account"] as ACCOUNT;
             if (currentAcc == null) return Redirect("~/Admin/Auth/Login");
 
-            // Lấy thông tin tài khoản
-            var account = db.ACCOUNT.Find(currentAcc.ID);
-            if (account == null) return Redirect("~/Admin/Auth/Login");
-
-            // Lấy thông tin Profile (Nếu chưa có thì tạo mặc định)
+            // Nạp lại data mới nhất từ DB
+            var acc = db.ACCOUNT.Find(currentAcc.ID);
             var profile = db.PROFILE.FirstOrDefault(p => p.AccountID == currentAcc.ID);
+
             if (profile == null)
             {
-                profile = new PROFILE { AccountID = currentAcc.ID, FullName = account.UserName, Avatar = "default-avatar.png" };
-                db.PROFILE.Add(profile);
-                db.SaveChanges();
+                profile = new PROFILE { FullName = acc.UserName, Avatar = "default-avatar.png" };
             }
 
-            ViewBag.Account = account;
+            ViewBag.Account = acc;
             return View(profile);
         }
 
-        // ==========================================
-        // 2. CẬP NHẬT THÔNG TIN & AVATAR
-        // ==========================================
+        // CẬP NHẬT THÔNG TIN VÀ AVATAR
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult UpdateProfile(PROFILE model, string Email, string Phone, HttpPostedFileBase AvatarFile)
+        public ActionResult UpdateProfile(string FullName, string Gender, string Email, string Phone, string Bio, HttpPostedFileBase AvatarFile)
         {
-            var currentAcc = Session["Account"] as ACCOUNT;
-            if (currentAcc == null) return Redirect("~/Admin/Auth/Login");
-
             try
             {
-                // 1. Cập nhật Account (Email, Phone)
-                var account = db.ACCOUNT.Find(currentAcc.ID);
-                account.Email = Email;
-                account.Phone = Phone;
+                var currentAcc = Session["Account"] as ACCOUNT;
+                if (currentAcc == null) return Redirect("~/Admin/Auth/Login");
 
-                // 2. Cập nhật Profile (FullName, Bio, Gender)
-                var profile = db.PROFILE.FirstOrDefault(p => p.AccountID == currentAcc.ID);
-                if (profile != null)
+                //  Dùng Include() kéo Profile lên luôn để gán lại Session không bị lỗi vỡ giao diện
+                var acc = db.ACCOUNT.Include(a => a.PROFILE).FirstOrDefault(a => a.ID == currentAcc.ID);
+                var profile = acc.PROFILE;
+
+                if (profile == null)
                 {
-                    profile.FullName = model.FullName;
-                    profile.Bio = model.Bio;
-                    profile.Gender = model.Gender;
+                    profile = new PROFILE { AccountID = currentAcc.ID, Avatar = "default-avatar.png" };
+                    db.PROFILE.Add(profile);
+                    acc.PROFILE = profile; // Gắn liên kết lại
+                }
 
-                    // Xử lý Upload Avatar
-                    if (AvatarFile != null && AvatarFile.ContentLength > 0)
-                    {
-                        string uploadDir = "~/Content/Images/Users/";
-                        if (!Directory.Exists(Server.MapPath(uploadDir))) Directory.CreateDirectory(Server.MapPath(uploadDir));
+                acc.Email = Email;
+                acc.Phone = Phone;
+                profile.FullName = FullName;
+                profile.Gender = Gender;
+                profile.Bio = Bio;
 
-                        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(AvatarFile.FileName);
-                        string path = Path.Combine(Server.MapPath(uploadDir), fileName);
-                        AvatarFile.SaveAs(path);
 
-                        profile.Avatar = fileName; // Lưu tên file vào DB
-                    }
+                // BẮT ĐẦU XỬ LÝ ẢNH BẰNG FILEHELPER
+                if (AvatarFile != null && AvatarFile.ContentLength > 0)
+                {
+                    string prefix = "admin_avatar_" + acc.ID;
+                    profile.Avatar = FileHelper.UploadAndReplaceImage(AvatarFile, "~/assets/images/avatars/", prefix, profile.Avatar);
                 }
 
                 db.SaveChanges();
-                Session["Account"] = account; // Cập nhật lại Session
-                TempData["Success"] = "Cập nhật hồ sơ thành công!";
+                Session["Account"] = acc; // Ghi đè Session với đầy đủ Avatar và Tên mới
+                TempData["Success"] = "Cập nhật hồ sơ cá nhân thành công!";
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Lỗi khi cập nhật: " + ex.Message;
+                TempData["Error"] = "Có lỗi xảy ra: " + ex.Message;
             }
 
             return RedirectToAction("Index");
         }
 
-        // ==========================================
-        // 3. ĐỔI MẬT KHẨU
-        // ==========================================
+        //  ĐỔI MẬT KHẨU
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ChangePassword(string OldPassword, string NewPassword, string ConfirmPassword)
         {
-            var currentAcc = Session["Account"] as ACCOUNT;
-            if (currentAcc == null) return Redirect("~/Admin/Auth/Login");
-
             try
             {
+                var currentAcc = Session["Account"] as ACCOUNT;
+                if (currentAcc == null) return Redirect("~/Admin/Auth/Login");
+
+                var acc = db.ACCOUNT.Find(currentAcc.ID);
+
+                //  Sử dụng hàm mã hóa dùng chung từ SecurityHelper
+                string hashedOldPass = CookingShare.Models.SecurityHelper.HashPasswordSHA256(OldPassword);
+
+                if (acc.Password != hashedOldPass)
+                {
+                    TempData["Error"] = "Mật khẩu hiện tại không chính xác!";
+                    return RedirectToAction("Index");
+                }
+
                 if (NewPassword != ConfirmPassword)
                 {
-                    TempData["Error"] = "Mật khẩu xác nhận không khớp!";
+                    TempData["Error"] = "Mật khẩu mới và mật khẩu xác nhận không khớp!";
                     return RedirectToAction("Index");
                 }
 
-                var account = db.ACCOUNT.Find(currentAcc.ID);
-                string hashedOldPwd = HashPasswordSHA256(OldPassword);
-
-                // Kiểm tra mật khẩu cũ
-                if (account.Password != hashedOldPwd)
+                if (NewPassword.Length < 6)
                 {
-                    TempData["Error"] = "Mật khẩu cũ không chính xác!";
+                    TempData["Error"] = "Mật khẩu mới phải có ít nhất 6 ký tự!";
                     return RedirectToAction("Index");
                 }
 
-                // Cập nhật mật khẩu mới (đã mã hóa)
-                account.Password = HashPasswordSHA256(NewPassword);
+                // Sử dụng hàm mã hóa dùng chung từ SecurityHelper
+                acc.Password = CookingShare.Models.SecurityHelper.HashPasswordSHA256(NewPassword);
                 db.SaveChanges();
 
-                TempData["Success"] = "Đổi mật khẩu thành công! Vui lòng dùng mật khẩu mới cho lần đăng nhập sau.";
+                TempData["Success"] = "Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới.";
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Lỗi đổi mật khẩu: " + ex.Message;
+                TempData["Error"] = "Có lỗi xảy ra: " + ex.Message;
             }
 
             return RedirectToAction("Index");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) { db.Dispose(); }
+            base.Dispose(disposing);
         }
     }
 }

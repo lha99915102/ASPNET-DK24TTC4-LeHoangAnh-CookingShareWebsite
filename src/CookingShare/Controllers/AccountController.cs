@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Google.Apis.Auth;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -13,9 +14,7 @@ namespace CookingShare.Controllers
     {
         CookingShareDBEntities db = new CookingShareDBEntities();
 
-        // ==========================================
-        // 1. ĐĂNG NHẬP
-        // ==========================================
+        // ĐĂNG NHẬP
         [HttpGet]
         public ActionResult Login(string returnUrl)
         {
@@ -26,11 +25,15 @@ namespace CookingShare.Controllers
                 int userId;
                 if (int.TryParse(authCookie.Value, out userId))
                 {
-                    var user = db.ACCOUNT.FirstOrDefault(u => u.ID == userId && u.Status == 1);
+                    var user = db.ACCOUNT.Include(u => u.PROFILE).FirstOrDefault(u => u.ID == userId && u.Status == 1);
                     if (user != null)
                     {
                         Session["Account"] = user; // Đăng nhập tự động
-                        if (!string.IsNullOrEmpty(returnUrl)) return Redirect(returnUrl);
+
+                        // Chống Open Redirect
+                        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                            return Redirect(returnUrl);
+
                         return RedirectToAction("Index", "Home");
                     }
                 }
@@ -41,14 +44,14 @@ namespace CookingShare.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken] //Chống tấn công giả mạo (CSRF)
         public ActionResult Login(string loginIdentifier, string password, bool rememberMe = false, string returnUrl = "")
         {
             // Mã hóa mật khẩu
             string hashedPassword = SecurityHelper.HashPasswordSHA256(password);
 
-            // TÌM KIẾM ĐA NĂNG: Khớp Email, hoặc UserName, hoặc Số điện thoại
-           
-            var user = db.ACCOUNT.FirstOrDefault(u =>
+            // TÌM KIẾM: Khớp Email, hoặc UserName, hoặc Số điện thoại. Kéo theo PROFILE để chống lỗi vỡ Session.
+            var user = db.ACCOUNT.Include(u => u.PROFILE).FirstOrDefault(u =>
                 (u.Email == loginIdentifier || u.UserName == loginIdentifier || u.Phone == loginIdentifier)
                 && u.Password == hashedPassword);
 
@@ -71,7 +74,10 @@ namespace CookingShare.Controllers
                     Response.Cookies.Add(authCookie);
                 }
 
-                if (!string.IsNullOrEmpty(returnUrl)) return Redirect(returnUrl);
+                //  Chống Open Redirect
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
                 return RedirectToAction("Index", "Home");
             }
 
@@ -80,9 +86,7 @@ namespace CookingShare.Controllers
             return View();
         }
 
-        // ==========================================
-        // 2. ĐĂNG XUẤT
-        // ==========================================
+        // ĐĂNG XUẤT
         public ActionResult Logout()
         {
             Session.Remove("Account");
@@ -98,9 +102,7 @@ namespace CookingShare.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ==========================================
-        // 3. ĐĂNG KÝ TÀI KHOẢN MỚI
-        // ==========================================
+        // ĐĂNG KÝ TÀI KHOẢN MỚI
         [HttpGet]
         public ActionResult Register()
         {
@@ -108,6 +110,7 @@ namespace CookingShare.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Register(string fullName, string email, string password, string confirmPassword)
         {
             if (password != confirmPassword)
@@ -132,6 +135,7 @@ namespace CookingShare.Controllers
                     userName = userName + new System.Random().Next(100, 999).ToString();
                 }
 
+                // Tối ưu Entity Framework (Lưu Account và Profile trong 1 lần duy nhất)
                 ACCOUNT newAcc = new ACCOUNT()
                 {
                     UserName = userName,
@@ -139,21 +143,16 @@ namespace CookingShare.Controllers
                     Password = SecurityHelper.HashPasswordSHA256(password),
                     Role = 2,
                     Status = 1,
-                    RegistDate = System.DateTime.Now
+                    RegistDate = System.DateTime.Now,
+                    PROFILE = new PROFILE()
+                    {
+                        FullName = fullName,
+                        Avatar = "default-avatar.png",
+                        CaloDaily = 0
+                    }
                 };
 
                 db.ACCOUNT.Add(newAcc);
-                db.SaveChanges();
-
-                PROFILE newProfile = new PROFILE()
-                {
-                    AccountID = newAcc.ID,
-                    FullName = fullName,
-                    Avatar = "default-avatar.png",
-                    CaloDaily = 0
-                };
-
-                db.PROFILE.Add(newProfile);
                 db.SaveChanges();
 
                 ViewBag.Success = "Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.";
@@ -166,18 +165,15 @@ namespace CookingShare.Controllers
             }
         }
 
-        // ==========================================
-        // 4. QUÊN MẬT KHẨU
-        // ==========================================
+        // QUÊN MẬT KHẨU
         [HttpGet]
         public ActionResult ForgotPassword()
         {
             return View();
         }
 
-
-        // 4.2. Xử lý khi bấm nút "Gửi mã xác nhận"
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult ForgotPassword(string email)
         {
             var user = db.ACCOUNT.FirstOrDefault(u => u.Email == email);
@@ -206,7 +202,6 @@ namespace CookingShare.Controllers
 
             if (isSent)
             {
-                // Gửi thành công thì chuyển trang, mang theo cái email trên thanh URL
                 return RedirectToAction("ResetPassword", new { email = email });
             }
             else
@@ -216,7 +211,6 @@ namespace CookingShare.Controllers
             }
         }
 
-        // 4.3. Hiển thị trang Nhập OTP và Mật khẩu mới
         [HttpGet]
         public ActionResult ResetPassword(string email)
         {
@@ -226,8 +220,8 @@ namespace CookingShare.Controllers
             return View();
         }
 
-        // 4.4. Xử lý Đổi mật khẩu mới
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult ResetPassword(string email, string otp, string newPassword, string confirmPassword)
         {
             ViewBag.Email = email;
@@ -260,7 +254,7 @@ namespace CookingShare.Controllers
             }
 
             // Cập nhật mật khẩu (Đã mã hóa SHA-256)
-            user.Password = CookingShare.Models.SecurityHelper.HashPasswordSHA256(newPassword);
+            user.Password = SecurityHelper.HashPasswordSHA256(newPassword);
 
             // Dọn dẹp 2 cột Token để không bị dùng lại
             user.ResetToken = null;
@@ -272,27 +266,24 @@ namespace CookingShare.Controllers
             return RedirectToAction("Login");
         }
 
-        // ==========================================
-        // 5. ĐĂNG NHẬP / ĐĂNG KÝ BẰNG GOOGLE
-        // ==========================================
+
+        // ĐĂNG NHẬP / ĐĂNG KÝ BẰNG GOOGLE
         [HttpPost]
         public async Task<ActionResult> GoogleLogin(string credential)
         {
             try
             {
-                // 1. Xác thực Token với Google (Đảm bảo không bị làm giả)
+                // Xác thực Token với Google
                 var payload = await GoogleJsonWebSignature.ValidateAsync(credential);
 
-                // Lấy thông tin từ Google
                 string email = payload.Email;
                 string fullName = payload.Name;
+                string googleAvatar = payload.Picture;
 
-                // 2. Tìm xem Email này đã tồn tại trong hệ thống chưa
-                var user = db.ACCOUNT.FirstOrDefault(u => u.Email == email);
+                var user = db.ACCOUNT.Include(u => u.PROFILE).FirstOrDefault(u => u.Email == email);
 
                 if (user != null)
                 {
-                    // TRƯỜNG HỢP 1: ĐÃ CÓ TÀI KHOẢN -> TIẾN HÀNH ĐĂNG NHẬP
                     if (user.Status != 1)
                     {
                         return Json(new { success = false, message = "Tài khoản của bạn đã bị khóa!" });
@@ -301,49 +292,51 @@ namespace CookingShare.Controllers
                 }
                 else
                 {
-                    // TRƯỜNG HỢP 2: CHƯA CÓ TÀI KHOẢN -> TỰ ĐỘNG ĐĂNG KÝ MỚI
-
-                    // Tạo UserName tự động
                     string userName = email.Split('@')[0];
                     var checkUser = db.ACCOUNT.FirstOrDefault(u => u.UserName == userName);
                     if (checkUser != null) userName = userName + new Random().Next(100, 999).ToString();
 
+                    //  Lưu Account và Profile trong 1 lần duy nhất
                     ACCOUNT newAcc = new ACCOUNT()
                     {
                         UserName = userName,
                         Email = email,
-                        // Tạo một mật khẩu ngẫu nhiên cực khó đoán vì họ dùng Google để đăng nhập
                         Password = SecurityHelper.HashPasswordSHA256(Guid.NewGuid().ToString()),
                         Role = 2,
                         Status = 1,
-                        RegistDate = DateTime.Now
+                        RegistDate = DateTime.Now,
+                        PROFILE = new PROFILE() // Lồng vào đây
+                        {
+                            FullName = fullName,
+                            Avatar = string.IsNullOrEmpty(googleAvatar) ? "default-avatar.png" : googleAvatar,
+                            CaloDaily = 0
+                        }
                     };
-                    db.ACCOUNT.Add(newAcc);
-                    db.SaveChanges(); // Lưu để lấy ID
 
-                    PROFILE newProfile = new PROFILE()
-                    {
-                        AccountID = newAcc.ID,
-                        FullName = fullName,
-                        Avatar = "default-avatar.png", // Bạn có thể lấy luôn ảnh Google bằng: payload.Picture
-                        CaloDaily = 0
-                    };
-                    db.PROFILE.Add(newProfile);
+                    db.ACCOUNT.Add(newAcc);
                     db.SaveChanges();
 
-                    // Lưu Session đăng nhập
                     Session["Account"] = newAcc;
                 }
 
-                // Trả về tín hiệu thành công để Javascript chuyển trang
-                return Json(new { success = true, redirectUrl = "/Home/Index" });
+                // Dùng Url.Action cho link trả về
+                return Json(new { success = true, redirectUrl = Url.Action("Index", "Home") });
             }
             catch (Exception ex)
             {
-                // Token không hợp lệ hoặc hết hạn
                 return Json(new { success = false, message = "Xác thực Google thất bại: " + ex.Message });
             }
         }
 
+
+        // Dọn dẹp kết nối Database
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

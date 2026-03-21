@@ -2,10 +2,10 @@
     ViewBag.Title = "Góc bếp của bạn";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    // 1. Nhận link hình nền to từ Controller (Nếu null thì dùng ảnh mặc định)
+    // Nhận link hình nền to từ Controller (Nếu null thì dùng ảnh mặc định)
     string bgImage = ViewBag.CoverImage as string ?? "https://placehold.co/1200x400?text=My+Kitchen+Workspace";
 
-    // 2. Nhận link ảnh Menu dự phòng từ Controller (Nếu null thì dùng mặc định)
+    //  Nhận link ảnh Menu dự phòng từ Controller (Nếu null thì dùng mặc định)
     string fallbackMenuImg = ViewBag.FallbackMenuImg as string ?? "https://placehold.co/400x250?text=Menu+Hom+Nay";
 }
 
@@ -15,7 +15,7 @@
             <div class="card-body p-4 p-md-5 text-center position-absolute top-50 start-50 translate-middle w-100">
                 <h1 class="display-4 fw-bold mb-3" style="font-family: 'Dancing Script';">Góc Bếp Của Bạn</h1>
                 <p class="lead mb-4">Chào mừng trở lại! Hôm nay bạn muốn nấu món gì hay cần hỗ trợ công cụ nào?</p>
-                <a href="/Recipe/Grocery" class="btn btn-orange rounded-pill px-4 px-md-5 py-2 fw-bold shadow">
+                <a href="@Url.Action("Grocery", "Recipe")" class="btn btn-orange rounded-pill px-4 px-md-5 py-2 fw-bold shadow">
                     <i class="fas fa-shopping-basket me-2"></i> Mở Giỏ Đi Chợ Của Bạn
                 </a>
             </div>
@@ -37,7 +37,7 @@
                                 </div>
                                 <h5 class="fw-bold">Khám phá món ăn</h5>
                                 <p class="text-secondary small">Gợi ý món ăn dựa trên nguyên liệu bạn đang có sẵn.</p>
-                                <a href="/Recipe/Index" class="stretched-link"></a>
+                                <a href="@Url.Action("Index", "Recipe")" class="stretched-link"></a>
                             </div>
                         </div>
                     </div>
@@ -50,7 +50,7 @@
                                 </div>
                                 <h5 class="fw-bold">Mẹo Vặt Cuộc Sống</h5>
                                 <p class="text-secondary small">Các bí kíp xử lý mùi, bảo quản thực phẩm và vệ sinh bếp.</p>
-                                <a href="/Tip/Index" class="stretched-link"></a>
+                                <a href="@Url.Action("Index", "Tip")" class="stretched-link"></a>
                             </div>
                         </div>
                     </div>
@@ -85,7 +85,7 @@
                                 </div>
                             </div>
                         </form>
-                        <p class="text-muted small mt-3 mb-0 fst-italic">* Công cụ giúp bạn quy đổi nhanh các đơn vị đo lường Âu/Mỹ sang chuẩn Việt Nam.</p>
+                        <p class="text-muted small mt-3 mb-0 fst-italic">* Công cụ giúp bạn quy đổi nhanh các đơn vị đo lường Âu/Mỹ sang chuẩn Việt Nam (mang tính tương đối).</p>
                     </div>
                 </div>
 
@@ -118,11 +118,13 @@
                         var soup = ViewBag.Soup as CookingShare.Models.RECIPE;
                         var dessert = ViewBag.Dessert as CookingShare.Models.RECIPE;
 
-                        // 3. Xử lý ảnh bìa cho khối Menu:
-                        // Ưu tiên dùng ảnh món Mặn, nếu không có thì dùng ảnh Dự phòng đã cấu hình
-                        string coverImage = mainDish != null && !string.IsNullOrEmpty(mainDish.MainImage)
-                                            ? mainDish.MainImage
-                                            : fallbackMenuImg;
+                        string coverImage = fallbackMenuImg;
+                        if (mainDish != null && !string.IsNullOrEmpty(mainDish.MainImage))
+                        {
+                            coverImage = (mainDish.MainImage.StartsWith("http") || mainDish.MainImage.StartsWith("/"))
+                                         ? mainDish.MainImage
+                                         : Url.Content("~/assets/images/recipes/" + mainDish.MainImage);
+                        }
                     }
 
                     <div style="height: 200px; overflow: hidden;">
@@ -139,7 +141,7 @@
                                     <span class="text-muted d-block" style="font-size: 0.75rem;">Món thứ nhất:</span>
                                     @if (mainDish != null)
                                     {
-                                        <a href="/Recipe/Detail/@mainDish.ID" class="text-dark fw-bold text-decoration-none hover-orange">@mainDish.Name</a>
+                                        <a href="@Url.Action("Detail", "Recipe", new { id = mainDish.ID })" class="text-dark fw-bold text-decoration-none hover-orange">@mainDish.Name</a>
                                     }
                                     else
                                     { <span class="fst-italic text-secondary">Đang cập nhật...</span>}
@@ -152,7 +154,7 @@
                                     <span class="text-muted d-block" style="font-size: 0.75rem;">Món thứ hai:</span>
                                     @if (soup != null)
                                     {
-                                        <a href="/Recipe/Detail/@soup.ID" class="text-dark fw-bold text-decoration-none hover-orange">@soup.Name</a>
+                                        <a href="@Url.Action("Detail", "Recipe", new { id = soup.ID })" class="text-dark fw-bold text-decoration-none hover-orange">@soup.Name</a>
                                     }
                                     else
                                     { <span class="fst-italic text-secondary">Đang cập nhật...</span>}
@@ -165,7 +167,7 @@
                                     <span class="text-muted d-block" style="font-size: 0.75rem;">Món thứ ba: </span>
                                     @if (dessert != null)
                                     {
-                                        <a href="/Recipe/Detail/@dessert.ID" class="text-dark fw-bold text-decoration-none hover-orange">@dessert.Name</a>
+                                        <a href="@Url.Action("Detail", "Recipe", new { id = dessert.ID })" class="text-dark fw-bold text-decoration-none hover-orange">@dessert.Name</a>
                                     }
                                     else
                                     { <span class="fst-italic text-secondary">Đang cập nhật...</span>}
@@ -173,7 +175,7 @@
                             </li>
                         </ul>
 
-                        <a href="/Recipe/Index" class="btn btn-outline-success w-100 rounded-pill fw-bold">Khám phá món khác</a>
+                        <a href="@Url.Action("Index", "Recipe")" class="btn btn-outline-success w-100 rounded-pill fw-bold">Khám phá món khác</a>
                     </div>
                 </div>
             </div>
@@ -189,14 +191,35 @@
         .hover-up:hover {
             transform: translateY(-5px);
         }
+
+    .border-orange {
+        border-color: #ff6600 !important;
+    }
+
+    .text-orange {
+        color: #ff6600 !important;
+    }
+
+    .btn-orange {
+        background-color: #ff6600;
+        color: white;
+        border: none;
+    }
+
+        .btn-orange:hover {
+            background-color: #e65c00;
+            color: white;
+        }
+
+    .hover-orange:hover {
+        color: #ff6600 !important;
+    }
 </style>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-        // ==========================================
-        // 1. TÍNH NĂNG CHUYỂN ĐỔI ĐƠN VỊ BẾP
-        // ==========================================
+        // TÍNH NĂNG CHUYỂN ĐỔI ĐƠN VỊ BẾP
         const inpValue = document.getElementById('inputValue');
         const selUnit = document.getElementById('inputUnit');
         const outValue = document.getElementById('outputValue');
@@ -211,7 +234,6 @@
             let unit = selUnit.value;
             let result = 0;
 
-            // Tỉ lệ quy đổi
             if (unit === 'cup') result = val * 240;
             else if (unit === 'tbsp') result = val * 15;
             else if (unit === 'tsp') result = val * 5;
@@ -224,9 +246,7 @@
         selUnit.addEventListener('change', convertUnit);
 
 
-        // ==========================================
-        // 2. TÍNH NĂNG ĐỒNG HỒ ĐẾM NGƯỢC (TIMER)
-        // ==========================================
+        // TÍNH NĂNG ĐỒNG HỒ ĐẾM NGƯỢC (TIMER)
         let timerInterval;
         let timeLeft = 0;
         let isRunning = false;
@@ -235,6 +255,18 @@
         const iconPlayPause = document.getElementById('iconPlayPause');
         const btnSetTimes = document.querySelectorAll('.btn-set-time');
 
+        // Mở khóa AudioContext bằng cách khởi tạo khi có tương tác người dùng
+        let audioCtx = null;
+
+        function unlockAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
         function updateDisplay(seconds) {
             let m = Math.floor(seconds / 60).toString().padStart(2, '0');
             let s = (seconds % 60).toString().padStart(2, '0');
@@ -242,27 +274,28 @@
         }
 
         function playSound() {
-            let ctx = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = ctx.createOscillator();
+            if (!audioCtx) return;
+            let osc = audioCtx.createOscillator();
             osc.type = "sine";
-            osc.frequency.setValueAtTime(800, ctx.currentTime);
-            osc.connect(ctx.destination);
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.connect(audioCtx.destination);
             osc.start();
-            osc.stop(ctx.currentTime + 0.5);
+            osc.stop(audioCtx.currentTime + 0.5);
             setTimeout(() => { alert("⏰ Reng Reng! Hết thời gian rồi bạn ơi!"); }, 100);
         }
 
         function toggleTimer() {
             if (timeLeft <= 0) return;
 
+            //  gọi unlockAudio() để vượt qua rào cản của Chrome/Safari
+            unlockAudio();
+
             if (isRunning) {
-                // Pause
                 clearInterval(timerInterval);
                 iconPlayPause.classList.remove('fa-pause');
                 iconPlayPause.classList.add('fa-play');
                 btnPlayPause.classList.replace('btn-secondary', 'btn-danger');
             } else {
-                // Play
                 iconPlayPause.classList.remove('fa-play');
                 iconPlayPause.classList.add('fa-pause');
                 btnPlayPause.classList.replace('btn-danger', 'btn-secondary');
@@ -277,7 +310,7 @@
                         iconPlayPause.classList.remove('fa-pause');
                         iconPlayPause.classList.add('fa-play');
                         btnPlayPause.classList.replace('btn-secondary', 'btn-danger');
-                        playSound();
+                        playSound(); // Gọi chuông kêu
                     }
                 }, 1000);
             }
@@ -298,6 +331,5 @@
         });
 
         btnPlayPause.addEventListener('click', toggleTimer);
-
     });
 </script>

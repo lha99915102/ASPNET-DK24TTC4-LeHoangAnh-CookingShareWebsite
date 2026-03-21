@@ -64,7 +64,7 @@
     <div class="row g-0 h-100">
         <div class="col-lg-6 d-none d-lg-block position-relative auth-bg">
             <div class="auth-overlay"></div>
-            <a href="/Home/Index" class="back-home"><i class="fas fa-arrow-left me-2"></i> Quay về trang chủ</a>
+            <a href="@Url.Action("Index", "Home")" class="back-home"><i class="fas fa-arrow-left me-2"></i> Quay về trang chủ</a>
             <div class="position-absolute bottom-0 start-0 p-5 text-white w-100">
                 <h1 class="mb-3" style="font-family: 'Dancing Script', cursive; font-size: 4rem;">CookingShare</h1>
                 <h3 class="fw-bold">Chào mừng bạn trở lại!</h3>
@@ -83,6 +83,13 @@
                     <p class="text-muted">Nhập thông tin tài khoản của bạn để tiếp tục.</p>
                 </div>
 
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success mb-4 rounded-3 border-0 shadow-sm" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                    </div>
+                }
+
                 @if (ViewBag.Error != null)
                 {
                     <div class="alert alert-danger mb-4 rounded-3 border-0 shadow-sm" role="alert">
@@ -90,7 +97,9 @@
                     </div>
                 }
 
-                <form action="/Account/Login" method="POST">
+                <form action="@Url.Action("Login", "Account")" method="POST">
+                    @Html.AntiForgeryToken()
+
                     <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
 
                     <div class="form-floating mb-3">
@@ -113,10 +122,10 @@
                                 Ghi nhớ đăng nhập
                             </label>
                         </div>
-                        <a href="/Account/ForgotPassword" class="text-success text-decoration-none small fw-bold">Quên mật khẩu?</a>
+                        <a href="@Url.Action("ForgotPassword", "Account")" class="text-success text-decoration-none small fw-bold">Quên mật khẩu?</a>
                     </div>
 
-                    <button type="submit" class="btn btn-orange w-100 py-3 rounded-pill fw-bold shadow mb-4">Đăng Nhập</button>
+                    <button type="submit" class="btn btn-orange w-100 py-3 rounded-pill fw-bold shadow mb-4" style="background-color: #ff6600; color: white; border: none;">Đăng Nhập</button>
                 </form>
 
                 <div class="text-center position-relative mb-4">
@@ -146,7 +155,7 @@
                 </div>
 
                 <div class="text-center mt-5">
-                    <p class="text-muted">Bạn chưa có tài khoản? <a href="/Account/Register" class="text-orange fw-bold text-decoration-none">Đăng ký miễn phí</a></p>
+                    <p class="text-muted">Bạn chưa có tài khoản? <a href="@Url.Action("Register", "Account")" style="color: #ff6600;" class="fw-bold text-decoration-none">Đăng ký miễn phí</a></p>
                 </div>
             </div>
         </div>
@@ -170,7 +179,8 @@
             const token = response.credential;
 
             $.ajax({
-                url: '/Account/GoogleLogin',
+                // Dùng Url.Action cho AJAX call
+                url: '@Url.Action("GoogleLogin", "Account")',
                 type: 'POST',
                 data: { credential: token },
                 success: function (res) {

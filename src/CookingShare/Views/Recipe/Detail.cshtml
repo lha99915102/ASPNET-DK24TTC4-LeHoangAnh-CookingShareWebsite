@@ -4,24 +4,48 @@
     ViewBag.Title = Model.Name;
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    // Tính sao trung bình
+    // Tính sao trung bình (Chỉ tính những bình luận hợp lệ)
     double avgRating = 0;
-    if (Model.COMMENT != null && Model.COMMENT.Count > 0)
+    var validComments = Model.COMMENT != null ? Model.COMMENT.Where(c => c.Status == 1).ToList() : new List<CookingShare.Models.COMMENT>();
+    if (validComments.Count > 0)
     {
-        avgRating = Math.Round(Model.COMMENT.Average(c => c.Rating) ?? 0, 1);
+        avgRating = Math.Round(validComments.Average(c => c.Rating) ?? 0, 1);
     }
 
-    // Kiểm tra trạng thái các nút
     bool isFavorited = ViewBag.IsFavorited != null ? (bool)ViewBag.IsFavorited : false;
     bool isFollowed = ViewBag.IsFollowed != null ? (bool)ViewBag.IsFollowed : false;
+
+    string firstChar = !string.IsNullOrWhiteSpace(Model.Name) ? Model.Name.Substring(0, 1).ToUpper() : "R";
+    string fallbackImg = $"https://placehold.co/800x500/ff6600/FFFFFF?text={System.Web.HttpUtility.UrlEncode(firstChar)}";
+    string mainImageUrl = fallbackImg;
+
+    if (!string.IsNullOrWhiteSpace(Model.MainImage) && Model.MainImage != "default_recipe.jpg")
+    {
+        if (!Model.MainImage.StartsWith("/") && !Model.MainImage.StartsWith("http"))
+        {
+            mainImageUrl = Url.Content("~/assets/images/recipes/" + Model.MainImage);
+        }
+        else
+        {
+            mainImageUrl = Model.MainImage;
+        }
+    }
 }
 
 <main class="bg-light py-4">
+
+    <div class="container">
+        @if (TempData["Success"] != null)
+        {<div class="alert alert-success alert-dismissible fade show shadow-sm mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+        @if (TempData["Error"] != null)
+        {<div class="alert alert-danger alert-dismissible fade show shadow-sm mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+    </div>
+
     <div class="container mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/Home/Index" class="text-decoration-none text-success">Trang chủ</a></li>
-                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-success">@Model.CATEGORY.Name</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-decoration-none text-success">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Recipe", new { categoryId = Model.CategoryID })" class="text-decoration-none text-success">@Model.CATEGORY.Name</a></li>
                 <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
             </ol>
         </nav>
@@ -34,7 +58,8 @@
 
                 <div class="card border-0 shadow-sm rounded-3 mb-4 overflow-hidden">
                     <div class="position-relative">
-                        <img src="~/assets/images/@Model.MainImage" class="w-100 object-fit-cover" style="height: 450px;" alt="@Model.Name" onerror="this.src='https://placehold.co/800x500?text=@Model.Name'">
+                        <img src="@mainImageUrl" class="w-100 object-fit-cover" style="height: 450px;" alt="@Model.Name" onerror="this.onerror=null; this.src='@fallbackImg';">
+
                         <div class="position-absolute top-0 end-0 m-3">
                             <button id="btn-favorite" class="btn btn-light rounded-circle shadow-sm text-danger action-btn require-login" data-bs-toggle="tooltip" title="Lưu món này">
                                 <i class="@(isFavorited ? "fas" : "far") fa-heart fa-lg"></i>
@@ -53,7 +78,7 @@
                         <h1 class="fw-bold display-5 mb-3" style="font-family: 'Dancing Script'; color: #333;">@Model.Name</h1>
                         <div class="mb-3 text-warning">
                             <i class="fas fa-star"></i> <span class="fw-bold text-dark">@(avgRating > 0 ? avgRating.ToString() : "Chưa có đánh giá")</span>
-                            <span class="text-muted small">(@Model.COMMENT.Count đánh giá)</span>
+                            <span class="text-muted small">(@validComments.Count đánh giá)</span>
                         </div>
                         <p class="text-secondary lead fst-italic">"@Model.Describe"</p>
                         <div class="row text-center mt-4 border-top border-bottom py-4 g-2">
@@ -117,10 +142,11 @@
                                 <div class="step-number bg-orange text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold me-3">@step.StepOrder</div>
                                 <div>
                                     <h5 class="fw-bold">Bước @step.StepOrder</h5>
-                                    <p class="text-secondary">@step.Content</p>
+                                    <p class="text-secondary" style="white-space: pre-wrap;">@step.Content</p>
                                     @if (!string.IsNullOrEmpty(step.ImageURL))
                                     {
-                                        <img src="~/assets/images/@step.ImageURL" class="img-fluid rounded mb-2 shadow-sm" alt="Bước @step.StepOrder">
+                                        string stepImg = Url.Content("~/assets/images/steps/" + step.ImageURL);
+                                        <img src="@stepImg" class="img-fluid rounded mb-2 shadow-sm" alt="Bước @step.StepOrder" onerror="this.style.display='none'">
                                     }
                                 </div>
                             </div>
@@ -134,12 +160,13 @@
                         <ul class="nav nav-tabs mb-4 border-bottom-0 recipe-tab-nav" id="reviewTabs">
                             <li class="nav-item">
                                 <button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#comments">
-                                    <i class="far fa-comments me-1"></i> Bình luận (@Model.COMMENT.Count)
+                                    <i class="far fa-comments me-1"></i> Bình luận (@validComments.Count)
                                 </button>
                             </li>
                             <li class="nav-item">
+                                @{ var validCooksnaps = Model.COOKSNAP != null ? Model.COOKSNAP.Where(s => s.Status == 1).ToList() : new List<CookingShare.Models.COOKSNAP>(); }
                                 <button class="nav-link fw-bold text-secondary" data-bs-toggle="tab" data-bs-target="#cooksnaps">
-                                    <i class="fas fa-camera me-1"></i> Món thực hành
+                                    <i class="fas fa-camera me-1"></i> Món thực hành (@validCooksnaps.Count)
                                 </button>
                             </li>
                         </ul>
@@ -147,25 +174,23 @@
                         <div class="tab-content">
 
                             <div class="tab-pane fade show active" id="comments">
-
                                 @if (Session["Account"] != null)
                                 {
-                                    // 1. Lấy thông tin user đang đăng nhập từ Session
                                     var currentUser = (CookingShare.Models.ACCOUNT)Session["Account"];
-                                    var userProfile = currentUser.PROFILE;
+                                    string myAvatarUrl = "https://placehold.co/50x50/28a745/FFF?text=" + System.Web.HttpUtility.UrlEncode(currentUser.UserName.Substring(0, 1).ToUpper());
 
-                                    // 2. Xử lý đường dẫn Avatar của người dùng hiện tại
-                                    string myAvatarUrl = "https://placehold.co/50x50/png?text=" + currentUser.UserName.Substring(0, 1).ToUpper();
-                                    if (userProfile != null && !string.IsNullOrEmpty(userProfile.Avatar))
+                                    if (currentUser.PROFILE != null && !string.IsNullOrEmpty(currentUser.PROFILE.Avatar) && currentUser.PROFILE.Avatar != "default-avatar.png")
                                     {
-                                        myAvatarUrl = "/assets/images/avatars/" + userProfile.Avatar;
+                                        var ava = currentUser.PROFILE.Avatar;
+                                        myAvatarUrl = (ava.StartsWith("http") || ava.StartsWith("/")) ? ava : Url.Content("~/assets/images/avatars/" + ava);
                                     }
 
-                                    <form action="/Recipe/AddComment" method="POST" class="mb-4">
+                                    <form action="@Url.Action("AddComment", "Recipe")" method="POST" class="mb-4">
+                                        @Html.AntiForgeryToken()
+
                                         <input type="hidden" name="RecipeID" value="@Model.ID" />
                                         <div class="d-flex mb-2">
-                                            <img src="@myAvatarUrl" class="rounded-circle me-3 border border-success p-1 object-fit-cover" style="width: 50px; height: 50px;">
-
+                                            <img src="@myAvatarUrl" class="rounded-circle me-3 border border-success p-1 object-fit-cover" style="width: 50px; height: 50px;" onerror="this.src='https://placehold.co/50x50/28a745/FFF?text=U'">
                                             <div class="w-100">
                                                 <textarea name="Content" class="form-control mb-2 bg-light border-0" rows="2" placeholder="Để lại bình luận hoặc đánh giá của bạn về món ăn này..." required></textarea>
                                                 <div class="d-flex justify-content-between align-items-center">
@@ -193,31 +218,33 @@
                                         <i class="fas fa-lock text-secondary fa-2x mb-2"></i>
                                         <h6 class="fw-bold text-dark">Bạn muốn để lại bình luận?</h6>
                                         <p class="text-secondary small mb-3">Vui lòng đăng nhập để tham gia thảo luận.</p>
-                                        <a href="/Account/Login?returnUrl=/Recipe/Detail/@Model.ID" class="btn btn-orange rounded-pill px-4 shadow-sm">Đăng nhập ngay</a>
+                                        <a href="@Url.Action("Login", "Account")?returnUrl=@Url.Action("Detail", "Recipe", new { id = Model.ID })" class="btn btn-orange rounded-pill px-4 shadow-sm">Đăng nhập ngay</a>
                                     </div>
                                 }
 
-                                @foreach (var cmt in Model.COMMENT.OrderByDescending(c => c.CreateDate))
+                                @foreach (var cmt in validComments.OrderByDescending(c => c.CreateDate))
                                 {
-                                    // Xử lý Avatar và Tên cho từng người bình luận
-                                    string cmtAvatarUrl = "https://placehold.co/40x40/png?text=" + (cmt.ACCOUNT != null ? cmt.ACCOUNT.UserName.Substring(0, 1).ToUpper() : "U");
                                     string cmtName = cmt.ACCOUNT != null ? cmt.ACCOUNT.UserName : "Khách ẩn danh";
+                                    string safeCmtName = System.Web.HttpUtility.UrlEncode(cmtName.Substring(0, 1).ToUpper());
+                                    string cmtAvatarUrl = "https://placehold.co/40x40/6c757d/FFF?text=" + safeCmtName;
 
-                                    if (cmt.ACCOUNT != null && cmt.ACCOUNT.PROFILE != null)
+                                    if (cmt.ACCOUNT?.PROFILE != null)
                                     {
-                                        if (!string.IsNullOrEmpty(cmt.ACCOUNT.PROFILE.Avatar))
+                                        if (!string.IsNullOrEmpty(cmt.ACCOUNT.PROFILE.FullName)) { cmtName = cmt.ACCOUNT.PROFILE.FullName; }
+                                        var cAva = cmt.ACCOUNT.PROFILE.Avatar;
+                                        if (!string.IsNullOrEmpty(cAva) && cAva != "default-avatar.png")
                                         {
-                                            cmtAvatarUrl = "/assets/images/avatars/" + cmt.ACCOUNT.PROFILE.Avatar;
-                                        }
-                                        if (!string.IsNullOrEmpty(cmt.ACCOUNT.PROFILE.FullName))
-                                        {
-                                            cmtName = cmt.ACCOUNT.PROFILE.FullName; // Hiển thị FullName nếu có
+                                            cmtAvatarUrl = (cAva.StartsWith("http") || cAva.StartsWith("/")) ? cAva : Url.Content("~/assets/images/avatars/" + cAva);
                                         }
                                     }
 
-                                    <div class="d-flex mb-3 border-bottom pb-3">
-                                        <img src="@cmtAvatarUrl" class="rounded-circle me-3 object-fit-cover border shadow-sm" style="width: 40px; height: 40px;">
-                                        <div>
+                                    <div class="d-flex mb-3 border-bottom pb-3 position-relative">
+                                        <button class="btn btn-sm text-muted position-absolute top-0 end-0 p-0" onclick="openReportModal(@cmt.ID, 2)" title="Báo cáo vi phạm">
+                                            <i class="far fa-flag"></i>
+                                        </button>
+
+                                        <img src="@cmtAvatarUrl" class="rounded-circle me-3 object-fit-cover border shadow-sm" style="width: 40px; height: 40px;" onerror="this.src='https://placehold.co/40x40/6c757d/FFF?text=U'">
+                                        <div class="pe-4 w-100">
                                             <h6 class="fw-bold mb-1">
                                                 @cmtName
                                                 <small class="text-muted fw-normal ms-2 small">@(cmt.CreateDate.HasValue ? cmt.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")</small>
@@ -228,14 +255,13 @@
                                                 @for (int i = 0; i < (5 - cmt.Rating); i++)
                                                 {<i class="far fa-star"></i>}
                                             </div>
-                                            <p class="mb-0 text-secondary small">@cmt.Content</p>
+                                            <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">@cmt.Content</p>
                                         </div>
                                     </div>
                                 }
                             </div>
 
                             <div class="tab-pane fade" id="cooksnaps">
-
                                 <div class="text-center py-4 bg-light rounded-3 mb-4 border border-success">
                                     <i class="fas fa-camera fa-2x text-success mb-2"></i>
                                     <p class="mb-2 fw-bold text-dark">Bạn đã nấu món này? Khoe ảnh thành quả ngay nhé!</p>
@@ -248,30 +274,38 @@
                                     }
                                     else
                                     {
-                                        <a href="/Account/Login?returnUrl=/Recipe/Detail/@Model.ID" class="btn btn-success btn-sm rounded-pill shadow-sm">
+                                        <a href="@Url.Action("Login", "Account")?returnUrl=@Url.Action("Detail", "Recipe", new { id = Model.ID })" class="btn btn-success btn-sm rounded-pill shadow-sm">
                                             <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập để gửi ảnh
                                         </a>
                                     }
                                 </div>
 
                                 <div class="row g-3">
-                                    @if (Model.COOKSNAP != null && Model.COOKSNAP.Count > 0)
+                                    @if (validCooksnaps.Count > 0)
                                     {
-                                        foreach (var snap in Model.COOKSNAP.OrderByDescending(s => s.CreateDate))
+                                        foreach (var snap in validCooksnaps.OrderByDescending(s => s.CreateDate))
                                         {
-                                            // Lấy tên người đăng ảnh
-                                            string snapAuthor = snap.ACCOUNT != null ? snap.ACCOUNT.UserName : "Đầu bếp ẩn danh";
-                                            if (snap.ACCOUNT != null && snap.ACCOUNT.PROFILE != null && !string.IsNullOrEmpty(snap.ACCOUNT.PROFILE.FullName))
+                                            string snapAuthor = snap.ACCOUNT != null ? snap.ACCOUNT.UserName : "Đầu bếp";
+                                            if (snap.ACCOUNT?.PROFILE != null && !string.IsNullOrEmpty(snap.ACCOUNT.PROFILE.FullName))
                                             {
                                                 snapAuthor = snap.ACCOUNT.PROFILE.FullName;
                                             }
 
+                                            string snapImgUrl = !string.IsNullOrEmpty(snap.ImageName)
+                                                              ? Url.Content("~/assets/images/cooksnaps/" + snap.ImageName)
+                                                              : "https://placehold.co/300x300?text=Thành+Quả";
+
                                             <div class="col-6 col-md-4">
-                                                <div class="card border-0 shadow-sm h-100 overflow-hidden">
-                                                    <img src="~/assets/images/cooksnaps/@snap.ImageName" class="card-img-top object-fit-cover"
+                                                <div class="card border-0 shadow-sm h-100 overflow-hidden position-relative">
+
+                                                    <button class="btn btn-sm text-danger position-absolute top-0 start-0 m-2 bg-white rounded-circle shadow z-2" onclick="event.stopPropagation(); openReportModal(@snap.ID, 3)" title="Báo cáo ảnh này" style="width:30px; height:30px; padding:0;">
+                                                        <i class="fas fa-flag"></i>
+                                                    </button>
+
+                                                    <img src="@snapImgUrl" class="card-img-top object-fit-cover"
                                                          style="height: 200px; cursor: pointer;" alt="Cooksnap"
                                                          onclick="openCooksnap(@snap.ID)"
-                                                         onerror="this.onerror=null; this.src='https://placehold.co/300x300/e9ecef/6c757d?text=Thành+Quả';">
+                                                         onerror="this.src='https://placehold.co/300x300?text=Lỗi+Ảnh';">
 
                                                     <div class="card-body p-2 text-center bg-white">
                                                         <h6 class="mb-1 small fw-bold text-truncate text-dark">@snapAuthor</h6>
@@ -305,35 +339,31 @@
                 <div class="sticky-sidebar" style="top: 90px; z-index: 1;">
 
                     <div class="card border-0 shadow-sm rounded-3 mb-4 text-center p-4">
-
                         @{
-                            // 1. Gán đường dẫn ảnh mặc định
-                            string authorAvatarUrl = "/assets/images/avatars/default-avatar.png";
-                            string authorName = Model.ACCOUNT != null ? Model.ACCOUNT.UserName : "Ẩn danh";
+                            string authorAvatarUrl = Url.Content("~/assets/images/avatars/default-avatar.png");
+                            string rAuthorName = Model.ACCOUNT != null ? Model.ACCOUNT.UserName : "Ẩn danh";
 
-                            if (Model.ACCOUNT != null && Model.ACCOUNT.PROFILE != null)
+                            if (Model.ACCOUNT?.PROFILE != null)
                             {
-                                // 2. Nếu có Avatar thật và khác chữ "default-avatar.png" thì mới lấy ảnh đó
-                                if (!string.IsNullOrEmpty(Model.ACCOUNT.PROFILE.Avatar) && Model.ACCOUNT.PROFILE.Avatar != "default-avatar.png")
+                                var aAva = Model.ACCOUNT.PROFILE.Avatar;
+                                if (!string.IsNullOrEmpty(aAva) && aAva != "default-avatar.png")
                                 {
-                                    authorAvatarUrl = "/assets/images/avatars/" + Model.ACCOUNT.PROFILE.Avatar;
+                                    authorAvatarUrl = (aAva.StartsWith("http") || aAva.StartsWith("/")) ? aAva : Url.Content("~/assets/images/avatars/" + aAva);
                                 }
-
-                                // 3. Lấy Họ tên thật nếu có
                                 if (!string.IsNullOrEmpty(Model.ACCOUNT.PROFILE.FullName))
                                 {
-                                    authorName = Model.ACCOUNT.PROFILE.FullName;
+                                    rAuthorName = Model.ACCOUNT.PROFILE.FullName;
                                 }
                             }
                         }
                         <div class="d-inline-block mb-3 w-100">
                             <div class="rounded-circle border border-3 border-orange p-1 bg-white d-flex justify-content-center align-items-center mx-auto" style="width: 100px; height: 100px;">
                                 <img src="@authorAvatarUrl" class="rounded-circle w-100 h-100 object-fit-cover" alt="Avatar"
-                                     onerror="this.onerror=null; this.src='/assets/images/avatars/default-avatar.png';">
+                                     onerror="this.onerror=null; this.src='https://placehold.co/100x100/ff6600/FFF?text=U';">
                             </div>
                         </div>
 
-                        <h5 class="fw-bold mb-1">@authorName</h5>
+                        <h5 class="fw-bold mb-1">@rAuthorName</h5>
 
                         <button id="btn-follow" class="btn @(isFollowed ? "btn-success" : "btn-outline-success") rounded-pill px-4 w-100 mt-3 mb-2 require-login">
                             <i class="fas @(isFollowed ? "fa-check" : "fa-plus") me-1"></i> @(isFollowed ? "Đang theo dõi" : "Theo dõi")
@@ -341,53 +371,33 @@
 
                         @if (Model.ACCOUNT != null)
                         {
-                            <a href="/User/PublicProfile/@Model.AccountID" class="btn btn-light rounded-pill px-4 w-100 text-secondary">Xem trang cá nhân</a>
+                            <a href="@Url.Action("PublicProfile", "User", new { id = Model.AccountID })" class="btn btn-light rounded-pill px-4 w-100 text-secondary">Xem trang cá nhân</a>
                         }
                     </div>
 
-
                     @{
-                        // Khởi tạo các biến để cộng dồn
                         double totalCalo = 0, totalProtein = 0, totalFat = 0, totalCarbs = 0;
-
-                        // Kiểm tra xem món ăn có nguyên liệu không
                         if (Model.RECIPE_DETAIL != null && Model.RECIPE_DETAIL.Count > 0)
                         {
                             foreach (var item in Model.RECIPE_DETAIL)
                             {
                                 double multiplier = 1;
                                 string unitName = item.UNIT != null ? item.UNIT.UnitName.ToLower() : "";
+                                if (unitName == "gam" || unitName == "ml") { multiplier = item.Quantity / 100.0; }
+                                else if (unitName == "kg" || unitName == "lít") { multiplier = item.Quantity * 10.0; }
+                                else { multiplier = item.Quantity; }
 
-                                // Quy đổi hệ số: Giả sử DB lưu dinh dưỡng trên 100g.
-                                // Nếu là "gam" hoặc "ml" thì chia 100. Nếu là "kg" thì nhân 10.
-                                // Nếu là "quả", "tép", "muỗng" thì giữ nguyên (coi như dinh dưỡng tính trên 1 đơn vị).
-                                if (unitName == "gam" || unitName == "ml")
-                                {
-                                    multiplier = item.Quantity / 100.0;
-                                }
-                                else if (unitName == "kg" || unitName == "lít")
-                                {
-                                    multiplier = item.Quantity * 10.0;
-                                }
-                                else
-                                {
-                                    multiplier = item.Quantity;
-                                }
-
-                                // Cộng dồn từ bảng INGREDIENT
                                 if (item.INGREDIENT != null)
                                 {
                                     totalCalo += (item.INGREDIENT.Calo ?? 0) * multiplier;
                                     totalProtein += (item.INGREDIENT.Protein ?? 0) * multiplier;
                                     totalFat += (item.INGREDIENT.Fat ?? 0) * multiplier;
-                                    totalCarbs += (item.INGREDIENT.Sugar ?? 0) * multiplier; // Tạm dùng cột Sugar cho Tinh bột/Carbs
+                                    totalCarbs += (item.INGREDIENT.Sugar ?? 0) * multiplier;
                                 }
                             }
-
-                            // Chia cho số người ăn (Khẩu phần)
                             int servings = (Model.Servings.HasValue && Model.Servings > 0) ? Model.Servings.Value : 1;
-                            totalCalo = Math.Round(totalCalo / servings, 0);   // Làm tròn số nguyên
-                            totalProtein = Math.Round(totalProtein / servings, 1); // Làm tròn 1 chữ số thập phân
+                            totalCalo = Math.Round(totalCalo / servings, 0);
+                            totalProtein = Math.Round(totalProtein / servings, 1);
                             totalFat = Math.Round(totalFat / servings, 1);
                             totalCarbs = Math.Round(totalCarbs / servings, 1);
                         }
@@ -424,11 +434,28 @@
                         <div class="card-body p-0">
                             @foreach (var related in Model.CATEGORY.RECIPE.Where(r => r.ID != Model.ID && r.Status == 1).Take(3))
                             {
+                                string relFirstChar = !string.IsNullOrWhiteSpace(related.Name) ? related.Name.Substring(0, 1).ToUpper() : "R";
+                                string relSafeChar = System.Web.HttpUtility.UrlEncode(relFirstChar);
+                                string relFallbackImg = $"https://placehold.co/80x80/ff6600/FFFFFF?text={relSafeChar}";
+                                string relImgUrl = relFallbackImg;
+
+                                if (!string.IsNullOrWhiteSpace(related.MainImage) && related.MainImage != "default_recipe.jpg")
+                                {
+                                    if (!related.MainImage.StartsWith("/") && !related.MainImage.StartsWith("http"))
+                                    {
+                                        relImgUrl = Url.Content("~/assets/images/recipes/" + related.MainImage);
+                                    }
+                                    else
+                                    {
+                                        relImgUrl = related.MainImage;
+                                    }
+                                }
+
                                 <div class="d-flex p-3 border-bottom recipe-small-item position-relative">
-                                    <img src="~/assets/images/@related.MainImage" class="rounded me-3 object-fit-cover" style="width: 70px; height: 70px;" onerror="this.src='https://placehold.co/80x80?text=@related.Name'">
+                                    <img src="@relImgUrl" class="rounded me-3 object-fit-cover" style="width: 70px; height: 70px;" onerror="this.onerror=null; this.src='@relFallbackImg';">
                                     <div>
                                         <h6 class="fw-bold mb-1">
-                                            <a href="/Recipe/Detail/@related.ID" class="text-decoration-none text-dark stretched-link">@related.Name</a>
+                                            <a href="@Url.Action("Detail", "Recipe", new { id = related.ID })" class="text-decoration-none text-dark stretched-link hover-orange">@related.Name</a>
                                         </h6>
                                         <small class="text-muted"><i class="far fa-clock me-1"></i> @related.CookTime phút</small>
                                     </div>
@@ -443,7 +470,7 @@
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach (var tag in Model.TAG)
                                 {
-                                    <a href="#" class="badge bg-light text-secondary text-decoration-none fw-normal p-2">#@tag.TagName</a>
+                                    <a href="@Url.Action("Index", "Recipe", new { search = tag.TagName })" class="badge bg-light text-secondary text-decoration-none fw-normal p-2 hover-orange">#@tag.TagName</a>
                                 }
                             </div>
                         </div>
@@ -454,22 +481,18 @@
         </div>
     </div>
 
-    <div class="modal fade" id="uploadCooksnapModal" tabindex="-1" aria-labelledby="uploadCooksnapModalLabel" aria-hidden="true">
+    <div class="modal fade" id="uploadCooksnapModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
-
                 <div class="modal-header bg-light border-bottom-0">
-                    <h5 class="modal-title fw-bold text-success" id="uploadCooksnapModalLabel">
-                        <i class="fas fa-camera me-2"></i>Khoe thành quả của bạn
-                    </h5>
+                    <h5 class="modal-title fw-bold text-success"><i class="fas fa-camera me-2"></i>Khoe thành quả của bạn</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <form action="@Url.Action("UploadCooksnap", "Recipe")" method="POST" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
 
-                <form action="/Recipe/UploadCooksnap" method="POST" enctype="multipart/form-data">
                     <div class="modal-body p-4">
-
                         <input type="hidden" name="RecipeID" value="@Model.ID" />
-
                         <div class="mb-4 text-center">
                             <div class="cursor-pointer w-100" onclick="document.getElementById('CooksnapUpload').click()">
                                 <div id="cooksnap-preview-container" class="bg-light border border-dashed rounded-3 d-flex flex-column align-items-center justify-content-center text-muted" style="height: 250px; cursor: pointer;">
@@ -481,19 +504,14 @@
                             </div>
                             <input type="file" id="CooksnapUpload" name="ImageFile" class="d-none" accept="image/jpeg, image/png, image/jpg" required>
                         </div>
-
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Cảm nghĩ của bạn về món ăn này?</label>
-                            <textarea name="Content" class="form-control bg-light border-0" rows="3" placeholder="Ví dụ: Công thức này siêu ngon, mình làm lần đầu đã thành công rực rỡ! 😍"></textarea>
+                            <textarea name="Content" class="form-control bg-light border-0" rows="3" placeholder="Ví dụ: Công thức này siêu ngon... 😍"></textarea>
                         </div>
-
                     </div>
-
                     <div class="modal-footer border-top-0 bg-light">
                         <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-orange rounded-pill px-4 shadow-sm fw-bold">
-                            <i class="fas fa-paper-plane me-1"></i> Đăng ảnh
-                        </button>
+                        <button type="submit" class="btn btn-orange rounded-pill px-4 shadow-sm fw-bold"><i class="fas fa-paper-plane me-1"></i> Đăng ảnh</button>
                     </div>
                 </form>
             </div>
@@ -503,7 +521,7 @@
     <div class="modal fade" id="viewCooksnapModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content overflow-hidden border-0 shadow-lg">
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 shadow-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 shadow-sm" data-bs-dismiss="modal"></button>
                 <div id="cooksnap-modal-content">
                     <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-3x text-orange"></i></div>
                 </div>
@@ -511,157 +529,247 @@
         </div>
     </div>
 
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Báo cáo vi phạm</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="@Url.Action("SubmitReport", "Recipe")" method="POST">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="TargetID" id="reportTargetId" />
+                    <input type="hidden" name="ReportType" id="reportType" />
+                    <input type="hidden" name="ReturnUrl" value="@Url.Action("Detail", "Recipe", new { id = Model.ID })" />
+
+                    <div class="modal-body p-4">
+                        <label class="form-label fw-bold mb-2">Vui lòng cho biết lý do bạn báo cáo nội dung này:</label>
+                        <select name="ReasonSelect" class="form-select bg-light mb-3" onchange="document.getElementById('reportReason').value = this.value;">
+                            <option value="Chứa nội dung phản cảm, không phù hợp">Chứa nội dung phản cảm, không phù hợp</option>
+                            <option value="Spam, quảng cáo trái phép">Spam, quảng cáo trái phép</option>
+                            <option value="Xúc phạm, quấy rối người khác">Xúc phạm, quấy rối người khác</option>
+                            <option value="Hình ảnh/Bình luận không liên quan món ăn">Hình ảnh/Bình luận không liên quan món ăn</option>
+                            <option value="">Lý do khác...</option>
+                        </select>
+                        <textarea name="Reason" id="reportReason" class="form-control bg-light" rows="3" required placeholder="Ghi chú thêm lý do chi tiết..." style="display:none;">Chứa nội dung phản cảm, không phù hợp</textarea>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm fw-bold">Gửi Báo Cáo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
-// 1. CHỨC NĂNG PREVIEW ẢNH KHI UPLOAD
-document.addEventListener("DOMContentLoaded", function () {
-    const fileInput = document.getElementById('CooksnapUpload');
-    const previewContainer = document.getElementById('cooksnap-preview-container');
-    const previewImage = document.getElementById('cooksnap-preview-image');
+        function openReportModal(targetId, type) {
+            var isLoggedIn = @(Session["Account"] != null ? "true" : "false");
 
-    if (fileInput) {
-        fileInput.addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                if (file.size > 5 * 1024 * 1024) {
-                    alert("Vui lòng chọn ảnh có dung lượng nhỏ hơn 5MB!");
-                    this.value = '';
-                    return;
-                }
-                previewContainer.classList.add('d-none');
-                previewContainer.classList.remove('d-flex');
-                previewImage.src = URL.createObjectURL(file);
-                previewImage.classList.remove('d-none');
-            }
-        });
-    }
-});
-
-// 2. AJAX XEM CHI TIẾT ẢNH THÀNH QUẢ
-function openCooksnap(snapId) {
-    var myModal = new bootstrap.Modal(document.getElementById('viewCooksnapModal'));
-    myModal.show();
-
-    $.ajax({
-        url: '/Recipe/GetCooksnapDetail?id=' + snapId,
-        type: 'GET',
-        success: function (result) {
-            $('#cooksnap-modal-content').html(result);
-        },
-        error: function (xhr, status, error) {
-            console.error("Lỗi: ", xhr.responseText);
-            $('#cooksnap-modal-content').html('<div class="text-center py-5 text-danger">Có lỗi xảy ra khi tải dữ liệu! Ấn F12 xem Console nhé.</div>');
-        }
-    });
-}
-
-// 3. XỬ LÝ TẤT CẢ CÁC NÚT TƯƠNG TÁC (LƯU, THEO DÕI, GIỎ CHỢ, SHARE)
-document.addEventListener("DOMContentLoaded", function() {
-    var isLoggedIn = ('@(Session["Account"] != null)' === 'True');
-    var requireLoginBtns = document.querySelectorAll('.require-login');
-
-    // Bắt sự kiện cho các nút yêu cầu đăng nhập
-    requireLoginBtns.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-
-            // Nếu chưa đăng nhập -> Chặn lại và hiện thông báo
             if (!isLoggedIn) {
-                e.preventDefault();
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         title: 'Yêu cầu đăng nhập',
-                        text: 'Bạn cần đăng nhập để thực hiện chức năng này!',
-                        icon: 'info',
+                        text: 'Bạn cần đăng nhập để gửi báo cáo vi phạm!',
+                        icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Đi tới Đăng nhập',
                         cancelButtonText: 'Đóng',
-                        confirmButtonColor: '#ff6b00'
+                        confirmButtonColor: '#dc3545'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            window.location.href = '/Account/Login?returnUrl=/Recipe/Detail/@Model.ID';
+                            window.location.href = '@Url.Action("Login", "Account")?returnUrl=' + encodeURIComponent('@Url.Action("Detail", "Recipe", new { id = Model.ID })');
                         }
                     });
                 } else {
-                    alert("Bạn cần đăng nhập để thực hiện chức năng này!");
-                    window.location.href = '/Account/Login?returnUrl=/Recipe/Detail/@Model.ID';
+                    alert("Bạn cần đăng nhập để gửi báo cáo vi phạm!");
+                    window.location.href = '@Url.Action("Login", "Account")?returnUrl=' + encodeURIComponent('@Url.Action("Detail", "Recipe", new { id = Model.ID })');
                 }
+                return;
             }
-            // NẾU ĐÃ ĐĂNG NHẬP -> Xử lý AJAX
-            else {
-                e.preventDefault(); // Tránh bị nhảy trang khi bấm
 
-                // 3.1. Xử lý nút YÊU THÍCH (Trái tim)
-                if (this.id === 'btn-favorite') {
-                    $.post('/Recipe/ToggleFavorite', { recipeId: @Model.ID }, function(res) {
-                        if (res.success) {
-                            var icon = $('#btn-favorite i');
-                            if (res.isSaved) {
-                                icon.removeClass('far').addClass('fas');
-                                Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu công thức!', showConfirmButton: false, timer: 1500});
-                            } else {
-                                icon.removeClass('fas').addClass('far');
-                            }
-                        }
-                    });
+            document.getElementById('reportTargetId').value = targetId;
+            document.getElementById('reportType').value = type;
+
+            const selectReason = document.querySelector('select[name="ReasonSelect"]');
+            const inputReason = document.getElementById('reportReason');
+            inputReason.value = selectReason.value;
+
+            selectReason.addEventListener('change', function() {
+                if(this.value === "") {
+                    inputReason.style.display = "block";
+                    inputReason.value = "";
+                } else {
+                    inputReason.style.display = "none";
+                    inputReason.value = this.value;
                 }
+            });
 
-                // 3.2. Xử lý nút THEO DÕI
-                if (this.id === 'btn-follow') {
-                    var targetId = @(Model.AccountID ?? 0);
-                    $.post('/Recipe/ToggleFollow', { targetId: targetId }, function(res) {
-                        if (res.success) {
-                            var btnFollow = $('#btn-follow');
-                            if (res.isFollowed) {
-                                btnFollow.removeClass('btn-outline-success').addClass('btn-success').html('<i class="fas fa-check me-1"></i> Đang theo dõi');
-                            } else {
-                                btnFollow.removeClass('btn-success').addClass('btn-outline-success').html('<i class="fas fa-plus me-1"></i> Theo dõi');
-                            }
-                        } else {
-                            Swal.fire('Opps...', res.message, 'warning');
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('reportModal'));
+            myModal.show();
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const fileInput = document.getElementById('CooksnapUpload');
+            const previewContainer = document.getElementById('cooksnap-preview-container');
+            const previewImage = document.getElementById('cooksnap-preview-image');
+
+            if (fileInput) {
+                fileInput.addEventListener('change', function (event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert("Vui lòng chọn ảnh có dung lượng nhỏ hơn 5MB!");
+                            this.value = '';
+                            return;
                         }
-                    });
-                }
-
-                // 3.3. Xử lý nút THÊM VÀO GIỎ CHỢ
-                if (this.id === 'btn-grocery') {
-                    $.post('/Recipe/AddToGrocery', { recipeId: @Model.ID }, function(res) {
-                        if (res.success) {
-                            Swal.fire({icon: 'success', title: 'Đã thêm!', text: 'Món ăn đã có trong giỏ đi chợ của bạn.', timer: 1500});
-
-                            // CHỐNG CACHE TRÌNH DUYỆT ---
-                            // Lấy thời gian hiện tại (milisecond) để tạo URL luôn mới
-                            var timestamp = new Date().getTime();
-                            var urlKhongCache = '/Recipe/CartCount?t=' + timestamp;
-
-                            // Gọi AJAX với URL mới để ép trình duyệt lấy số liệu thật
-                            $.get(urlKhongCache, function (countHtml) {
-                                $('#nav-cart-btn').html('<i class="fas fa-shopping-basket fa-lg"></i> ' + countHtml);
-
-                                // Hiệu ứng nhấp nháy icon giỏ hàng
-                                $('#nav-cart-btn i').fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
-                            });
-                        }
-                    });
-                }
-            } // Kết thúc khối ELSE Đã đăng nhập
-        }); // Kết thúc addEventListener click
-    }); // Kết thúc forEach
-
-    // 4. CHỨC NĂNG CHIA SẺ (SHARE) - Nút này ai bấm cũng được, không cần đăng nhập
-    var shareBtn = document.getElementById('btn-share');
-    if(shareBtn) {
-        shareBtn.addEventListener('click', function() {
-            var dummy = document.createElement('input');
-            var text = window.location.href; // Lấy link trang hiện tại
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
-            Swal.fire({toast: true, position: 'top-end', icon: 'info', title: 'Đã copy link bài viết!', showConfirmButton: false, timer: 2000});
+                        previewContainer.classList.add('d-none');
+                        previewContainer.classList.remove('d-flex');
+                        previewImage.src = URL.createObjectURL(file);
+                        previewImage.classList.remove('d-none');
+                    }
+                });
+            }
         });
-    }
-}); // Kết thúc DOMContentLoaded
+
+        function openCooksnap(snapId) {
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('viewCooksnapModal'));
+            myModal.show();
+
+            $.ajax({
+                url: '@Url.Action("GetCooksnapDetail", "Recipe")?id=' + snapId,
+                type: 'GET',
+                success: function (result) {
+                    $('#cooksnap-modal-content').html(result);
+                },
+                error: function () {
+                    $('#cooksnap-modal-content').html('<div class="text-center py-5 text-danger">Có lỗi xảy ra khi tải dữ liệu!</div>');
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var isLoggedIn = @(Session["Account"] != null ? "true" : "false");
+            var requireLoginBtns = document.querySelectorAll('.require-login');
+
+            requireLoginBtns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    if (!isLoggedIn) {
+                        e.preventDefault();
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                title: 'Yêu cầu đăng nhập',
+                                text: 'Bạn cần đăng nhập để thực hiện chức năng này!',
+                                icon: 'info',
+                                showCancelButton: true,
+                                confirmButtonText: 'Đăng nhập',
+                                cancelButtonText: 'Đóng',
+                                confirmButtonColor: '#ff6b00'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '@Url.Action("Login", "Account")?returnUrl=' + encodeURIComponent('@Url.Action("Detail", "Recipe", new { id = Model.ID })');
+                                }
+                            });
+                        } else {
+                            alert("Bạn cần đăng nhập để thực hiện chức năng này!");
+                            window.location.href = '@Url.Action("Login", "Account")?returnUrl=' + encodeURIComponent('@Url.Action("Detail", "Recipe", new { id = Model.ID })');
+                        }
+                    } else {
+                        if (this.closest('#reportModal')) return;
+
+                        if (this.id === 'btn-favorite' || this.id === 'btn-follow' || this.id === 'btn-grocery') {
+                            e.preventDefault();
+
+                            if (this.id === 'btn-favorite') {
+                                $.post('@Url.Action("ToggleFavorite", "Recipe")', { recipeId: @Model.ID }, function(res) {
+                                    if (res.success) {
+                                        var icon = $('#btn-favorite i');
+                                        if (res.isSaved) {
+                                            icon.removeClass('far').addClass('fas');
+                                            if (typeof Swal !== 'undefined') Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu công thức!', showConfirmButton: false, timer: 1500});
+                                        } else {
+                                            icon.removeClass('fas').addClass('far');
+                                        }
+                                    }
+                                });
+                            }
+
+                            if (this.id === 'btn-follow') {
+                                var targetId = @(Model.AccountID ?? 0);
+                                $.post('@Url.Action("ToggleFollow", "Recipe")', { targetId: targetId }, function(res) {
+                                    if (res.success) {
+                                        var btnFollow = $('#btn-follow');
+                                        if (res.isFollowed) {
+                                            btnFollow.removeClass('btn-outline-success').addClass('btn-success').html('<i class="fas fa-check me-1"></i> Đang theo dõi');
+                                        } else {
+                                            btnFollow.removeClass('btn-success').addClass('btn-outline-success').html('<i class="fas fa-plus me-1"></i> Theo dõi');
+                                        }
+                                    }
+                                });
+                            }
+
+                            if (this.id === 'btn-grocery') {
+                                $.post('@Url.Action("AddToGrocery", "Recipe")', { recipeId: @Model.ID }, function(res) {
+                                    if (res.success) {
+                                        if (typeof Swal !== 'undefined') Swal.fire({icon: 'success', title: 'Đã thêm!', text: 'Món ăn đã có trong giỏ đi chợ của bạn.', timer: 1500});
+                                        var timestamp = new Date().getTime();
+                                        $.get('@Url.Action("CartCount", "Recipe")?t=' + timestamp, function (countHtml) {
+                                            $('#nav-cart-btn').html('<i class="fas fa-shopping-basket fa-lg"></i> ' + countHtml);
+                                            $('#nav-cart-btn i').fadeOut(100).fadeIn(100);
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+            });
+
+            var shareBtn = document.getElementById('btn-share');
+            if(shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    var dummy = document.createElement('input');
+                    document.body.appendChild(dummy);
+                    dummy.value = window.location.href;
+                    dummy.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(dummy);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({toast: true, position: 'top-end', icon: 'info', title: 'Đã copy link!', showConfirmButton: false, timer: 2000});
+                    } else {
+                        alert("Đã copy link bài viết!");
+                    }
+                });
+            }
+        });
     </script>
 
-</main>
+    <style>
+        .hover-orange:hover {
+            color: #ff6600 !important;
+        }
 
+        .btn-orange {
+            background-color: #ff6600;
+            color: white;
+            border: none;
+        }
+
+            .btn-orange:hover {
+                background-color: #e65c00;
+                color: white;
+            }
+
+        .bg-orange {
+            background-color: #ff6600 !important;
+        }
+
+        .text-orange {
+            color: #ff6600 !important;
+        }
+
+        .border-orange {
+            border-color: #ff6600 !important;
+        }
+    </style>
+</main>

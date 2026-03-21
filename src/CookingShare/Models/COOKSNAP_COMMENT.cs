@@ -19,6 +19,7 @@ namespace CookingShare.Models
         public int AccountID { get; set; }
         public string Content { get; set; }
         public Nullable<System.DateTime> CreateDate { get; set; }
+        public int Status { get; set; }
     
         public virtual ACCOUNT ACCOUNT { get; set; }
         public virtual COOKSNAP COOKSNAP { get; set; }

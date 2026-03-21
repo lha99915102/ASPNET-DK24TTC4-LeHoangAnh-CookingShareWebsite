@@ -6,11 +6,15 @@
 
     var profile = Model.PROFILE;
 
-    // Lấy Avatar
-    string avatarUrl = "https://placehold.co/100x100/png?text=" + Model.UserName.Substring(0, 1).ToUpper();
-    if (profile != null && !string.IsNullOrEmpty(profile.Avatar))
+    // Xử lý Avatar thông minh hỗ trợ Google Login và ký tự đặc biệt
+    string safeChar = System.Web.HttpUtility.UrlEncode(Model.UserName.Substring(0, 1).ToUpper());
+    string avatarUrl = $"https://placehold.co/100x100/28a745/FFF?text={safeChar}";
+
+    if (profile != null && !string.IsNullOrEmpty(profile.Avatar) && profile.Avatar != "default-avatar.png")
     {
-        avatarUrl = "/assets/images/avatars/" + profile.Avatar;
+        avatarUrl = (profile.Avatar.StartsWith("http") || profile.Avatar.StartsWith("/"))
+                    ? profile.Avatar
+                    : Url.Content("~/assets/images/avatars/" + profile.Avatar);
     }
 }
 
@@ -41,7 +45,7 @@
 
                         <div class="position-relative d-inline-block mb-3">
                             <div class="rounded-circle border border-3 border-success p-1 bg-white d-flex" style="width: 120px; height: 120px;">
-                                <img id="avatar-preview" src="@avatarUrl" class="rounded-circle w-100 h-100 object-fit-cover" alt="Avatar">
+                                <img id="avatar-preview" src="@avatarUrl" class="rounded-circle w-100 h-100 object-fit-cover" alt="Avatar" onerror="this.src='https://placehold.co/120x120/28a745/FFF?text=U'">
                             </div>
 
                             <button type="button" id="btn-change-avatar" class="btn btn-light rounded-circle position-absolute border shadow-sm d-flex align-items-center justify-content-center"
@@ -97,7 +101,7 @@
                         <i class="fas fa-cog me-3 text-secondary"></i> Cài đặt tài khoản
                     </a>
 
-                    <a href="/Account/Logout" class="list-group-item list-group-item-action border-0 py-3 text-danger">
+                    <a href="@Url.Action("Logout", "Account")" class="list-group-item list-group-item-action border-0 py-3 text-danger">
                         <i class="fas fa-sign-out-alt me-3"></i> Đăng xuất
                     </a>
                 </div>
@@ -109,7 +113,7 @@
                     <div class="tab-pane fade show active" id="my-recipes" role="tabpanel">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="fw-bold mb-0">Quản lý công thức</h3>
-                            <a href="/Recipe/Create" class="btn btn-orange rounded-pill px-4 shadow-sm">
+                            <a href="@Url.Action("Create", "Recipe")" class="btn btn-orange rounded-pill px-4 shadow-sm">
                                 <i class="fas fa-plus me-2"></i> Viết bài mới
                             </a>
                         </div>
@@ -141,12 +145,24 @@
                                         <div class="card recipe-card h-100 border-0 shadow-sm">
                                             <div class="row g-0 h-100">
                                                 <div class="col-4">
-                                                    <img src="~/assets/images/@recipe.MainImage" class="img-fluid rounded-start h-100 object-fit-cover" alt="@recipe.Name" onerror="this.src='https://placehold.co/200x200?text=@recipe.Name'">
+                                                    @{
+                                                        string rFirstChar = !string.IsNullOrWhiteSpace(recipe.Name) ? recipe.Name.Substring(0, 1).ToUpper() : "R";
+                                                        string rFallbackImg = $"https://placehold.co/200x200/ff6600/FFFFFF?text={System.Web.HttpUtility.UrlEncode(rFirstChar)}";
+                                                        string rImgSrc = rFallbackImg;
+
+                                                        if (!string.IsNullOrWhiteSpace(recipe.MainImage) && recipe.MainImage != "default_recipe.jpg")
+                                                        {
+                                                            rImgSrc = (recipe.MainImage.StartsWith("http") || recipe.MainImage.StartsWith("/"))
+                                                                        ? recipe.MainImage
+                                                                        : Url.Content("~/assets/images/recipes/" + recipe.MainImage);
+                                                        }
+                                                    }
+                                                    <img src="@rImgSrc" class="img-fluid rounded-start h-100 object-fit-cover" alt="@recipe.Name" onerror="this.src='@rFallbackImg'">
                                                 </div>
                                                 <div class="col-8">
                                                     <div class="card-body py-2">
                                                         <h6 class="card-title fw-bold text-truncate mb-1">
-                                                            <a href="/Recipe/Detail/@recipe.ID" class="text-dark text-decoration-none">@recipe.Name</a>
+                                                            <a href="@Url.Action("Detail", "Recipe", new { id = recipe.ID })" class="text-dark text-decoration-none">@recipe.Name</a>
                                                         </h6>
                                                         <p class="card-text small text-muted mb-2"><i class="far fa-clock"></i> @(recipe.CreateDate?.ToString("dd/MM/yyyy"))</p>
 
@@ -156,8 +172,8 @@
                                                         { <span class="badge bg-warning-subtle text-warning mb-2">Chờ duyệt</span>}
 
                                                         <div class="mt-2">
-                                                            <a href="/Recipe/Edit/@recipe.ID" class="btn btn-sm btn-outline-primary rounded-pill me-1" title="Sửa bài"><i class="fas fa-edit"></i></a>
-                                                            <a href="#" class="btn btn-sm btn-outline-danger rounded-pill" title="Xóa bài"><i class="fas fa-trash"></i></a>
+                                                            <a href="@Url.Action("Edit", "Recipe", new { id = recipe.ID })" class="btn btn-sm btn-outline-primary rounded-pill me-1" title="Sửa bài"><i class="fas fa-edit"></i></a>
+                                                            <a href="@Url.Action("Delete", "Recipe", new { id = recipe.ID })" onclick="return confirm('Bạn có chắc chắn muốn xóa công thức này? Hành động này không thể hoàn tác!');" class="btn btn-sm btn-outline-danger rounded-pill" title="Xóa bài"><i class="fas fa-trash"></i></a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -187,10 +203,23 @@
                                 {
                                     <div class="col-md-4 fav-item">
                                         <div class="card recipe-card h-100 border-0 shadow-sm position-relative">
-                                            <img src="~/assets/images/@fav.RECIPE.MainImage" class="card-img-top object-fit-cover" style="height: 180px;" alt="@fav.RECIPE.Name" onerror="this.src='https://placehold.co/400x300?text=@fav.RECIPE.Name'">
+                                            @{
+                                                string fFirstChar = !string.IsNullOrWhiteSpace(fav.RECIPE.Name) ? fav.RECIPE.Name.Substring(0, 1).ToUpper() : "R";
+                                                string fFallbackImg = $"https://placehold.co/400x300/ff6600/FFFFFF?text={System.Web.HttpUtility.UrlEncode(fFirstChar)}";
+                                                string fImgSrc = fFallbackImg;
+
+                                                if (!string.IsNullOrWhiteSpace(fav.RECIPE.MainImage) && fav.RECIPE.MainImage != "default_recipe.jpg")
+                                                {
+                                                    fImgSrc = (fav.RECIPE.MainImage.StartsWith("http") || fav.RECIPE.MainImage.StartsWith("/"))
+                                                                ? fav.RECIPE.MainImage
+                                                                : Url.Content("~/assets/images/recipes/" + fav.RECIPE.MainImage);
+                                                }
+                                            }
+                                            <img src="@fImgSrc" class="card-img-top object-fit-cover" style="height: 180px;" alt="@fav.RECIPE.Name" onerror="this.src='@fFallbackImg'">
+
                                             <div class="card-body p-3">
                                                 <h6 class="card-title fw-bold mb-1 text-truncate">
-                                                    <a href="/Recipe/Detail/@fav.RecipeID" class="text-dark text-decoration-none stretched-link">@fav.RECIPE.Name</a>
+                                                    <a href="@Url.Action("Detail", "Recipe", new { id = fav.RecipeID })" class="text-dark text-decoration-none stretched-link">@fav.RECIPE.Name</a>
                                                 </h6>
                                                 <small class="text-muted">Bởi @(fav.RECIPE.ACCOUNT != null ? fav.RECIPE.ACCOUNT.UserName : "Ẩn danh")</small>
                                             </div>
@@ -230,7 +259,7 @@
                                 {
                                     if (!string.IsNullOrEmpty(noti.LinkURL))
                                     {
-                                        <a href="/User/ReadNotification?id=@noti.ID" class="list-group-item list-group-item-action p-3 border-0 border-bottom @(noti.IsRead == false ? "bg-light" : "")">
+                                        <a href="@Url.Action("ReadNotification", "User", new { id = noti.ID })" class="list-group-item list-group-item-action p-3 border-0 border-bottom @(noti.IsRead == false ? "bg-light" : "")">
                                             <div class="d-flex align-items-center">
                                                 <div class="flex-shrink-0 text-success me-3"><i class="fas fa-bell fa-lg"></i></div>
                                                 <div class="flex-grow-1">
@@ -272,7 +301,8 @@
                     <div class="tab-pane fade" id="my-settings" role="tabpanel">
                         <h3 class="fw-bold mb-4">Cài đặt tài khoản</h3>
 
-                        <form id="profileForm" action="/User/UpdateProfile" method="POST" enctype="multipart/form-data">
+                        <form id="profileForm" action="@Url.Action("UpdateProfile", "User")" method="POST" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
 
                             <div class="card border-0 shadow-sm rounded-3 mb-4">
                                 <div class="card-body p-4">
@@ -297,7 +327,7 @@
                             <div class="card border-0 shadow-sm rounded-3 mb-4">
                                 <div class="card-body p-4">
                                     <h5 class="fw-bold text-success mb-3"><i class="fas fa-id-card me-2"></i>Thông tin cá nhân</h5>
-                                    <h6 class="fw-bold text-success mb-3"></i>(Nhập đủ các thông tin để tính calo tiêu thụ)</h6>
+                                    <h6 class="fw-bold text-success mb-3">(Nhập đủ các thông tin để hệ thống tính calo tiêu thụ)</h6>
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
                                             <label class="form-label small fw-bold">Họ và tên</label>
@@ -424,8 +454,8 @@
                                 </div>
                             </div>
 
-                            <div class="d-flex justify-content-end sticky-bottom bg-light py-3 border-top mt-4">
-                                <button type="button" class="btn btn-light me-2">Hủy bỏ</button>
+                            <div class="d-flex justify-content-end sticky-bottom bg-light py-3 border-top mt-4" style="z-index: 10;">
+                                <a href="@Url.Action("MyProfile", "User")" class="btn btn-light me-2">Hủy bỏ</a>
                                 <button type="submit" class="btn btn-orange rounded-pill px-5 shadow fw-bold">Lưu tất cả thay đổi</button>
                             </div>
                         </form>
@@ -439,7 +469,7 @@
 </main>
 
 <script>
-    // 1. XỬ LÝ ĐỔI ẢNH ĐẠI DIỆN (AVATAR)
+    // XỬ LÝ ĐỔI ẢNH ĐẠI DIỆN (AVATAR)
     document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('btn-change-avatar').addEventListener('click', function () {
             document.getElementById('AvatarUpload').click();
@@ -453,7 +483,7 @@
         });
     });
 
-    // 2. XỬ LÝ NÚT "BỎ YÊU THÍCH"
+    // XỬ LÝ NÚT "BỎ YÊU THÍCH"
     document.addEventListener("DOMContentLoaded", function () {
         const removeFavBtns = document.querySelectorAll('.btn-remove-fav');
 
@@ -462,10 +492,10 @@
                 if (!confirm("Bạn có muốn bỏ lưu công thức này không?")) return;
 
                 let recipeId = this.getAttribute('data-id');
-                let cardElement = this.closest('.fav-item'); // Thẻ cha chứa công thức
+                let cardElement = this.closest('.fav-item');
 
-                // Gửi dữ liệu xuống C#
-                fetch('/User/RemoveFavorite', {
+                // Dùng Url.Action cho Fetch API
+                fetch('@Url.Action("RemoveFavorite", "User")', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: 'recipeId=' + recipeId
@@ -473,18 +503,15 @@
                     .then(response => response.json())
                     .then(res => {
                         if (res.success) {
-                            // Tạo hiệu ứng mờ đi rồi xóa
                             cardElement.style.transition = "opacity 0.3s ease";
                             cardElement.style.opacity = "0";
                             setTimeout(() => {
                                 cardElement.remove();
 
-                                // Cập nhật lại số lượng trên thanh Menu trái
                                 let badge = document.getElementById('fav-count-badge');
                                 let currentCount = parseInt(badge.innerText);
                                 if (currentCount > 0) badge.innerText = currentCount - 1;
 
-                                // Hiện câu thông báo nếu đã xóa hết
                                 let remainingItems = document.querySelectorAll('.fav-item');
                                 if (remainingItems.length === 0) {
                                     document.getElementById('favorites-container').innerHTML = `
@@ -503,8 +530,7 @@
         });
     });
 
-
-    // 3. XỬ LÝ NÚT THÔNG BÁO (ĐÁNH DẤU ĐÃ ĐỌC / XÓA)
+    // XỬ LÝ NÚT THÔNG BÁO (ĐÁNH DẤU ĐÃ ĐỌC / XÓA)
     document.addEventListener("DOMContentLoaded", function () {
         const btnDeleteReadNoti = document.getElementById('btn-delete-read-noti');
         if (btnDeleteReadNoti) {
@@ -512,7 +538,8 @@
                 e.preventDefault();
                 if (!confirm("Bạn có chắc chắn muốn dọn dẹp tất cả thông báo đã đọc?")) return;
 
-                fetch('/User/DeleteReadNotifications', { method: 'POST' })
+                // ĐÃ SỬA: Dùng Url.Action cho Fetch API
+                fetch('@Url.Action("DeleteReadNotifications", "User")', { method: 'POST' })
                     .then(response => response.json())
                     .then(res => {
                         if (res.success) {
@@ -539,7 +566,8 @@
             btnReadAllNoti.addEventListener('click', function (e) {
                 e.preventDefault();
 
-                fetch('/User/MarkNotificationsRead', { method: 'POST' })
+                // Dùng Url.Action cho Fetch API
+                fetch('@Url.Action("MarkNotificationsRead", "User")', { method: 'POST' })
                     .then(response => response.json())
                     .then(res => {
                         if (res.success) {
@@ -558,7 +586,7 @@
         }
     });
 
-    // 4. XỬ LÝ LỌC VÀ PHÂN TRANG (PAGINATION) CHO CÔNG THỨC
+    // XỬ LÝ LỌC VÀ PHÂN TRANG (PAGINATION) CHO CÔNG THỨC
     document.addEventListener("DOMContentLoaded", function () {
         const recipeItems = Array.from(document.querySelectorAll('.recipe-item'));
         const filterBtns = document.querySelectorAll('.filter-btn');
@@ -568,7 +596,7 @@
 
         let currentFilter = 'all';
         let currentPage = 1;
-        let pageSize = parseInt(pageSizeSelect.value);
+        let pageSize = parseInt(pageSizeSelect ? pageSizeSelect.value : 6);
 
         function renderRecipes() {
             let filteredRecipes = recipeItems.filter(item => {
@@ -587,18 +615,19 @@
             let endIndex = Math.min(startIndex + pageSize, totalItems);
 
             if (totalItems > 0) {
-                noRecipeMsg.classList.add('d-none');
+                if (noRecipeMsg) noRecipeMsg.classList.add('d-none');
                 for (let i = startIndex; i < endIndex; i++) {
                     filteredRecipes[i].classList.remove('d-none');
                     filteredRecipes[i].style.animation = "fadeIn 0.3s ease-in-out";
                 }
             } else {
-                noRecipeMsg.classList.remove('d-none');
+                if (noRecipeMsg) noRecipeMsg.classList.remove('d-none');
             }
             renderPagination(totalPages);
         }
 
         function renderPagination(totalPages) {
+            if (!paginationContainer) return;
             paginationContainer.innerHTML = '';
             if (totalPages <= 1) return;
 
@@ -615,20 +644,22 @@
             paginationContainer.innerHTML += `<li class="page-item custom-page-item ${nextClass}"><a class="page-link custom-page-link text-orange rounded-end-pill" href="#" data-page="${currentPage + 1}">Sau</a></li>`;
         }
 
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', function () {
-                filterBtns.forEach(b => {
-                    b.classList.remove('btn-dark');
-                    b.classList.add('btn-light', 'text-secondary');
-                });
-                this.classList.remove('btn-light', 'text-secondary');
-                this.classList.add('btn-dark');
+        if (filterBtns) {
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    filterBtns.forEach(b => {
+                        b.classList.remove('btn-dark');
+                        b.classList.add('btn-light', 'text-secondary');
+                    });
+                    this.classList.remove('btn-light', 'text-secondary');
+                    this.classList.add('btn-dark');
 
-                currentFilter = this.getAttribute('data-filter');
-                currentPage = 1;
-                renderRecipes();
+                    currentFilter = this.getAttribute('data-filter');
+                    currentPage = 1;
+                    renderRecipes();
+                });
             });
-        });
+        }
 
         if (pageSizeSelect) {
             pageSizeSelect.addEventListener('change', function () {
@@ -652,12 +683,14 @@
         renderRecipes();
     });
 
-    // 5. XỬ LÝ TỰ ĐỘNG TÍNH CALO HẰNG NGÀY (TDEE) BẰNG ID ĐỘC LẬP
+    // XỬ LÝ TỰ ĐỘNG TÍNH CALO HẰNG NGÀY (TDEE) BẰNG ID ĐỘC LẬP
     document.addEventListener("DOMContentLoaded", function () {
         const triggers = document.querySelectorAll('.calo-trigger');
         const caloInput = document.getElementById('CaloDaily');
 
         function calculateCalories() {
+            if (!caloInput) return;
+
             let weightStr = document.getElementById('inpWeight').value;
             let heightStr = document.getElementById('inpHeight').value;
             let gender = document.getElementById('inpGender').value;
@@ -725,34 +758,34 @@
         calculateCalories();
     });
 
-    // =========================================================
-    // 6. TÍNH NĂNG LỌC NHANH NGUYÊN LIỆU (TAB CÀI ĐẶT DỊ ỨNG)
-    // =========================================================
-    const profileAllergySearch = document.getElementById('profileAllergySearch');
-    if (profileAllergySearch) {
+    // TÍNH NĂNG LỌC NHANH NGUYÊN LIỆU (TAB CÀI ĐẶT DỊ ỨNG)
+    document.addEventListener("DOMContentLoaded", function () {
+        const profileAllergySearch = document.getElementById('profileAllergySearch');
+        if (profileAllergySearch) {
 
-        // Ngăn chặn bấm Enter bị văng form
-        profileAllergySearch.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') e.preventDefault();
-        });
-
-        // Xử lý khi gõ phím
-        profileAllergySearch.addEventListener('keyup', function () {
-            let filterText = this.value.toLowerCase();
-            let items = document.querySelectorAll('.allergy-item-profile');
-
-            items.forEach(item => {
-                let labelText = item.querySelector('.allergy-label-profile').innerText.toLowerCase();
-
-                // Nếu tên nguyên liệu chứa chữ vừa gõ -> Hiện lên, ngược lại -> Giấu đi
-                if (labelText.includes(filterText)) {
-                    item.style.display = "";
-                } else {
-                    item.style.display = "none";
-                }
+            // Ngăn chặn bấm Enter bị văng form
+            profileAllergySearch.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') e.preventDefault();
             });
-        });
-    }
+
+            // Xử lý khi gõ phím
+            profileAllergySearch.addEventListener('keyup', function () {
+                let filterText = this.value.toLowerCase();
+                let items = document.querySelectorAll('.allergy-item-profile');
+
+                items.forEach(item => {
+                    let labelText = item.querySelector('.allergy-label-profile').innerText.toLowerCase();
+
+                    // Nếu tên nguyên liệu chứa chữ vừa gõ -> Hiện lên, ngược lại -> Giấu đi
+                    if (labelText.includes(filterText)) {
+                        item.style.display = "";
+                    } else {
+                        item.style.display = "none";
+                    }
+                });
+            });
+        }
+    });
 
 </script>
 
@@ -780,6 +813,17 @@
     .border-orange {
         border-color: #ff6600 !important;
     }
+
+    .btn-orange {
+        background-color: #ff6600;
+        color: white;
+        border: none;
+    }
+
+        .btn-orange:hover {
+            background-color: #e65c00;
+            color: white;
+        }
 
     .custom-page-item {
         margin: 0 5px;

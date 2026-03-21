@@ -17,7 +17,7 @@
     </button>
     <div class="d-flex align-items-center gap-2">
         <span class="text-muted small fw-bold">Lọc theo loại:</span>
-        <form action="/Admin/Tag/Index" method="get" id="filterForm">
+        <form action="@Url.Action("Index", "Tag", new { area = "Admin" })" method="get" id="filterForm">
             <select class="form-select w-auto" name="typeFilter" onchange="document.getElementById('filterForm').submit();">
                 <option value="">Tất cả</option>
                 <option value="Dị ứng" @(currentFilter == "Dị ứng" ? "selected" : "")>Cảnh báo Dị ứng</option>
@@ -65,11 +65,12 @@
                                     </td>
                                     <td class="text-end">
                                         <button class="btn btn-sm btn-outline-primary me-1"
-                                                onclick="editTag(@item.ID, '@item.TagName', '@item.TagType')">
+                                                onclick="editTag(@item.ID, '@System.Web.HttpUtility.JavaScriptStringEncode(item.TagName ?? "")', '@System.Web.HttpUtility.JavaScriptStringEncode(item.TagType ?? "")')">
                                             <i class="fas fa-edit"></i>
                                         </button>
 
-                                        <form action="/Admin/Tag/Delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa Tag này không?');">
+                                        <form action="@Url.Action("Delete", "Tag", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa Tag này không?');">
+                                            @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@item.ID" />
                                             <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                                         </form>
@@ -92,7 +93,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <form action="/Admin/Tag/Save" method="post">
+            <form action="@Url.Action("Save", "Tag", new { area = "Admin" })" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="ID" id="t_ID" value="0" />
 
@@ -141,11 +142,11 @@
             document.getElementById('t_TagName').value = name;
 
             // Xử lý selected cho dropdown
-            if(type && type !== '') {
+            if (type && type !== '') {
                 document.getElementById('t_TagType').value = type;
             }
 
-            var myModal = new bootstrap.Modal(document.getElementById('tagModal'));
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('tagModal'));
             myModal.show();
         }
     </script>

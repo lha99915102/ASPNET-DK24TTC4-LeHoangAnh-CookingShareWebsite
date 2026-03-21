@@ -26,6 +26,7 @@ namespace CookingShare.Models
         public string ImageName { get; set; }
         public string Content { get; set; }
         public Nullable<System.DateTime> CreateDate { get; set; }
+        public Nullable<int> Status { get; set; }
     
         public virtual ACCOUNT ACCOUNT { get; set; }
         public virtual RECIPE RECIPE { get; set; }

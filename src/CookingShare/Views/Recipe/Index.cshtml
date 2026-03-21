@@ -11,19 +11,13 @@
 
     string currentDifficulty = ViewBag.CurrentDifficulty as string ?? "";
     string currentSort = ViewBag.CurrentSort as string ?? "newest";
-
-    // Kiểm tra trạng thái các nút
-    bool isFavorited = ViewBag.IsFavorited != null ? (bool)ViewBag.IsFavorited : false;
-    bool isFollowed = ViewBag.IsFollowed != null ? (bool)ViewBag.IsFollowed : false;
 }
-
-
 
 <main class="bg-light py-4">
     <div class="container mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-success">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-decoration-none text-success">Trang chủ</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Công thức</li>
             </ol>
         </nav>
@@ -39,7 +33,7 @@
                 </button>
 
                 <div class="collapse d-lg-block" id="filterSidebar">
-                    <form action="/Recipe/Index" method="GET" id="filterForm">
+                    <form action="@Url.Action("Index", "Recipe")" method="GET" id="filterForm">
                         <input type="hidden" name="page" id="pageInput" value="@ViewBag.CurrentPage" />
                         <div class="card border-0 shadow-sm rounded-3">
                             <div class="card-body">
@@ -175,12 +169,12 @@
                             <img src="https://cdn-icons-png.flaticon.com/512/7486/7486754.png" width="120" class="mb-3 opacity-50" alt="Not found">
                             <h5 class="text-muted fw-bold">Không tìm thấy công thức nào phù hợp</h5>
                             <p class="text-muted small">Hãy thử thay đổi từ khóa hoặc xóa bớt bộ lọc dị ứng/độ khó.</p>
-                            <a href="/Recipe/Index" class="btn btn-orange rounded-pill px-4 mt-2">Xóa tất cả bộ lọc</a>
+                            <a href="@Url.Action("Index", "Recipe")" class="btn btn-orange rounded-pill px-4 mt-2">Xóa tất cả bộ lọc</a>
                         </div>
                     }
                     else
                     {
-                        // ĐÃ XÓA DẤU @ Ở ĐÂY
+
                         foreach (var recipe in Model)
                         {
                             <div class="col-md-6 col-lg-4">
@@ -189,16 +183,15 @@
 
                                         @{
                                             string firstChar = !string.IsNullOrWhiteSpace(recipe.Name) ? recipe.Name.Substring(0, 1).ToUpper() : "R";
-                                            string fallbackImg = $"https://placehold.co/400x300/ff6600/FFFFFF?text={firstChar}";
+                                            string safeChar = System.Web.HttpUtility.UrlEncode(firstChar);
+                                            string fallbackImg = $"https://placehold.co/400x300/ff6600/FFFFFF?text={safeChar}";
                                             string imgSrc = fallbackImg;
 
-                                            // XỬ LÝ ẢNH THÔNG MINH
-                                            if (!string.IsNullOrWhiteSpace(recipe.MainImage))
+                                            if (!string.IsNullOrWhiteSpace(recipe.MainImage) && recipe.MainImage != "default_recipe.jpg")
                                             {
-                                                // Nếu DB chỉ lưu mỗi tên file (không có dấu / ở đầu), tự động nối thêm thư mục
                                                 if (!recipe.MainImage.StartsWith("/") && !recipe.MainImage.StartsWith("http"))
                                                 {
-                                                    imgSrc = "/Content/Images/Recipes/" + recipe.MainImage;
+                                                    imgSrc = Url.Content("~/assets/images/recipes/" + recipe.MainImage);
                                                 }
                                                 else
                                                 {
@@ -207,7 +200,9 @@
                                             }
                                         }
 
-                                        <img src="@imgSrc" class="card-img-top object-fit-cover" style="height: 200px; transition: transform 0.3s ease;" alt="@recipe.Name" onerror="this.onerror=null; this.src='@fallbackImg';">
+                                        <a href="@Url.Action("Detail", "Recipe", new { id = recipe.ID })">
+                                            <img src="@imgSrc" class="card-img-top object-fit-cover" style="height: 200px; transition: transform 0.3s ease;" alt="@recipe.Name" onerror="this.onerror=null; this.src='@fallbackImg';">
+                                        </a>
 
                                         @if (recipe.Views > 20)
                                         {
@@ -224,27 +219,37 @@
                                             </span>
                                         </div>
                                         <h5 class="card-title fw-bold mb-0">
-                                            <a href="/Recipe/Detail/@recipe.ID" class="text-decoration-none text-dark stretched-link">@recipe.Name</a>
+                                            <a href="@Url.Action("Detail", "Recipe", new { id = recipe.ID })" class="text-decoration-none text-dark stretched-link">@recipe.Name</a>
                                         </h5>
                                     </div>
 
                                     <div class="card-footer bg-white border-0 pt-0 pb-3">
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center position-relative z-1">
                                             @{
-                                                string ava = "/Content/Images/Users/default-avatar.png";
-                                                string authorName = "Đầu bếp ẩn danh";
+                                                string ava = Url.Content("~/assets/images/avatars/default-avatar.png");
+                                                string authorName = "Ẩn danh";
+
                                                 if (recipe.ACCOUNT != null)
                                                 {
                                                     authorName = recipe.ACCOUNT.UserName;
-                                                    // Kiểm tra Profile an toàn
-                                                    if (recipe.ACCOUNT.PROFILE != null && recipe.ACCOUNT.PROFILE != null && !string.IsNullOrEmpty(recipe.ACCOUNT.PROFILE.Avatar))
+                                                    if (recipe.ACCOUNT.PROFILE != null)
                                                     {
-                                                        ava = "/Content/Images/Users/" + recipe.ACCOUNT.PROFILE.Avatar;
+                                                        if (!string.IsNullOrEmpty(recipe.ACCOUNT.PROFILE.FullName))
+                                                        {
+                                                            authorName = recipe.ACCOUNT.PROFILE.FullName;
+                                                        }
+
+                                                        var rawAva = recipe.ACCOUNT.PROFILE.Avatar;
+                                                        if (!string.IsNullOrEmpty(rawAva) && rawAva != "default-avatar.png")
+                                                        {
+                                                            ava = (rawAva.StartsWith("http") || rawAva.StartsWith("/")) ? rawAva : Url.Content("~/assets/images/avatars/" + rawAva);
+                                                        }
                                                     }
                                                 }
                                             }
-                                            <img src="@ava" class="rounded-circle me-2 border object-fit-cover" style="width: 32px; height: 32px;" alt="User" onerror="this.src='/Content/Images/Users/default-avatar.png'">
-                                            <small class="text-muted fw-semibold">@authorName</small>
+
+                                            <img src="@ava" class="rounded-circle me-2 border object-fit-cover" style="width: 32px; height: 32px;" alt="User" onerror="this.onerror=null; this.src='@Url.Content("~/assets/images/avatars/default-avatar.png")';">
+                                            <a href="@Url.Action("PublicProfile", "User", new { id = recipe.AccountID })" class="text-muted fw-semibold small text-decoration-none custom-link-hover">@authorName</a>
                                         </div>
                                     </div>
                                 </div>
@@ -385,8 +390,6 @@
                 filterForm.submit();
             });
         });
-
-        
     });
 </script>
 
@@ -422,6 +425,14 @@
         color: #ff6600 !important;
     }
 
+    .custom-link-hover {
+        transition: color 0.2s;
+    }
+
+        .custom-link-hover:hover {
+            color: #ff6600 !important;
+        }
+
     .custom-page-item {
         margin: 0 5px;
     }
@@ -442,8 +453,8 @@
     .custom-page-item.custom-active .custom-page-link {
         background-color: #28a745 !important;
         color: white !important;
-        border: 2px solid #ff6600 !important;
-        box-shadow: 0 4px 8px rgba(255, 102, 0, 0.3);
+        border: 2px solid #28a745 !important;
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
     }
 
     .rounded-start-pill {

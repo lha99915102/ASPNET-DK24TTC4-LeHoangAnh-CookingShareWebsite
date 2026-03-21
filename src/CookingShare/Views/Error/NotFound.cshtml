@@ -24,51 +24,62 @@
 
                 <div class="row justify-content-center mb-5">
                     <div class="col-md-8">
-                        <form action="/Recipe/Index" method="GET" class="d-flex mb-3 shadow-sm rounded-pill overflow-hidden">
+                        <form action="@Url.Action("Index", "Recipe")" method="GET" class="d-flex mb-3 shadow-sm rounded-pill overflow-hidden">
                             <input class="form-control border-0 py-3 ps-4" type="search" name="search" placeholder="Bạn muốn tìm món gì khác? (Ví dụ: Phở, Bún...)" autocomplete="off" required>
                             <button class="btn btn-orange px-4 fw-bold" type="submit">Tìm kiếm</button>
                         </form>
 
-                        <a href="/Home/Index" class="btn btn-outline-secondary rounded-pill px-4 me-2">
-                            <i class="fas fa-home me-2"></i> Về trang chủ
-                        </a>
-                        <a href="#" onclick="alert('Tính năng báo lỗi đang hoàn thiện')" class="btn btn-light rounded-pill px-4">
-                            <i class="fas fa-envelope me-2"></i> Báo lỗi
-                        </a>
+                        <div class="d-flex justify-content-center gap-2 mt-3">
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fas fa-home me-2"></i> Về trang chủ
+                            </a>
+                            <a href="#" onclick="alert('Tính năng báo lỗi đang hoàn thiện')" class="btn btn-light rounded-pill px-4 shadow-sm border">
+                                <i class="fas fa-envelope me-2"></i> Báo lỗi
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <div class="mt-5 pt-4 border-top">
-            <h4 class="fw-bold text-center mb-4">Đừng buồn, thử các món ngon này nhé!</h4>
+        @if (Model != null && Model.Any())
+        {
+            <div class="mt-5 pt-4 border-top">
+                <h4 class="fw-bold text-center mb-4">Đừng buồn, thử các món ngon này nhé!</h4>
 
-            <div class="row g-4">
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var item in Model)
+                <div class="row g-4">
+                    @foreach (var item in Model)
                     {
                         string firstChar = !string.IsNullOrWhiteSpace(item.Name) ? item.Name.Substring(0, 1).ToUpper() : "M";
-                        string fallbackImg = $"https://placehold.co/300x200/ff6600/FFFFFF?text={firstChar}";
-                        string imgSrc = !string.IsNullOrWhiteSpace(item.MainImage) ? $"/assets/images/recipes/{item.MainImage}" : fallbackImg;
+                        string safeChar = System.Web.HttpUtility.UrlEncode(firstChar);
+                        string fallbackImg = $"https://placehold.co/300x200/ff6600/FFFFFF?text={safeChar}";
 
-                        <div class="col-md-3">
-                            <div class="card recipe-card h-100 border-0 shadow-sm">
-                                <a href="/Recipe/Detail/@item.ID">
-                                    <img src="@imgSrc" onerror="this.onerror=null; this.src='@fallbackImg';" class="card-img-top object-fit-cover" style="height: 200px;" alt="@item.Name">
+                        // Đồng bộ logic kiểm tra ảnh ngoại (http) hoặc ảnh nội bộ giống với Trang chủ
+                        string imgSrc = fallbackImg;
+                        if (!string.IsNullOrWhiteSpace(item.MainImage))
+                        {
+                            imgSrc = (item.MainImage.StartsWith("http") || item.MainImage.StartsWith("/"))
+                                     ? item.MainImage
+                                     : Url.Content("~/assets/images/recipes/" + item.MainImage);
+                        }
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card recipe-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                                <a href="@Url.Action("Detail", "Recipe", new { id = item.ID })">
+                                    <img src="@imgSrc" onerror="this.onerror=null; this.src='@fallbackImg';" class="card-img-top object-fit-cover" style="height: 180px;" alt="@item.Name">
                                 </a>
                                 <div class="card-body text-center p-3">
                                     <h6 class="card-title fw-bold mb-0">
-                                        <a href="/Recipe/Detail/@item.ID" class="text-decoration-none text-dark">@item.Name</a>
+                                        <a href="@Url.Action("Detail", "Recipe", new { id = item.ID })" class="text-decoration-none text-dark custom-link-hover">@item.Name</a>
                                     </h6>
                                 </div>
                             </div>
                         </div>
                     }
-                }
+                </div>
             </div>
-        </div>
+        }
 
     </div>
 </main>
@@ -94,11 +105,19 @@
         }
 
     .recipe-card {
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
         .recipe-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    .custom-link-hover {
+        transition: color 0.2s;
+    }
+
+        .custom-link-hover:hover {
+            color: #ff6600 !important;
         }
 </style>

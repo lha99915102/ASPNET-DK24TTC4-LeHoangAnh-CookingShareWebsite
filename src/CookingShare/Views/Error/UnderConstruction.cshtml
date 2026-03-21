@@ -23,11 +23,11 @@
                     Sẽ sớm có những điều tuyệt vời ra lò. Bạn vui lòng quay lại sau nhé!
                 </p>
 
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="/Home/Index" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                <div class="d-flex justify-content-center flex-wrap gap-3">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold shadow-sm">
                         <i class="fas fa-home me-2"></i> Về trang chủ
                     </a>
-                    <a href="/Recipe/Index" class="btn btn-orange text-white rounded-pill px-4 py-2 fw-bold shadow-sm">
+                    <a href="@Url.Action("Index", "Recipe")" class="btn btn-orange text-white rounded-pill px-4 py-2 fw-bold shadow-sm">
                         <i class="fas fa-utensils me-2"></i> Khám phá công thức
                     </a>
                 </div>
@@ -38,18 +38,32 @@
 </main>
 
 <style>
-    .text-orange { color: #ff6600 !important; }
-    .bg-warning-subtle { background-color: #fff3cd !important; }
+    .text-orange {
+        color: #ff6600 !important;
+    }
 
-    .btn-orange { background-color: #ff6600; border: none; transition: 0.3s; }
-    .btn-orange:hover { background-color: #e65c00; transform: translateY(-2px); }
+    .bg-warning-subtle {
+        background-color: #fff3cd !important;
+    }
 
-    /* Hiệu ứng xoay tròn liên tục cho icon mỏ lết */
+    .btn-orange {
+        background-color: #ff6600;
+        border: none;
+        transition: 0.3s;
+    }
+
+        .btn-orange:hover {
+            background-color: #e65c00;
+            transform: translateY(-2px);
+        }
+
     .spin-icon {
         animation: spin 4s linear infinite;
     }
 
     @@keyframes spin {
-        100% { transform: rotate(360deg); }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>

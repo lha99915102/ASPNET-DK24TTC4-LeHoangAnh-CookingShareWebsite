@@ -54,7 +54,7 @@
                             <div class="text-center py-5">
                                 <i class="fas fa-shopping-basket fa-4x text-muted opacity-25 mb-3"></i>
                                 <h5 class="text-muted">Giỏ đi chợ đang trống</h5>
-                                <a href="/Home/Index" class="btn btn-orange rounded-pill mt-3 px-4">Đi tìm món ngon ngay</a>
+                                <a href="@Url.Action("Index", "Home")" class="btn btn-orange rounded-pill mt-3 px-4">Đi tìm món ngon ngay</a>
                             </div>
                         }
 
@@ -73,11 +73,32 @@
                             <ul class="list-group list-group-flush border-0">
                                 @foreach (var recipe in Model)
                                 {
+                                    string firstChar = !string.IsNullOrWhiteSpace(recipe.Name) ? recipe.Name.Substring(0, 1).ToUpper() : "R";
+                                    string fallbackImg = $"https://placehold.co/50x50/ff6600/FFFFFF?text={System.Web.HttpUtility.UrlEncode(firstChar)}";
+                                    string imgSrc = fallbackImg;
+
+                                    if (!string.IsNullOrWhiteSpace(recipe.MainImage) && recipe.MainImage != "default_recipe.jpg")
+                                    {
+                                        if (!recipe.MainImage.StartsWith("/") && !recipe.MainImage.StartsWith("http"))
+                                        {
+                                            imgSrc = Url.Content("~/assets/images/recipes/" + recipe.MainImage);
+                                        }
+                                        else
+                                        {
+                                            imgSrc = recipe.MainImage;
+                                        }
+                                    }
+
                                     <li class="list-group-item border-bottom py-3 d-flex align-items-center bg-transparent">
-                                        <img src="~/assets/images/@recipe.MainImage" class="rounded-3 object-fit-cover shadow-sm me-3" style="width: 50px; height: 50px;" alt="@recipe.Name" onerror="this.src='https://placehold.co/50x50?text=Món'">
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1 fw-bold text-dark text-truncate" style="font-size: 0.9rem;"><a href="/Recipe/Detail/@recipe.ID" class="text-decoration-none text-dark">@recipe.Name</a></h6>
+                                        <img src="@imgSrc" class="rounded-3 object-fit-cover shadow-sm me-3" style="width: 50px; height: 50px;" alt="@recipe.Name" onerror="this.src='@fallbackImg'">
+                                        <div class="flex-grow-1 pe-2">
+                                            <h6 class="mb-1 fw-bold text-dark text-truncate" style="font-size: 0.9rem; max-width: 180px;">
+                                                <a href="@Url.Action("Detail", "Recipe", new { id = recipe.ID })" class="text-decoration-none text-dark hover-orange">@recipe.Name</a>
+                                            </h6>
                                         </div>
+                                        <button class="btn btn-sm text-danger btn-remove-single p-0 m-0" data-id="@recipe.ID" title="Bỏ món này">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </li>
                                 }
                             </ul>
@@ -112,6 +133,21 @@
         .grocery-check:checked + label span {
             color: #adb5bd !important;
         }
+
+    .hover-orange:hover {
+        color: #ff6600 !important;
+    }
+
+    .btn-orange {
+        background-color: #ff6600;
+        color: white;
+        border: none;
+    }
+
+        .btn-orange:hover {
+            background-color: #e65c00;
+            color: white;
+        }
 </style>
 
 <script>
@@ -120,28 +156,46 @@
         var btnClear = document.getElementById('btn-clear-cart');
         if (btnClear) {
             btnClear.addEventListener('click', function () {
-                Swal.fire({
-                    title: 'Xóa giỏ đi chợ?',
-                    text: "Bạn có chắc chắn muốn xóa toàn bộ nguyên liệu không?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Xóa hết!',
-                    cancelButtonText: 'Hủy'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.post('/Recipe/ClearGrocery', function(res) {
-                            if(res.success) {
-                                window.location.reload(); // Tải lại trang sau khi xóa
-                            }
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Xóa giỏ đi chợ?',
+                        text: "Bạn có chắc chắn muốn xóa toàn bộ nguyên liệu không?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Xóa hết!',
+                        cancelButtonText: 'Hủy'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // ĐÃ SỬA: Dùng Url.Action cho AJAX POST
+                            $.post('@Url.Action("ClearGrocery", "Recipe")', function (res) {
+                                if (res.success) {
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ nguyên liệu không?')) {
+                        // ĐÃ SỬA: Dùng Url.Action
+                        $.post('@Url.Action("ClearGrocery", "Recipe")', function (res) {
+                            if (res.success) window.location.reload();
                         });
                     }
-                });
+                }
             });
         }
 
-        // 2. XỬ LÝ NÚT TẢI FILE WORD
+        const removeBtns = document.querySelectorAll('.btn-remove-single');
+        removeBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                var rId = this.getAttribute('data-id');
+                alert('Tính năng xóa lẻ từng món đang được cập nhật! Vui lòng dùng nút "Xóa toàn bộ giỏ".');
+            });
+        });
+
+        // XỬ LÝ NÚT TẢI FILE WORD
         var btnExport = document.getElementById('btn-export-word');
         if (btnExport) {
             btnExport.addEventListener('click', function () {
@@ -150,7 +204,8 @@
                 var uncheckedBoxes = document.querySelectorAll('.grocery-check:not(:checked)');
 
                 if (uncheckedBoxes.length === 0) {
-                    Swal.fire('Giỏ trống', 'Tuyệt vời, bạn đã nhặt đủ đồ nên không cần in danh sách nữa!', 'info');
+                    if (typeof Swal !== 'undefined') Swal.fire('Giỏ trống', 'Tuyệt vời, bạn đã nhặt đủ đồ nên không cần in danh sách nữa!', 'info');
+                    else alert('Bạn đã nhặt đủ đồ!');
                     return;
                 }
 
@@ -162,29 +217,29 @@
                 // TẠO FORM ẨN ĐỂ ĐẨY DỮ LIỆU SANG C# BẰNG PHƯƠNG THỨC POST
                 var form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '/Recipe/ExportWord';
+                // ĐÃ SỬA: Dùng Url.Action cho Form Action
+                form.action = '@Url.Action("ExportWord", "Recipe")';
 
                 // Nhét từng tên nguyên liệu chưa mua vào Form
                 uncheckedBoxes.forEach(function (box) {
                     var input = document.createElement('input');
                     input.type = 'hidden';
-                    input.name = 'itemNames'; // Khớp 100% với tên biến trong hàm C#
+                    input.name = 'itemNames';
                     input.value = box.value;
                     form.appendChild(input);
                 });
 
                 document.body.appendChild(form);
-                form.submit(); // Bấm nút gửi Form ngầm
-                document.body.removeChild(form); // Xóa form đi cho sạch
+                form.submit();
+                document.body.removeChild(form);
 
                 // Phục hồi lại nút
                 setTimeout(() => {
                     this.innerHTML = originalHtml;
                     this.disabled = false;
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tải file thành công!', showConfirmButton: false, timer: 3000 });
+                    if (typeof Swal !== 'undefined') Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Tải file thành công!', showConfirmButton: false, timer: 3000 });
                 }, 2000);
             });
         }
-
     });
 </script>

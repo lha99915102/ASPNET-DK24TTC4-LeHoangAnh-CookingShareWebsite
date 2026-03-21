@@ -12,9 +12,7 @@
     int idBanhNgot = categories.FirstOrDefault(c => c.Name.Contains("Bánh") || c.Name.Contains("Ngọt"))?.ID ?? 0;
     int idSinhTo = categories.FirstOrDefault(c => c.Name.Contains("Sinh"))?.ID ?? 0;
     int idDoNuong = categories.FirstOrDefault(c => c.Name.Contains("Nướng"))?.ID ?? 0;
-}
 
-@{
     // Nhận danh sách Banner từ Controller
     var banners = ViewBag.Banners as List<CookingShare.Models.BANNER>;
 }
@@ -27,9 +25,17 @@
             foreach (var item in banners)
             {
                 <div class="item position-relative">
-                    <img src="@item.ImageURL" alt="@item.Title" class="slider-img" onerror="this.src='https://placehold.co/1920x600/212529/FFF?text=Banner+CookingShare'">
+                    @{
+                        string bannerImg = item.ImageURL;
+                        if (!string.IsNullOrEmpty(bannerImg) && !bannerImg.StartsWith("http") && !bannerImg.StartsWith("/"))
+                        {
+                            bannerImg = Url.Content("~/assets/images/banners/" + bannerImg);
+                        }
+                    }
 
-                    <div class="slider-overlay d-flex align-items-center">
+                    <img src="@bannerImg" alt="@item.Title" class="slider-img object-fit-cover" style="height: 500px; width: 100%;" onerror="this.src='https://placehold.co/1920x600/212529/FFF?text=Banner+CookingShare'">
+
+                    <div class="slider-overlay d-flex align-items-center position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.4);">
                         <div class="container text-white text-center text-md-start">
                             <div class="row">
                                 <div class="col-lg-8">
@@ -52,13 +58,13 @@
         else
         {
             <div class="item position-relative">
-                <img src="https://placehold.co/1920x600/212529/FFF?text=Chao+Mung+Den+Voi+CookingShare" alt="Welcome" class="slider-img">
-                <div class="slider-overlay d-flex align-items-center">
+                <img src="https://placehold.co/1920x600/212529/FFF?text=Chao+Mung+Den+Voi+CookingShare" alt="Welcome" class="slider-img w-100" style="height: 500px; object-fit: cover;">
+                <div class="slider-overlay d-flex align-items-center position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.5);">
                     <div class="container text-white text-center text-md-start">
                         <div class="row">
                             <div class="col-lg-8">
                                 <h1 class="display-3 fw-bold mb-4">Chào mừng đến với <br> <span class="text-success font-handwriting">CookingShare</span></h1>
-                                <a href="/Recipe/Index" class="btn btn-orange btn-lg rounded-pill px-5 shadow">Xem công thức</a>
+                                <a href="@Url.Action("Index", "Recipe")" class="btn btn-orange btn-lg rounded-pill px-5 shadow">Xem công thức</a>
                             </div>
                         </div>
                     </div>
@@ -77,7 +83,7 @@
 
     <div class="row justify-content-center mb-5">
         <div class="col-md-8 col-lg-6">
-            <form action="/Recipe/Index" method="GET" class="position-relative search-box-wrapper">
+            <form action="@Url.Action("Index", "Recipe")" method="GET" class="position-relative search-box-wrapper shadow-sm rounded-pill">
                 <input type="text" name="search" class="form-control form-control-lg rounded-pill ps-4 pe-5 border-2"
                        placeholder="Bạn đang thèm món gì? (VD: Sườn xào, Bánh mì...)"
                        style="height: 60px; font-size: 1rem;" autocomplete="off">
@@ -87,18 +93,18 @@
                     <i class="fas fa-search me-2"></i> Tìm kiếm
                 </button>
             </form>
-            <div class="text-center mt-2 small text-muted">
+            <div class="text-center mt-3 small text-muted">
                 <span>Gợi ý: </span>
-                <a href="/Recipe/Index?search=Thịt+kho" class="text-decoration-none text-success fw-bold">Thịt kho tàu</a>,
-                <a href="/Recipe/Index?search=Canh+chua" class="text-decoration-none text-success fw-bold">Canh chua</a>,
-                <a href="/Recipe/Index?search=Eat+Clean" class="text-decoration-none text-success fw-bold">Eat Clean</a>
+                <a href="@Url.Action("Index", "Recipe", new { search = "Thịt kho" })" class="text-decoration-none text-success fw-bold">Thịt kho tàu</a>,
+                <a href="@Url.Action("Index", "Recipe", new { search = "Canh chua" })" class="text-decoration-none text-success fw-bold">Canh chua</a>,
+                <a href="@Url.Action("Index", "Recipe", new { search = "Eat Clean" })" class="text-decoration-none text-success fw-bold">Eat Clean</a>
             </div>
         </div>
     </div>
 
     <div class="row justify-content-center g-4">
         <div class="col-6 col-md-4 col-lg-2 text-center">
-            <a href="@(idMonMan > 0 ? "/Recipe/Index?categoryId=" + idMonMan : "/Recipe/Index?search=Món Mặn")" class="category-item d-block text-decoration-none">
+            <a href="@(idMonMan > 0 ? Url.Action("Index", "Recipe", new { categoryId = idMonMan }) : Url.Action("Index", "Recipe", new { search = "Món Mặn" }))" class="category-item d-block text-decoration-none">
                 <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
                     <i class="fas fa-drumstick-bite fa-2x text-orange"></i>
                 </div>
@@ -106,7 +112,7 @@
             </a>
         </div>
         <div class="col-6 col-md-4 col-lg-2 text-center">
-            <a href="@(idMonChay > 0 ? "/Recipe/Index?categoryId=" + idMonChay : "/Recipe/Index?search=Món Chay")" class="category-item d-block text-decoration-none">
+            <a href="@(idMonChay > 0 ? Url.Action("Index", "Recipe", new { categoryId = idMonChay }) : Url.Action("Index", "Recipe", new { search = "Món Chay" }))" class="category-item d-block text-decoration-none">
                 <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
                     <i class="fas fa-carrot fa-2x text-success"></i>
                 </div>
@@ -114,7 +120,7 @@
             </a>
         </div>
         <div class="col-6 col-md-4 col-lg-2 text-center">
-            <a href="@(idBanhNgot > 0 ? "/Recipe/Index?categoryId=" + idBanhNgot : "/Recipe/Index?search=Bánh Ngọt")" class="category-item d-block text-decoration-none">
+            <a href="@(idBanhNgot > 0 ? Url.Action("Index", "Recipe", new { categoryId = idBanhNgot }) : Url.Action("Index", "Recipe", new { search = "Bánh Ngọt" }))" class="category-item d-block text-decoration-none">
                 <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
                     <i class="fas fa-cookie-bite fa-2x text-warning"></i>
                 </div>
@@ -122,7 +128,7 @@
             </a>
         </div>
         <div class="col-6 col-md-4 col-lg-2 text-center">
-            <a href="@(idSinhTo > 0 ? "/Recipe/Index?categoryId=" + idSinhTo : "/Recipe/Index?search=Sinh Tố")" class="category-item d-block text-decoration-none">
+            <a href="@(idSinhTo > 0 ? Url.Action("Index", "Recipe", new { categoryId = idSinhTo }) : Url.Action("Index", "Recipe", new { search = "Sinh Tố" }))" class="category-item d-block text-decoration-none">
                 <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
                     <i class="fas fa-blender fa-2x text-info"></i>
                 </div>
@@ -130,7 +136,7 @@
             </a>
         </div>
         <div class="col-6 col-md-4 col-lg-2 text-center">
-            <a href="@(idDoNuong > 0 ? "/Recipe/Index?categoryId=" + idDoNuong : "/Recipe/Index?search=Đồ Nướng")" class="category-item d-block text-decoration-none">
+            <a href="@(idDoNuong > 0 ? Url.Action("Index", "Recipe", new { categoryId = idDoNuong }) : Url.Action("Index", "Recipe", new { search = "Đồ Nướng" }))" class="category-item d-block text-decoration-none">
                 <div class="category-icon bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm">
                     <i class="fas fa-fire fa-2x text-danger"></i>
                 </div>
@@ -146,58 +152,70 @@
             <div>
                 <h2 class="fw-bold section-title mb-0">Công Thức <span class="text-danger font-handwriting">(Mới Nhất)</span></h2>
             </div>
-            <a href="/Recipe/Index" class="btn btn-outline-success rounded-pill btn-sm">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+            <a href="@Url.Action("Index", "Recipe")" class="btn btn-outline-success rounded-pill btn-sm">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
         </div>
 
         <div class="row g-4">
-            @if (Model != null && Model.Count ()> 0)
+            @if (Model != null && Model.Any())
             {
                 foreach (var item in Model)
                 {
                     <div class="col-md-6 col-lg-3">
-                        <div class="card recipe-card h-100 border-0 shadow-sm position-relative">
+                        <div class="card recipe-card h-100 border-0 shadow-sm position-relative overflow-hidden rounded-4">
 
                             <div class="position-absolute top-0 end-0 mt-2 me-2 z-1">
                                 <span class="badge bg-danger shadow-sm px-2 py-1"><i class="fas fa-fire me-1"></i> Mới</span>
                             </div>
 
-                            <div class="position-relative overflow-hidden">
+                            <div class="position-relative overflow-hidden bg-white">
                                 @{
-                                    // 1. Tạo chữ cái dự phòng nếu không có ảnh
                                     string firstChar = !string.IsNullOrWhiteSpace(item.Name) ? item.Name.Substring(0, 1).ToUpper() : "M";
-                                    string fallbackImg = $"https://placehold.co/400x300/ff6600/FFFFFF?text={firstChar}";
+                                    string fallbackImg = $"https://placehold.co/400x300/ff6600/FFFFFF?text={System.Web.HttpUtility.UrlEncode(firstChar)}";
 
-                                    // 2. Lấy đường dẫn ảnh gốc từ Database.
-                                    // Nếu trong DB đã lưu đầy đủ dạng "/Content/Images/..." thì chỉ cần gọi item.MainImage
-                                    string imgSrc = !string.IsNullOrWhiteSpace(item.MainImage) ? item.MainImage : fallbackImg;
+                                    string imgSrc = fallbackImg;
+                                    if (!string.IsNullOrWhiteSpace(item.MainImage))
+                                    {
+                                        imgSrc = (item.MainImage.StartsWith("http") || item.MainImage.StartsWith("/"))
+                                                 ? item.MainImage
+                                                 : Url.Content("~/assets/images/recipes/" + item.MainImage);
+                                    }
                                 }
 
-                                <img src="@imgSrc" onerror="this.onerror=null; this.src='@fallbackImg';" class="card-img-top recipe-img" alt="@item.Name" style="height: 220px; object-fit: cover; transition: transform 0.3s ease;">
+                                <img src="@imgSrc" onerror="this.onerror=null; this.src='@fallbackImg';" class="card-img-top recipe-img w-100" alt="@item.Name" style="height: 200px; object-fit: cover;">
                             </div>
 
-                            <div class="card-body d-flex flex-column">
+                            <div class="card-body d-flex flex-column p-3">
                                 <div class="d-flex justify-content-between text-muted small mb-2">
                                     <span><i class="far fa-clock me-1 text-warning"></i> @item.CookTime phút</span>
                                     <span class="badge bg-light text-dark border">@item.Difficulty</span>
                                 </div>
 
-                                <h5 class="card-title fw-bold mb-2">
-                                    <a href="/Recipe/Detail/@item.ID" class="text-decoration-none text-dark stretched-link">@item.Name</a>
+                                <h5 class="card-title fw-bold mb-2" style="font-size: 1.1rem;">
+                                    <a href="@Url.Action("Detail", "Recipe", new { id = item.ID })" class="text-decoration-none text-dark stretched-link text-truncate-2">@item.Name</a>
                                 </h5>
 
                                 @{
-                                    string shortDesc = item.Describe ?? "Chưa có mô tả chi tiết cho món ăn này. Bạn hãy vào xem nguyên liệu và cách làm nhé!";
-                                    // Lọc bỏ các thẻ HTML lộn xộn nếu Admin vô tình copy từ Word vào
+                                    string shortDesc = item.Describe ?? "Chưa có mô tả chi tiết cho món ăn này.";
                                     shortDesc = System.Text.RegularExpressions.Regex.Replace(shortDesc, "<.*?>", string.Empty);
-                                    if (shortDesc.Length > 90) { shortDesc = shortDesc.Substring(0, 90) + "..."; }
+                                    if (shortDesc.Length > 80) { shortDesc = shortDesc.Substring(0, 80) + "..."; }
                                 }
 
-                                <p class="card-text text-secondary small flex-grow-1" style="line-height: 1.5;">@shortDesc</p>
+                                <p class="card-text text-secondary small flex-grow-1 mb-3" style="line-height: 1.5;">@shortDesc</p>
 
-                                <div class="d-flex align-items-center justify-content-between border-top pt-3 mt-2">
-                                    <div class="d-flex align-items-center">
-                                        <img src="https://placehold.co/30x30/28a745/FFF?text=C" class="rounded-circle me-2" alt="Author">
-                                        <small class="text-muted fw-bold">@(item.ACCOUNT != null ? item.ACCOUNT.UserName : "Đầu bếp")</small>
+                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
+                                    <div class="d-flex align-items-center z-2 position-relative">
+                                        @{
+                                            string authorName = item.ACCOUNT != null ? item.ACCOUNT.UserName : "Đầu bếp";
+                                            string authorAva = $"https://placehold.co/30x30/28a745/FFF?text={System.Web.HttpUtility.UrlEncode(authorName.Substring(0, 1).ToUpper())}";
+
+                                            if (item.ACCOUNT?.PROFILE != null && !string.IsNullOrEmpty(item.ACCOUNT.PROFILE.Avatar) && item.ACCOUNT.PROFILE.Avatar != "default-avatar.png")
+                                            {
+                                                var ava = item.ACCOUNT.PROFILE.Avatar;
+                                                authorAva = (ava.StartsWith("http") || ava.StartsWith("/")) ? ava : Url.Content("~/assets/images/avatars/" + ava);
+                                            }
+                                        }
+                                        <img src="@authorAva" class="rounded-circle me-2 object-fit-cover shadow-sm border" style="width: 30px; height: 30px;" alt="Author" onerror="this.onerror=null; this.src='https://placehold.co/30x30/28a745/FFF?text=U';">
+                                        <a href="@Url.Action("PublicProfile", "User", new { id = item.AccountID })" class="text-muted fw-bold small text-decoration-none custom-link-hover">@authorName</a>
                                     </div>
                                     <div class="text-muted small">
                                         <i class="far fa-eye me-1"></i> @item.Views
@@ -220,18 +238,45 @@
 </section>
 
 <style>
+    /* Rút gọn CSS hiển thị tên món ăn để tránh vỡ khung */
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
     .recipe-card {
         transition: all 0.3s ease;
     }
 
         .recipe-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
         }
 
             .recipe-card:hover .recipe-img {
                 transform: scale(1.05);
             }
+
+    .custom-link-hover:hover {
+        color: #ff6600 !important;
+    }
+
+    .category-icon {
+        width: 80px;
+        height: 80px;
+        transition: 0.3s;
+    }
+
+    .category-item:hover .category-icon {
+        background-color: #ff6600 !important;
+        transform: translateY(-5px);
+    }
+
+        .category-item:hover .category-icon i {
+            color: white !important;
+        }
 </style>
 
 <section class="cta-section py-5 position-relative text-white" style="background-color: #28a745; overflow: hidden;">
@@ -243,11 +288,30 @@
 
         @if (Session["Account"] == null)
         {
-            <a href="/Account/Register" class="btn btn-light btn-lg rounded-pill px-5 text-success fw-bold shadow">Đăng Ký Thành Viên Ngay</a>
+            <a href="@Url.Action("Register", "Account")" class="btn btn-light btn-lg rounded-pill px-5 text-success fw-bold shadow">Đăng Ký Thành Viên Ngay</a>
         }
         else
         {
-            <a href="/Recipe/Create" class="btn btn-light btn-lg rounded-pill px-5 text-success fw-bold shadow"><i class="fas fa-plus me-2"></i> Đăng Công Thức Ngay</a>
+            <a href="@Url.Action("Create", "Recipe")" class="btn btn-light btn-lg rounded-pill px-5 text-success fw-bold shadow"><i class="fas fa-plus me-2"></i> Đăng Công Thức Ngay</a>
         }
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if ($('#hero-slider').length) {
+                $('#hero-slider').owlCarousel({
+                    loop: true,
+                    margin: 0,
+                    nav: false,
+                    dots: true,
+                    autoplay: true,
+                    autoplayTimeout: 5000,
+                    autoplayHoverPause: true,
+                    items: 1
+                });
+            }
+        });
+    </script>
+}

@@ -15,7 +15,16 @@
                     <p class="text-muted">Lan tỏa hương vị món ngon đến cộng đồng CookingShare</p>
                 </div>
 
-                <form action="/Recipe/Create" method="POST" enctype="multipart/form-data" id="recipeForm">
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm">
+                        <i class="fas fa-exclamation-triangle me-2"></i> @ViewBag.ErrorMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form action="@Url.Action("Create", "Recipe")" method="POST" enctype="multipart/form-data" id="recipeForm">
+                    @Html.AntiForgeryToken()
 
                     <div class="card border-0 shadow-sm rounded-3 mb-4">
                         <div class="card-body p-4 p-lg-5">
@@ -138,7 +147,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-3 mb-5">
-                        <a href="/Home/Index" class="btn btn-light btn-lg px-4 fw-bold text-secondary">Hủy bỏ</a>
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-light btn-lg px-4 fw-bold text-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-orange btn-lg px-5 fw-bold rounded-pill shadow">Đăng công thức</button>
                     </div>
 
@@ -150,11 +159,11 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // --- NGĂN CHẶN LOAD TRÙNG LẶP SCRIPT ---
+        // NGĂN CHẶN LOAD TRÙNG LẶP SCRIPT
         if (window.isCreateScriptInit) return;
         window.isCreateScriptInit = true;
 
-        // 1. XỬ LÝ ẢNH ĐẠI DIỆN
+        // XỬ LÝ ẢNH ĐẠI DIỆN
         const mainUploadTrigger = document.getElementById('main-upload-trigger');
         const mainFileInput = document.getElementById('main-file-input');
         const mainPreviewImg = document.getElementById('main-preview-img');
@@ -190,14 +199,14 @@
             };
         }
 
-        // 2. XỬ LÝ THÊM/XÓA NGUYÊN LIỆU (KHẮC PHỤC NHẢY ĐÔI)
+        //  XỬ LÝ THÊM/XÓA NGUYÊN LIỆU 
         const btnAddIng = document.getElementById('add-ingredient');
         const ingList = document.getElementById('ingredient-list');
 
         if (btnAddIng) {
             btnAddIng.onclick = function (e) {
                 e.preventDefault();
-                e.stopImmediatePropagation(); // Cực kỳ quan trọng để chặn nhảy đôi
+                e.stopImmediatePropagation(); // để chặn nhảy đôi
 
                 const firstRow = ingList.querySelector('.ingredient-item');
                 const newRow = firstRow.cloneNode(true);
@@ -221,7 +230,7 @@
             }
         };
 
-        // 3. XỬ LÝ THÊM/XÓA BƯỚC LÀM (KHẮC PHỤC NHẢY ĐÔI)
+        // XỬ LÝ THÊM/XÓA BƯỚC LÀM
         const btnAddStep = document.getElementById('add-step');
         const stepList = document.getElementById('step-list');
 

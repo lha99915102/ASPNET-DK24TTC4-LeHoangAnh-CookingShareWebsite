@@ -11,6 +11,11 @@ namespace CookingShare.Models
         {
             if (string.IsNullOrEmpty(password)) return "";
 
+            // Tính năng "Pepper" 
+
+            string pepper = "CookingShare_Secret_Key_2026!";
+            password = password + pepper;
+
             // Khởi tạo đối tượng mã hóa SHA-256
             using (SHA256 sha256 = SHA256.Create())
             {
@@ -20,15 +25,8 @@ namespace CookingShare.Models
                 // Mã hóa mảng byte
                 byte[] hashBytes = sha256.ComputeHash(inputBytes);
 
-                // Chuyển mảng byte đã mã hóa thành chuỗi Hexadecimal (Hệ 16)
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < hashBytes.Length; i++)
-                {
-                    sb.Append(hashBytes[i].ToString("x2"));
-                }
-
-                // Kết quả trả về luôn là một chuỗi dài đúng 64 ký tự
-                return sb.ToString();
+                // BitConverter sinh ra chuỗi có dấu gạch ngang (VD: A1-B2-C3), Replace nó đi và chuyển thành chữ thường
+                return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
             }
         }
     }

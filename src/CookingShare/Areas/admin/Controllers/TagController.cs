@@ -10,9 +10,7 @@ namespace CookingShare.Areas.Admin.Controllers
     {
         CookingShareDBEntities db = new CookingShareDBEntities();
 
-        // ==========================================
-        // 1. HIỂN THỊ DANH SÁCH TAG
-        // ==========================================
+        // HIỂN THỊ DANH SÁCH TAG
         public ActionResult Index(string typeFilter = "")
         {
             var currentAcc = Session["Account"] as ACCOUNT;
@@ -21,7 +19,7 @@ namespace CookingShare.Areas.Admin.Controllers
             // Lấy danh sách Tag
             var tags = db.TAG.AsQueryable();
 
-            // Lọc theo loại Tag nếu có
+            // Lọc theo loại Tag
             if (!string.IsNullOrEmpty(typeFilter))
             {
                 tags = tags.Where(t => t.TagType == typeFilter);
@@ -32,19 +30,23 @@ namespace CookingShare.Areas.Admin.Controllers
             return View(tags.OrderByDescending(t => t.ID).ToList());
         }
 
-        // ==========================================
-        // 2. THÊM MỚI HOẶC CẬP NHẬT TAG
-        // ==========================================
+
+        // THÊM MỚI HOẶC CẬP NHẬT TAG
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Save(TAG model)
         {
+            var currentAcc = Session["Account"] as ACCOUNT;
+            if (currentAcc == null || currentAcc.Role != 1) return Redirect("~/Admin/Auth/Login");
+
             try
             {
-                if (model.ID == 0) // THÊM MỚI
+                //  Xóa khoảng trắng thừa ở đầu/cuối
+                model.TagName = model.TagName?.Trim();
+
+                if (model.ID == 0) // THÊM MỚI 
                 {
-                    // Kiểm tra xem tên Tag đã tồn tại chưa để tránh trùng lặp
-                    var checkExist = db.TAG.FirstOrDefault(t => t.TagName.ToLower() == model.TagName.ToLower());
+                    var checkExist = db.TAG.FirstOrDefault(t => t.TagName == model.TagName);
                     if (checkExist != null)
                     {
                         TempData["Error"] = "Tên Tag này đã tồn tại trong hệ thống!";
@@ -54,8 +56,15 @@ namespace CookingShare.Areas.Admin.Controllers
                     db.TAG.Add(model);
                     TempData["Success"] = "Đã thêm Tag mới thành công!";
                 }
-                else // CẬP NHẬT
+                else //  CẬP NHẬT
                 {
+                    var checkExist = db.TAG.FirstOrDefault(t => t.TagName == model.TagName && t.ID != model.ID);
+                    if (checkExist != null)
+                    {
+                        TempData["Error"] = "Tên Tag này bị trùng với một Tag khác đang có!";
+                        return RedirectToAction("Index");
+                    }
+
                     var existingTag = db.TAG.Find(model.ID);
                     if (existingTag != null)
                     {
@@ -74,28 +83,48 @@ namespace CookingShare.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
 
-        // ==========================================
-        // 3. XÓA TAG
-        // ==========================================
+        //  XÓA TAG
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
+            var currentAcc = Session["Account"] as ACCOUNT;
+            if (currentAcc == null || currentAcc.Role != 1) return Redirect("~/Admin/Auth/Login");
+
             try
             {
                 var tag = db.TAG.Find(id);
                 if (tag != null)
                 {
+                    // KIỂM TRA CHỦ ĐỘNG KHÓA NGOẠI (Foreign Key)
+                    if (tag.RECIPE != null && tag.RECIPE.Count > 0)
+                    {
+                        TempData["Error"] = $"Không thể xóa! Tag này đang được gắn trong {tag.RECIPE.Count} bài viết công thức.";
+                        return RedirectToAction("Index");
+                    }
+
                     db.TAG.Remove(tag);
                     db.SaveChanges();
                     TempData["Success"] = "Đã xóa Tag thành công!";
                 }
+                else
+                {
+                    TempData["Error"] = "Không tìm thấy Tag để xóa.";
+                }
             }
             catch (Exception)
             {
-                // Bắt lỗi khóa ngoại nếu Tag này đang được gán cho một Công thức nào đó (bảng RECIPE_TAG_MAP)
-                TempData["Error"] = "Không thể xóa! Tag này đang được sử dụng trong các bài viết Công thức.";
+                // Bắt lỗi dự phòng nếu có lỗi hệ thống khác
+                TempData["Error"] = "Không thể xóa! Tag này đang được sử dụng.";
             }
             return RedirectToAction("Index");
+        }
+
+        // Dọn dẹp kết nối
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) { db.Dispose(); }
+            base.Dispose(disposing);
         }
     }
 }

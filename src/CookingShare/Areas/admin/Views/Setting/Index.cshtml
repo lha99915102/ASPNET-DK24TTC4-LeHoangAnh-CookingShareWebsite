@@ -63,7 +63,8 @@
                                     <i class="fas fa-edit"></i>
                                 </button>
 
-                                <form action="/Admin/Setting/Delete" method="post" style="display:inline;" onsubmit="return confirm('Xóa cấu hình này có thể gây lỗi hệ thống. Bạn có chắc chắn?');">
+                                <form action="@Url.Action("Delete", "Setting", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Xóa cấu hình này có thể gây lỗi hệ thống. Bạn có chắc chắn?');">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@item.ID" />
                                     <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                                 </form>
@@ -84,7 +85,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <form action="/Admin/Setting/Save" method="post">
+            <form action="@Url.Action("Save", "Setting", new { area = "Admin" })" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="ID" id="s_ID" value="0" />
 
@@ -129,7 +130,8 @@
             document.getElementById('s_Key').value = key;
             document.getElementById('s_Value').value = value;
 
-            var myModal = new bootstrap.Modal(document.getElementById('settingModal'));
+            // chống kẹt Modal Backdrop
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('settingModal'));
             myModal.show();
         }
     </script>

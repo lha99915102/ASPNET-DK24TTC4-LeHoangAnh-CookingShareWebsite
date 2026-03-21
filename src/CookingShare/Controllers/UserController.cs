@@ -1,6 +1,7 @@
 ﻿using CookingShare.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -11,97 +12,105 @@ namespace CookingShare.Controllers
     {
         CookingShareDBEntities db = new CookingShareDBEntities();
 
-        // Hàm hiển thị trang cá nhân công khai (Ai cũng xem được)
+        // TRANG CÁ NHÂN CÔNG KHAI
         public ActionResult PublicProfile(int? id)
         {
-            if (id == null)
+            if (id == null) return RedirectToAction("Index", "Home");
+
+            try
             {
-                // Nếu không truyền ID thì bay về trang chủ
-                return RedirectToAction("Index", "Home");
-            }
+                var user = db.ACCOUNT.Include(u => u.PROFILE).FirstOrDefault(u => u.ID == id && u.Status == 1);
 
-            // Lấy thông tin user dựa vào ID
-            var user = db.ACCOUNT.FirstOrDefault(u => u.ID == id && u.Status == 1);
+                if (user == null) return HttpNotFound("Không tìm thấy đầu bếp này!");
 
-            if (user == null)
-            {
-                // Trả về trang lỗi 404 nếu không tìm thấy người dùng
-                return HttpNotFound("Không tìm thấy đầu bếp này!");
-            }
+                // Đếm trực tiếp dưới Database, không kéo dữ liệu lên RAM
+                ViewBag.RecipeCount = db.RECIPE.Count(r => r.AccountID == id && r.Status == 1);
+                ViewBag.FollowerCount = db.FOLLOW.Count(f => f.FollowedID == id);
+                ViewBag.FollowingCount = db.FOLLOW.Count(f => f.FollowerID == id);
 
-            // Đếm số lượng công thức người này đã đăng (đã duyệt)
-            ViewBag.RecipeCount = user.RECIPE.Count(r => r.Status == 1);
+                ViewBag.IsFollowing = false;
+                ViewBag.IsSelf = false;
 
-            ViewBag.FollowerCount = db.FOLLOW.Count(f => f.FollowedID == id); // Số người theo dõi user này
-            ViewBag.FollowingCount = db.FOLLOW.Count(f => f.FollowerID == id); // Số người user này đang theo dõi
-
-            ViewBag.IsFollowing = false;
-            ViewBag.IsSelf = false;
-
-            if (Session["Account"] != null)
-            {
-                int loggedInUserId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
-
-                // Kiểm tra xem có phải đang tự xem trang của mình không
-                if (loggedInUserId == id)
+                if (Session["Account"] != null)
                 {
-                    ViewBag.IsSelf = true;
-                }
-                else
-                {
-                    // Nếu xem trang người khác, kiểm tra xem đã theo dõi chưa
-                    var checkFollow = db.FOLLOW.FirstOrDefault(f => f.FollowerID == loggedInUserId && f.FollowedID == id);
-                    if (checkFollow != null)
+                    int loggedInUserId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
+
+                    if (loggedInUserId == id)
                     {
-                        ViewBag.IsFollowing = true;
+                        ViewBag.IsSelf = true;
+                    }
+                    else
+                    {
+                        ViewBag.IsFollowing = db.FOLLOW.Any(f => f.FollowerID == loggedInUserId && f.FollowedID == id);
                     }
                 }
+
+                // Chỉ lấy ảnh thành quả hợp lệ (Status == 1) và Include RECIPE để in tên món
+                var cooksnaps = db.COOKSNAP
+                                   .Include(c => c.RECIPE)
+                                   .Where(c => c.AccountID == id && !string.IsNullOrEmpty(c.ImageName) && c.Status == 1)
+                                   .OrderByDescending(c => c.CreateDate)
+                                   .ToList();
+
+                ViewBag.Cooksnaps = cooksnaps;
+                ViewBag.CooksnapCount = cooksnaps.Count;
+
+                return View(user);
             }
-
-            var cooksnaps = db.COOKSNAP
-                               .Where(c => c.AccountID == id && c.ImageName != null && c.ImageName != "")
-                               .OrderByDescending(c => c.CreateDate)
-                               .ToList();
-
-            ViewBag.Cooksnaps = cooksnaps;
-            ViewBag.CooksnapCount = cooksnaps.Count;
-
-            return View(user); // Truyền nguyên Model ACCOUNT sang View
+            catch (Exception)
+            {
+                return HttpNotFound("Hệ thống đang bảo trì dữ liệu người dùng.");
+            }
         }
 
-        // Hàm hiển thị trang Cài đặt cá nhân (Yêu cầu đăng nhập)
+
+        // TRANG CÀI ĐẶT CÁ NHÂN (MY PROFILE)
         [HttpGet]
         public ActionResult MyProfile()
         {
-            if (Session["Account"] == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            if (Session["Account"] == null) return RedirectToAction("Login", "Account");
 
-            var sessionUser = (CookingShare.Models.ACCOUNT)Session["Account"];
-            var currentUser = db.ACCOUNT.FirstOrDefault(u => u.ID == sessionUser.ID);
+            int sessionId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
 
-            // 1. Thống kê
+            // Tối ưu truy vấn: Include sẵn PROFILE và INGREDIENT
+            var currentUser = db.ACCOUNT
+                                .Include(u => u.PROFILE)
+                                .Include(u => u.INGREDIENT)
+                                .FirstOrDefault(u => u.ID == sessionId);
+
+            if (currentUser == null) return RedirectToAction("Login", "Account");
+
             ViewBag.FollowerCount = db.FOLLOW.Count(f => f.FollowedID == currentUser.ID);
 
-            // 2. Lấy danh sách Công thức đã lưu (Favorites)
-            ViewBag.Favorites = db.FAVORITE.Where(f => f.AccountID == currentUser.ID).OrderByDescending(f => f.CreateDate).ToList();
+            // Include RECIPE và ACCOUNT (tác giả món) cho danh sách Favorite
+            ViewBag.Favorites = db.FAVORITE
+                                  .Include(f => f.RECIPE)
+                                  .Include(f => f.RECIPE.ACCOUNT)
+                                  .Where(f => f.AccountID == currentUser.ID)
+                                  .OrderByDescending(f => f.CreateDate)
+                                  .ToList();
 
-            // 3. Lấy thông báo (Chưa đọc đưa lên đầu)
             ViewBag.Notifications = db.NOTIFICATION.Where(n => n.AccountID == currentUser.ID).OrderBy(n => n.IsRead).ThenByDescending(n => n.CreateDate).ToList();
             ViewBag.UnreadNotiCount = db.NOTIFICATION.Count(n => n.AccountID == currentUser.ID && n.IsRead == false);
 
-            // 4. Lấy danh sách tất cả Nguyên Liệu để hiển thị Dị ứng
-            ViewBag.AllIngredients = db.INGREDIENT.ToList();
+            // TÁI SỬ DỤNG BỘ NHỚ ĐỆM (CACHE) CHO BẢNG NGUYÊN LIỆU ĐỂ GIẢM TẢI DB
+            var allIngredients = HttpContext.Cache["GlobalIngredients"] as List<INGREDIENT>;
+            if (allIngredients == null)
+            {
+                allIngredients = db.INGREDIENT.OrderBy(i => i.Name).ToList();
+                HttpContext.Cache.Insert("GlobalIngredients", allIngredients, null, DateTime.Now.AddHours(24), System.Web.Caching.Cache.NoSlidingExpiration);
+            }
+            ViewBag.AllIngredients = allIngredients;
 
-            // LẤY DỊ ỨNG BẰNG CÁCH GỌI THẲNG TỪ USER
             ViewBag.UserAllergies = currentUser.INGREDIENT.Select(i => i.ID).ToList();
 
             return View(currentUser);
         }
 
-        // Hàm xử lý Lưu thay đổi Cập nhật thông tin (ĐÃ GOM ĐẦY ĐỦ CÁC TRƯỜNG MỚI VÀ DỊ ỨNG)
+
+        // CẬP NHẬT THÔNG TIN CÁ NHÂN
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult UpdateProfile(FormCollection form, HttpPostedFileBase AvatarFile, HttpPostedFileBase KitchenFile, List<int> AllergyIDs)
         {
             if (Session["Account"] == null) return RedirectToAction("Login", "Account");
@@ -112,10 +121,8 @@ namespace CookingShare.Controllers
 
             if (userInDb != null && profile != null)
             {
-                // 1. CẬP NHẬT ACCOUNT (Số điện thoại)
                 userInDb.Phone = form["Phone"];
 
-                // 2. CẬP NHẬT PROFILE CƠ BẢN VÀ CHUYÊN SÂU
                 profile.FullName = form["FullName"];
                 profile.Bio = form["Bio"];
                 profile.Gender = form["Gender"];
@@ -125,73 +132,45 @@ namespace CookingShare.Controllers
                 profile.CookingPhilosophy = form["CookingPhilosophy"];
                 profile.SocialLink = form["SocialLink"];
 
-                // XỬ LÝ AN TOÀN CHO CÁC TRƯỜNG KIỂU SỐ VÀ NGÀY THÁNG 
-
-                // Ngày sinh
                 DateTime parsedDate;
-                if (DateTime.TryParse(form["BirthDay"], out parsedDate))
-                {
-                    profile.BirthDay = parsedDate;
-                }
+                if (DateTime.TryParse(form["BirthDay"], out parsedDate)) profile.BirthDay = parsedDate;
 
-                // Chiều cao
+                // Xử lý dấu thập phân
                 double parsedHeight;
-                if (double.TryParse(form["Height"], out parsedHeight))
-                {
-                    profile.Height = parsedHeight;
-                }
+                if (double.TryParse(form["Height"]?.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out parsedHeight)) profile.Height = parsedHeight;
 
-                // Cân nặng
                 double parsedWeight;
-                if (double.TryParse(form["Weight"], out parsedWeight))
-                {
-                    profile.Weight = parsedWeight;
-                }
+                if (double.TryParse(form["Weight"]?.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out parsedWeight)) profile.Weight = parsedWeight;
 
-                // Calo hằng ngày
                 int parsedCalo;
-                if (int.TryParse(form["CaloDaily"], out parsedCalo))
-                {
-                    profile.CaloDaily = parsedCalo;
-                }
+                if (int.TryParse(form["CaloDaily"], out parsedCalo)) profile.CaloDaily = parsedCalo;
 
-                // 3. XỬ LÝ UPLOAD ẢNH AVATAR
+                // DÙNG FILE HELPER CHUẨN HÓA UPLOAD ẢNH
+
+                // Cập nhật Avatar
                 if (AvatarFile != null && AvatarFile.ContentLength > 0)
                 {
-                    string extension = System.IO.Path.GetExtension(AvatarFile.FileName);
-                    string fileName = "avatar_" + sessionUser.ID.ToString() + "_" + System.DateTime.Now.ToString("yyyyMMddHHmmss") + extension;
-                    string path = Server.MapPath("~/assets/images/avatars/");
-                    if (!System.IO.Directory.Exists(path)) System.IO.Directory.CreateDirectory(path);
-                    AvatarFile.SaveAs(path + fileName);
-                    profile.Avatar = fileName;
+                    string prefix = "avatar_" + sessionUser.ID;
+                    profile.Avatar = FileHelper.UploadAndReplaceImage(AvatarFile, "~/assets/images/avatars/", prefix, profile.Avatar);
                 }
 
-                // XỬ LÝ UPLOAD ẢNH BẾP (KITCHEN IMAGE)
+                // Cập nhật Ảnh Căn Bếp (Kitchen Image)
                 if (KitchenFile != null && KitchenFile.ContentLength > 0)
                 {
-                    string extension = System.IO.Path.GetExtension(KitchenFile.FileName);
-                    string fileName = "kitchen_" + sessionUser.ID.ToString() + "_" + System.DateTime.Now.ToString("yyyyMMddHHmmss") + extension;
-                    string path = Server.MapPath("~/assets/images/kitchens/");
-                    if (!System.IO.Directory.Exists(path)) System.IO.Directory.CreateDirectory(path);
-                    KitchenFile.SaveAs(path + fileName);
-                    profile.KitchenImage = fileName;
+                    string prefix = "kitchen_" + sessionUser.ID;
+                    profile.KitchenImage = FileHelper.UploadAndReplaceImage(KitchenFile, "~/assets/images/kitchens/", prefix, profile.KitchenImage);
                 }
 
-                // 4. XỬ LÝ DỊ ỨNG (Quan hệ Nhiều - Nhiều)
-                userInDb.INGREDIENT.Clear(); // Xóa cũ
-                if (AllergyIDs != null && AllergyIDs.Count > 0) // Thêm mới
+                userInDb.INGREDIENT.Clear();
+                if (AllergyIDs != null && AllergyIDs.Count > 0)
                 {
                     foreach (var ingId in AllergyIDs)
                     {
                         var ingredient = db.INGREDIENT.Find(ingId);
-                        if (ingredient != null)
-                        {
-                            userInDb.INGREDIENT.Add(ingredient);
-                        }
+                        if (ingredient != null) userInDb.INGREDIENT.Add(ingredient);
                     }
                 }
 
-                // 5. XỬ LÝ ĐỔI MẬT KHẨU
                 string OldPassword = form["OldPassword"];
                 string NewPassword = form["NewPassword"];
                 string ConfirmPassword = form["ConfirmPassword"];
@@ -209,50 +188,38 @@ namespace CookingShare.Controllers
                         TempData["ErrorMessage"] = "Mật khẩu mới và Xác nhận mật khẩu không khớp hoặc bị bỏ trống!";
                         return RedirectToAction("MyProfile");
                     }
-                    string hashedNewPass = CookingShare.Models.SecurityHelper.HashPasswordSHA256(NewPassword);
-                    userInDb.Password = hashedNewPass;
+                    userInDb.Password = CookingShare.Models.SecurityHelper.HashPasswordSHA256(NewPassword);
                 }
 
-                db.SaveChanges(); // Lưu tất cả vào Database
+                db.SaveChanges();
 
-                Session["Account"] = userInDb; // Reset Session để cập nhật thông tin mới
+                Session["Account"] = userInDb;
                 TempData["SuccessMessage"] = "Cập nhật thông tin thành công!";
             }
 
             return RedirectToAction("MyProfile");
         }
 
-        // Hàm AJAX: Xử lý Báo cáo (Report) từ người dùng
+
         [HttpPost]
         public ActionResult SubmitReport(int targetId, string reason, int type)
         {
             try
             {
-                if (Session["Account"] == null)
-                {
-                    return Json(new { success = false, message = "Vui lòng đăng nhập!" });
-                }
-
+                if (Session["Account"] == null) return Json(new { success = false, message = "Vui lòng đăng nhập!" });
                 int reporterId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
+                if (reporterId == targetId && type == 2) return Json(new { success = false, message = "Bạn không thể tự báo cáo chính mình!" });
 
-                // Tránh việc người dùng tự báo cáo chính mình
-                if (reporterId == targetId && type == 2)
-                {
-                    return Json(new { success = false, message = "Bạn không thể tự báo cáo chính mình!" });
-                }
-
-                // Tạo mới một record Báo cáo
                 var newReport = new REPORT();
                 newReport.ReporterID = reporterId;
                 newReport.TargetID = targetId;
-                newReport.ReportType = type; // 2 = Báo cáo người dùng
+                newReport.ReportType = type;
                 newReport.Reason = reason;
                 newReport.CreateDate = DateTime.Now;
-                newReport.Status = 0; // 0 = Chờ Admin duyệt
+                newReport.Status = 0;
 
                 db.REPORT.Add(newReport);
                 db.SaveChanges();
-
                 return Json(new { success = true });
             }
             catch (Exception ex)
@@ -261,60 +228,36 @@ namespace CookingShare.Controllers
             }
         }
 
-        // Hàm AJAX: Xử lý Theo dõi / Bỏ theo dõi người dùng
         [HttpPost]
         public ActionResult ToggleFollow(int targetId)
         {
             try
             {
-                if (Session["Account"] == null)
-                {
-                    return Json(new { success = false, message = "Vui lòng đăng nhập!" });
-                }
-
+                if (Session["Account"] == null) return Json(new { success = false, message = "Vui lòng đăng nhập!" });
                 int followerId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
+                if (followerId == targetId) return Json(new { success = false, message = "Bạn không thể tự theo dõi chính mình!" });
 
-                // Cấm tự theo dõi chính mình
-                if (followerId == targetId)
-                {
-                    return Json(new { success = false, message = "Bạn không thể tự theo dõi chính mình!" });
-                }
-
-                // Kiểm tra xem đã theo dõi chưa
                 var existingFollow = db.FOLLOW.FirstOrDefault(f => f.FollowerID == followerId && f.FollowedID == targetId);
 
                 if (existingFollow != null)
                 {
-                    // NẾU ĐÃ THEO DÕI -> BỎ THEO DÕI (XÓA KHỎI DB)
                     db.FOLLOW.Remove(existingFollow);
                     db.SaveChanges();
-
                     return Json(new { success = true, isFollowing = false });
                 }
                 else
                 {
-                    // NẾU CHƯA THEO DÕI -> THÊM MỚI VÀO DB
-                    var newFollow = new FOLLOW();
-                    newFollow.FollowerID = followerId;
-                    newFollow.FollowedID = targetId;
-                    newFollow.CreateDate = DateTime.Now;
-
+                    var newFollow = new FOLLOW { FollowerID = followerId, FollowedID = targetId, CreateDate = DateTime.Now };
                     db.FOLLOW.Add(newFollow);
 
-                    // TẠO THÔNG BÁO CHO NGƯỜI ĐƯỢC FOLLOW
                     var followerName = ((CookingShare.Models.ACCOUNT)Session["Account"]).UserName;
-                    var newNoti = new NOTIFICATION();
-                    newNoti.AccountID = targetId; // Người nhận thông báo là người được theo dõi
-                    newNoti.Content = $"Người dùng {followerName} đã bắt đầu theo dõi bạn.";
-                    newNoti.LinkURL = $"/User/PublicProfile/{followerId}"; // Link dẫn về trang của người vừa follow
-                    newNoti.IsRead = false;
-                    newNoti.CreateDate = DateTime.Now;
 
+                    string linkUrl = Url.Action("PublicProfile", "User", new { id = followerId });
+
+                    var newNoti = new NOTIFICATION { AccountID = targetId, Content = $"Người dùng {followerName} đã bắt đầu theo dõi bạn.", LinkURL = linkUrl, IsRead = false, CreateDate = DateTime.Now };
                     db.NOTIFICATION.Add(newNoti);
-                    // ==========================================
 
                     db.SaveChanges();
-
                     return Json(new { success = true, isFollowing = true });
                 }
             }
@@ -324,73 +267,47 @@ namespace CookingShare.Controllers
             }
         }
 
-        // Hàm AJAX: Đánh dấu tất cả thông báo của người dùng là Đã đọc
         [HttpPost]
         public ActionResult MarkNotificationsRead()
         {
             if (Session["Account"] == null) return Json(new { success = false });
-
             int userId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
-
-            // Tìm các thông báo chưa đọc của user này
             var unreadNotis = db.NOTIFICATION.Where(n => n.AccountID == userId && n.IsRead == false).ToList();
-
             if (unreadNotis.Count > 0)
             {
-                foreach (var noti in unreadNotis)
-                {
-                    noti.IsRead = true; // Đổi trạng thái
-                }
-                db.SaveChanges(); // Lưu vào DB
+                foreach (var noti in unreadNotis) noti.IsRead = true;
+                db.SaveChanges();
             }
-
             return Json(new { success = true });
         }
 
-        // Hàm AJAX: Xóa tất cả thông báo ĐÃ ĐỌC của người dùng
         [HttpPost]
         public ActionResult DeleteReadNotifications()
         {
             if (Session["Account"] == null) return Json(new { success = false });
-
             int userId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
-
-            // Tìm tất cả thông báo ĐÃ ĐỌC (IsRead == true) của user này
             var readNotis = db.NOTIFICATION.Where(n => n.AccountID == userId && n.IsRead == true).ToList();
-
             if (readNotis.Count > 0)
             {
-                db.NOTIFICATION.RemoveRange(readNotis); // Xóa sạch khỏi DB
+                db.NOTIFICATION.RemoveRange(readNotis);
                 db.SaveChanges();
             }
-
             return Json(new { success = true });
         }
 
-        // Hàm xử lý khi người dùng CLICK vào 1 thông báo cụ thể
         [HttpGet]
         public ActionResult ReadNotification(int id)
         {
             var noti = db.NOTIFICATION.Find(id);
             if (noti != null)
             {
-                // 1. Đánh dấu thông báo này là Đã đọc
                 noti.IsRead = true;
                 db.SaveChanges();
-
-                // 2. Kiểm tra xem thông báo này có Link để nhảy đi không?
-                if (!string.IsNullOrEmpty(noti.LinkURL))
-                {
-                    return Redirect(noti.LinkURL); // Nhảy sang Public Profile hoặc Chi tiết món
-                }
+                if (!string.IsNullOrEmpty(noti.LinkURL)) return Redirect(noti.LinkURL);
             }
-
-            // Nếu thông báo KHÔNG có link (Ví dụ: Thông báo xử phạt), 
-            // hoặc không tìm thấy thông báo, thì quay lại trang Quản lý tài khoản
             return RedirectToAction("MyProfile");
         }
 
-        // Hàm này gọi trực tiếp từ Layout để lấy số thông báo chưa đọc
         [ChildActionOnly]
         public ActionResult GetUnreadNotiBadge()
         {
@@ -398,36 +315,34 @@ namespace CookingShare.Controllers
             {
                 int userId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
                 int count = db.NOTIFICATION.Count(n => n.AccountID == userId && n.IsRead == false);
-
-                if (count > 0)
-                {
-                    // Trả về HTML chứa cái chấm đỏ
-                    return Content($"<span class=\"position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger\" style=\"font-size: 0.6rem;\">{count}</span>");
-                }
+                if (count > 0) return Content($"<span class=\"position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger\" style=\"font-size: 0.6rem;\">{count}</span>");
             }
-            return Content(""); // Không có thông báo thì không hiện gì
+            return Content("");
         }
 
-        // Hàm AJAX: Xóa công thức khỏi danh sách yêu thích
         [HttpPost]
         public ActionResult RemoveFavorite(int recipeId)
         {
             if (Session["Account"] == null) return Json(new { success = false, message = "Vui lòng đăng nhập!" });
-
             int userId = ((CookingShare.Models.ACCOUNT)Session["Account"]).ID;
-
-            // Tìm record yêu thích trong DB
             var fav = db.FAVORITE.FirstOrDefault(f => f.AccountID == userId && f.RecipeID == recipeId);
-
             if (fav != null)
             {
                 db.FAVORITE.Remove(fav);
                 db.SaveChanges();
                 return Json(new { success = true });
             }
-
             return Json(new { success = false });
         }
 
+        // Dọn dẹp kết nối Database
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

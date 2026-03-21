@@ -1,4 +1,5 @@
 ﻿using CookingShare.Models;
+using CookingShare.Helpers; 
 using System;
 using System.IO;
 using System.Linq;
@@ -13,15 +14,13 @@ namespace CookingShare.Areas.Admin.Controllers
     {
         CookingShareDBEntities db = new CookingShareDBEntities();
 
-        // ==========================================
-        // 1. HIỂN THỊ DANH SÁCH MẸO VẶT
-        // ==========================================
+
+        //  HIỂN THỊ DANH SÁCH MẸO VẶT
         public ActionResult Index()
         {
             var currentAcc = Session["Account"] as ACCOUNT;
             if (currentAcc == null || currentAcc.Role != 1) return Redirect("~/Admin/Auth/Login");
 
-            // Lấy danh sách Mẹo vặt, kèm theo thông tin người đăng (ACCOUNT)
             var tips = db.TIP.Include(t => t.ACCOUNT).OrderByDescending(t => t.CreateDate).ToList();
 
             ViewBag.TotalTips = tips.Count;
@@ -29,59 +28,51 @@ namespace CookingShare.Areas.Admin.Controllers
             return View(tips);
         }
 
-        // ==========================================
-        // 2. THÊM MỚI HOẶC CẬP NHẬT MẸO VẶT
-        // ==========================================
+
+        // THÊM MỚI HOẶC CẬP NHẬT MẸO VẶT
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [ValidateInput(false)] // Cho phép lưu nội dung HTML nếu bạn dùng bộ gõ như Summernote
+        [ValidateInput(false)] // Cho phép lưu nội dung HTML
         public ActionResult Save(TIP model, HttpPostedFileBase ImageFile)
         {
             var currentAcc = Session["Account"] as ACCOUNT;
-            if (currentAcc == null) return Redirect("~/Admin/Auth/Login");
+            if (currentAcc == null || currentAcc.Role != 1) return Redirect("~/Admin/Auth/Login");
 
             try
             {
-                // Xử lý Upload Hình ảnh
-                if (ImageFile != null && ImageFile.ContentLength > 0)
+                if (model.ID == 0) // THÊM MỚI 
                 {
-                    string uploadDir = "~/Content/Images/Tips/";
-                    bool exists = Directory.Exists(Server.MapPath(uploadDir));
-                    if (!exists) Directory.CreateDirectory(Server.MapPath(uploadDir));
+                    model.CreateDate = DateTime.Now;
+                    model.AccountID = currentAcc.ID;
 
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
-                    string path = Path.Combine(Server.MapPath(uploadDir), fileName);
-                    ImageFile.SaveAs(path);
-
-                    model.ImageURL = "/Content/Images/Tips/" + fileName;
-                }
-
-                if (model.ID == 0) // THÊM MỚI
-                {
-                    model.CreateDate = DateTime.Now; // Lấy ngày giờ hiện tại
-                    model.AccountID = currentAcc.ID; // Gán ID của người đang thao tác
+                    if (ImageFile != null && ImageFile.ContentLength > 0)
+                    {
+                        string prefix = "tip_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+                        model.ImageURL = FileHelper.UploadAndReplaceImage(ImageFile, "~/assets/images/tips/", prefix, null);
+                    }
 
                     db.TIP.Add(model);
+                    db.SaveChanges();
                     TempData["Success"] = "Đã đăng mẹo vặt mới thành công!";
                 }
                 else // CẬP NHẬT
                 {
                     var existingTip = db.TIP.Find(model.ID);
-                    if (existingTip != null) 
+                    if (existingTip != null)
                     {
                         existingTip.Title = model.Title;
                         existingTip.Content = model.Content;
-                        // Không cập nhật CreateDate và AccountID để giữ nguyên lịch sử
 
-                        if (!string.IsNullOrEmpty(model.ImageURL))
+                        if (ImageFile != null && ImageFile.ContentLength > 0)
                         {
-                            existingTip.ImageURL = model.ImageURL;
+                            string prefix = "tip_" + existingTip.ID;
+                            existingTip.ImageURL = FileHelper.UploadAndReplaceImage(ImageFile, "~/assets/images/tips/", prefix, existingTip.ImageURL);
                         }
 
                         TempData["Success"] = "Đã cập nhật mẹo vặt thành công!";
+                        db.SaveChanges();
                     }
                 }
-                db.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -91,20 +82,24 @@ namespace CookingShare.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
 
-        // ==========================================
-        // 3. XÓA MẸO VẶT
-        // ==========================================
+        //  XÓA MẸO VẶT
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
+            var currentAcc = Session["Account"] as ACCOUNT;
+            if (currentAcc == null || currentAcc.Role != 1) return Redirect("~/Admin/Auth/Login");
+
             try
             {
                 var tip = db.TIP.Find(id);
                 if (tip != null)
                 {
+                    FileHelper.DeleteImage("~/assets/images/tips/", tip.ImageURL);
+
                     db.TIP.Remove(tip);
                     db.SaveChanges();
-                    TempData["Success"] = "Đã xóa mẹo vặt thành công!";
+                    TempData["Success"] = "Đã xóa mẹo vặt và dọn dẹp dữ liệu thành công!";
                 }
             }
             catch (Exception ex)
@@ -112,6 +107,12 @@ namespace CookingShare.Areas.Admin.Controllers
                 TempData["Error"] = "Lỗi khi xóa: " + ex.Message;
             }
             return RedirectToAction("Index");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) { db.Dispose(); }
+            base.Dispose(disposing);
         }
     }
 }

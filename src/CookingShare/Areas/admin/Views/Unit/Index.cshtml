@@ -42,11 +42,12 @@
                                     </td>
                                     <td class="text-end">
                                         <button class="btn btn-sm btn-outline-primary me-1"
-                                                onclick="editUnit(@item.ID, '@item.UnitName')">
+                                                onclick="editUnit(@item.ID, '@System.Web.HttpUtility.JavaScriptStringEncode(item.UnitName ?? "")')">
                                             <i class="fas fa-edit"></i>
                                         </button>
 
-                                        <form action="/Admin/Unit/Delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa đơn vị này không?');">
+                                        <form action="@Url.Action("Delete", "Unit", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa đơn vị này không?');">
+                                            @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@item.ID" />
                                             <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                                         </form>
@@ -69,7 +70,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <form action="/Admin/Unit/Save" method="post">
+            <form action="@Url.Action("Save", "Unit", new { area = "Admin" })" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="ID" id="u_ID" value="0" />
 
@@ -106,7 +107,7 @@
             document.getElementById('u_ID').value = id;
             document.getElementById('u_UnitName').value = name;
 
-            var myModal = new bootstrap.Modal(document.getElementById('unitModal'));
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('unitModal'));
             myModal.show();
         }
     </script>

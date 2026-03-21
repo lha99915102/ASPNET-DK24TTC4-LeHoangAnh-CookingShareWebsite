@@ -16,7 +16,7 @@
     </button>
     <div class="d-flex align-items-center gap-2">
         <span class="text-muted small fw-bold">Trạng thái:</span>
-        <form action="/Admin/Banner/Index" method="get" id="filterForm">
+        <form action="@Url.Action("Index", "Banner", new { area = "Admin" })" method="get" id="filterForm">
             <select class="form-select w-auto" name="isActiveFilter" onchange="document.getElementById('filterForm').submit();">
                 <option value="">Tất cả</option>
                 <option value="true" @(currentFilter == true ? "selected" : "")>Đang hiển thị</option>
@@ -41,10 +41,13 @@
             <tbody>
                 @foreach (var item in Model)
                 {
+                    string fallbackImg = "https://placehold.co/800x300?text=No+Image";
+                    string imgSrc = !string.IsNullOrEmpty(item.ImageURL) ? Url.Content("~/assets/images/banners/" + item.ImageURL) : fallbackImg;
+
                     <tr class="@(item.IsActive == false ? "opacity-75" : "")">
                         <td><span class="badge bg-dark fs-6">@item.Position</span></td>
                         <td>
-                            <img src="@item.ImageURL" class="img-thumbnail w-100 object-fit-cover" style="height: 100px;" alt="Banner" onerror="this.src='https://placehold.co/800x300?text=No+Image'">
+                            <img src="@imgSrc" class="img-thumbnail w-100 object-fit-cover" style="height: 100px;" alt="Banner" onerror="this.src='@fallbackImg'">
                         </td>
                         <td>
                             <h6 class="mb-1 fw-bold @(item.IsActive == false ? "text-muted" : "text-dark")">@item.Title</h6>
@@ -58,10 +61,12 @@
                         </td>
                         <td class="text-end">
                             <button class="btn btn-sm btn-outline-primary me-1"
-                                    onclick="editBanner(@item.ID, '@item.Title', '@item.LinkURL', @item.Position, @(item.IsActive == true ? "true" : "false"), '@item.ImageURL')">
+                                    onclick="editBanner(@item.ID, '@HttpUtility.JavaScriptStringEncode(item.Title ?? "")', '@HttpUtility.JavaScriptStringEncode(item.LinkURL ?? "")', @item.Position, @(item.IsActive == true ? "true" : "false"), '@imgSrc')">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form action="/Admin/Banner/Delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa banner này?');">
+
+                            <form action="@Url.Action("Delete", "Banner", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa banner này?');">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@item.ID" />
                                 <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                             </form>
@@ -81,7 +86,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <form action="/Admin/Banner/Save" method="post" enctype="multipart/form-data">
+            <form action="@Url.Action("Save", "Banner", new { area = "Admin" })" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="ID" id="b_ID" value="0" />
 
@@ -141,7 +146,7 @@
         function previewImg(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
-                reader.onload = function(e) { document.getElementById('bannerPreview').src = e.target.result; }
+                reader.onload = function (e) { document.getElementById('bannerPreview').src = e.target.result; }
                 reader.readAsDataURL(input.files[0]);
             }
         }
@@ -168,11 +173,12 @@
             document.getElementById('b_Position').value = position;
             document.getElementById('b_IsActive').value = isActive.toString();
 
-            if(imgUrl && imgUrl !== '') {
+            if (imgUrl && imgUrl !== '') {
                 document.getElementById('bannerPreview').src = imgUrl;
             }
 
-            var myModal = new bootstrap.Modal(document.getElementById('bannerModal'));
+            // Tránh tạo nhiều instance Modal gây kẹt màn đen
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('bannerModal'));
             myModal.show();
         }
     </script>
