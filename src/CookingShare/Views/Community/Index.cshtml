@@ -36,7 +36,7 @@
                         if (snap.ACCOUNT != null && snap.ACCOUNT.PROFILE != null)
                         {
                             var p = snap.ACCOUNT.PROFILE;
-                            if (!string.IsNullOrEmpty(p.FullName)) snapAuthorName = p.FullName;
+                            if (!string.IsNullOrEmpty(p.FullName)) { snapAuthorName = p.FullName; }
 
                             if (!string.IsNullOrEmpty(p.Avatar) && p.Avatar != "default-avatar.png")
                             {
