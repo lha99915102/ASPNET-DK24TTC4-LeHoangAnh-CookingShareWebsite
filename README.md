@@ -7,6 +7,8 @@
 
 **CookingShare** là đồ án chuyên đề ASP.NET sử dụng ngôn ngữ C# và cấu trúc ASP.NET MVC nhằm xây dựng một website chia sẻ công thức nấu ăn chuyên sâu. Dự án không chỉ dừng lại ở việc đăng tải món ăn, mà còn tích hợp các tính năng tính toán dinh dưỡng (Calo, TDEE/BMR), gợi ý thực đơn thông minh dựa trên tủ lạnh và loại trừ dị ứng cá nhân, tạo ra một cộng đồng ẩm thực lành mạnh và tiện ích.
 
+> **🌐 TRẢI NGHIỆM THỰC TẾ (LIVE DEMO):** > Dự án đã được triển khai và vận hành thực tế trên máy chủ Internet.  
+> 👉 **[Bấm vào đây để truy cập Website CookingShare](https://hoanganhle.id.vn/)** ---
 ---
 
 ## 🎓 Thông tin Sinh viên (Student Information)
