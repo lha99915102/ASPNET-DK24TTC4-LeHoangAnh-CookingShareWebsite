@@ -1,0 +1,184 @@
+﻿@model IEnumerable<CookingShare.Models.INGREDIENT>
+@{
+    ViewBag.Title = "Nguyên liệu & Calo";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#ingredientModal" onclick="resetForm()">
+            <i class="fas fa-plus-circle me-2"></i>Thêm Nguyên Liệu
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle datatable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th>Tên Nguyên Liệu</th>
+                    <th>Calo (100g)</th>
+                    <th>Dinh dưỡng (P/F/S)</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <h6 class="mb-0 fw-bold text-dark">@item.Name</h6>
+                                <small class="text-muted">ID: @item.ID</small>
+                            </td>
+                            <td><strong class="text-danger">@(item.Calo ?? 0) kcal</strong></td>
+                            <td>
+                                <small class="d-block text-muted" style="font-size: 0.75rem;">
+                                    <span class="text-success fw-bold" title="Protein">P: @(item.Protein ?? 0) g</span> •
+                                    <span class="text-warning fw-bold" title="Fat">F: @(item.Fat ?? 0) g</span> •
+                                    <span class="text-info fw-bold" title="Sugar">S: @(item.Sugar ?? 0) g</span>
+                                </small>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="editIngredient(@item.ID, '@System.Web.HttpUtility.JavaScriptStringEncode(item.Name ?? "")', '@(item.Calo ?? 0)', '@(item.Protein ?? 0)', '@(item.Fat ?? 0)', '@(item.Sugar ?? 0)')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+
+                                <form action="@Url.Action("Delete", "Ingredient", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nguyên liệu này?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.ID" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger btn-delete" title="Xóa"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="ingredientModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalTitle">Thêm Nguyên Liệu Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="@Url.Action("Save", "Ingredient", new { area = "Admin" })" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" id="ing_ID" value="0" />
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tên nguyên liệu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="Name" id="ing_Name" placeholder="VD: Thịt gà..." required>
+
+                            <div class="alert alert-warning mt-4 small">
+                                <i class="fas fa-info-circle me-1"></i> Vui lòng nhập tên nguyên liệu chính xác để hệ thống có thể tính toán calo và dinh dưỡng cho các công thức nấu ăn một cách chính xác nhất.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 border-start">
+                            <div class="bg-light p-3 rounded">
+                                <h6 class="text-primary mb-3 fw-bold border-bottom pb-2">Chỉ số dinh dưỡng / 100g</h6>
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-sm-6 col-form-label fw-bold">Calories (kcal)</label>
+                                    <div class="col-sm-6">
+                                        <input type="number" step="0.1" class="form-control text-end fw-bold text-danger" name="Calo" id="ing_Calo" value="0">
+                                    </div>
+                                </div>
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-sm-6 col-form-label text-success">Protein (Đạm)</label>
+                                    <div class="col-sm-6">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="0.1" class="form-control text-end" name="Protein" id="ing_Protein" value="0">
+                                            <span class="input-group-text">g</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-sm-6 col-form-label text-warning">Fat (Béo)</label>
+                                    <div class="col-sm-6">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="0.1" class="form-control text-end" name="Fat" id="ing_Fat" value="0">
+                                            <span class="input-group-text">g</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-sm-6 col-form-label text-info">Sugar (Đường)</label>
+                                    <div class="col-sm-6">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="0.1" class="form-control text-end" name="Sugar" id="ing_Sugar" value="0">
+                                            <span class="input-group-text">g</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Lưu Dữ Liệu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function resetForm() {
+            document.getElementById('modalTitle').innerText = "Thêm Nguyên Liệu Mới";
+            document.getElementById('ing_ID').value = "0";
+            document.getElementById('ing_Name').value = "";
+            document.getElementById('ing_Calo').value = "0";
+            document.getElementById('ing_Protein').value = "0";
+            document.getElementById('ing_Fat').value = "0";
+            document.getElementById('ing_Sugar').value = "0";
+        }
+
+        // Hàm hứng dữ liệu khi bấm nút Sửa
+        function editIngredient(id, name, calo, protein, fat, sugar) {
+            resetForm();
+            document.getElementById('modalTitle').innerText = "Cập Nhật Nguyên Liệu";
+            document.getElementById('ing_ID').value = id;
+            document.getElementById('ing_Name').value = name;
+
+            // Xử lý dấu chấm phẩy thập phân
+            document.getElementById('ing_Calo').value = calo.toString().replace(',', '.');
+            document.getElementById('ing_Protein').value = protein.toString().replace(',', '.');
+            document.getElementById('ing_Fat').value = fat.toString().replace(',', '.');
+            document.getElementById('ing_Sugar').value = sugar.toString().replace(',', '.');
+
+            // Chống kẹt Modal Backdrop
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('ingredientModal'));
+            myModal.show();
+        }
+    </script>
+}

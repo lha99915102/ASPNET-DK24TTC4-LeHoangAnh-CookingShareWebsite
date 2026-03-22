@@ -1,0 +1,93 @@
+﻿<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container">
+
+            <a class="navbar-brand navbar-brand-custom d-flex align-items-center" href="@Url.Action("Index", "Home")">
+                <i class="fas fa-utensils me-2" style="color: #28a745;"></i>
+                <span class="fw-bold" style="font-family: 'Dancing Script', cursive; font-size: 1.5rem; color: #ff6600;">CookingShare</span>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+
+                @{
+                    // Lấy tên Controller đang chạy để biết người dùng đang ở trang nào
+                    string currentController = ViewContext.RouteData.Values["controller"] as string ?? "Home";
+                }
+
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Home" ? "active fw-bold text-success" : "")" href="@Url.Action("Index", "Home")">Trang chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Recipe" ? "active fw-bold text-success" : "")" href="@Url.Action("Index", "Recipe")">Công thức</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Kitchen" ? "active fw-bold text-success" : "")" href="@Url.Action("Index", "Kitchen")">Góc bếp</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Community" ? "active fw-bold text-success" : "")" href="@Url.Action("Index", "Community")">Cộng đồng</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center ms-lg-4 gap-3">
+
+                    <a href="@Url.Action("Index", "Recipe")" class="text-dark search-icon" id="search-trigger" title="Tìm kiếm công thức">
+                        <i class="fas fa-search"></i>
+                    </a>
+
+                    <a href="@Url.Action("MyProfile", "User")" class="nav-link position-relative text-dark" title="Thông báo">
+                        <i class="fas fa-bell fa-lg"></i>
+                        @Html.Action("GetUnreadNotiBadge", "User")
+                    </a>
+
+                    @if (Session["Account"] == null)
+                    {
+                        <a href="@Url.Action("Login", "Account")" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Đăng nhập</a>
+                        <a href="@Url.Action("Register", "Account")" class="btn btn-orange btn-sm rounded-pill px-3 shadow-sm" style="background-color: #ff6600; color: white; border: none;">Đăng ký</a>
+                    }
+                    else
+                    {
+                        var currentUser = (CookingShare.Models.ACCOUNT)Session["Account"];
+                        var userProfile = currentUser.PROFILE;
+
+                        string safeChar = System.Web.HttpUtility.UrlEncode(currentUser.UserName.Substring(0, 1).ToUpper());
+                        string navAvatar = $"https://placehold.co/40x40/28a745/FFF?text={safeChar}";
+
+                        if (userProfile != null && !string.IsNullOrEmpty(userProfile.Avatar) && userProfile.Avatar != "default-avatar.png")
+                        {
+                            navAvatar = (userProfile.Avatar.StartsWith("http") || userProfile.Avatar.StartsWith("/"))
+                                        ? userProfile.Avatar
+                                        : Url.Content("~/assets/images/avatars/" + userProfile.Avatar);
+                        }
+
+                        <div class="dropdown">
+                            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="@navAvatar" alt="User" class="rounded-circle border border-2 border-success me-2" style="width: 35px; height: 35px; object-fit: cover;" onerror="this.src='https://placehold.co/40x40/28a745/FFF?text=U'">
+                                <span class="fw-bold text-dark d-none d-md-inline">@(userProfile != null && !string.IsNullOrEmpty(userProfile.FullName) ? userProfile.FullName : currentUser.UserName)</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item py-2" href="@Url.Action("MyProfile", "User")"><i class="fas fa-user-circle me-2 text-success"></i>Trang cá nhân</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+
+                        <a href="@Url.Action("Create", "Recipe")" class="btn btn-sm rounded-circle shadow-sm text-white" style="background-color: #ff6600; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;" title="Đăng công thức mới">
+                            <i class="fas fa-plus"></i>
+                        </a>
+
+                        <a id="nav-cart-btn" href="@Url.Action("Grocery", "Recipe")" class="nav-link text-success position-relative" data-bs-toggle="tooltip" title="Giỏ đi chợ">
+                            <i class="fas fa-shopping-basket fa-lg"></i>
+                            @Html.Action("CartCount", "Recipe", new { area = "" })
+                        </a>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

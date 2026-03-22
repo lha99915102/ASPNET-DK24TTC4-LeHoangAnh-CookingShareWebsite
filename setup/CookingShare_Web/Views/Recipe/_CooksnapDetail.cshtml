@@ -1,0 +1,156 @@
+﻿@model CookingShare.Models.COOKSNAP
+
+@{
+    // XỬ LÝ ẢNH THÀNH QUẢ (COOKSNAP) THÔNG MINH
+    string snapImgUrl = "https://placehold.co/800x800?text=Thành+Quả";
+    if (!string.IsNullOrEmpty(Model.ImageName))
+    {
+        if (!Model.ImageName.StartsWith("/") && !Model.ImageName.StartsWith("http"))
+        {
+            snapImgUrl = Url.Content("~/assets/images/cooksnaps/" + Model.ImageName);
+        }
+        else
+        {
+            snapImgUrl = Model.ImageName;
+        }
+    }
+
+    // LẤY THÔNG TIN TÁC GIẢ BỨC ẢNH (Hỗ trợ ảnh Google)
+    string authorName = Model.ACCOUNT != null ? Model.ACCOUNT.UserName : "Đầu bếp";
+    string safeAuthorChar = System.Web.HttpUtility.UrlEncode(authorName.Substring(0, 1).ToUpper());
+    string authorAva = "https://placehold.co/40x40/28a745/FFF?text=" + safeAuthorChar;
+
+    if (Model.ACCOUNT?.PROFILE != null)
+    {
+        if (!string.IsNullOrEmpty(Model.ACCOUNT.PROFILE.FullName)) { authorName = Model.ACCOUNT.PROFILE.FullName; }
+
+        var ava = Model.ACCOUNT.PROFILE.Avatar;
+        if (!string.IsNullOrEmpty(ava) && ava != "default-avatar.png")
+        {
+            authorAva = (ava.StartsWith("http") || ava.StartsWith("/")) ? ava : Url.Content("~/assets/images/avatars/" + ava);
+        }
+    }
+}
+
+<div class="row g-0" style="height: 85vh; min-height: 500px; max-height: 800px;">
+
+    <div class="col-md-7 d-flex align-items-center justify-content-center position-relative h-100" style="background-color: #2b2d31;">
+        <img src="@snapImgUrl" class="img-fluid object-fit-contain w-100 h-100" alt="Cooksnap" onerror="this.src='https://placehold.co/800x800?text=Lỗi+Ảnh'">
+    </div>
+
+    <div class="col-md-5 d-flex flex-column bg-white h-100">
+
+        <div class="flex-grow-1 overflow-auto p-0">
+
+            <div class="d-flex p-3 border-bottom position-relative">
+                <img src="@authorAva" class="rounded-circle me-3 object-fit-cover mt-1" style="width: 40px; height: 40px;" onerror="this.src='https://placehold.co/40x40/28a745/FFF?text=U'">
+                <div class="flex-grow-1 pe-4">
+                    <div class="d-flex flex-column">
+                        <span class="text-dark" style="font-size: 0.95rem;">
+                            <a href="@Url.Action("PublicProfile", "User", new { id = Model.AccountID })" class="fw-bold text-dark text-decoration-none me-1 hover-orange">@authorName</a>
+                            @Model.Content
+                        </span>
+                    </div>
+                    <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
+                        @(Model.CreateDate.HasValue ? Model.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")
+                    </small>
+                </div>
+
+                <button class="btn btn-sm text-danger position-absolute top-0 end-0 m-2 p-1 bg-white border-0" onclick="openReportModal(@Model.ID, 3)" title="Báo cáo bài viết này">
+                    <i class="far fa-flag fa-lg"></i>
+                </button>
+            </div>
+
+            @if (Model.COOKSNAP_COMMENT != null && Model.COOKSNAP_COMMENT.Any(c => c.Status == 1))
+            {
+                foreach (var cmt in Model.COOKSNAP_COMMENT.Where(c => c.Status == 1).OrderBy(c => c.CreateDate))
+                {
+                    string cmtName = cmt.ACCOUNT != null ? cmt.ACCOUNT.UserName : "Khách";
+                    string safeCmtChar = System.Web.HttpUtility.UrlEncode(cmtName.Substring(0, 1).ToUpper());
+                    string cmtAva = "https://placehold.co/40x40/6c757d/FFF?text=" + safeCmtChar;
+
+                    // Hỗ trợ ảnh Google cho người bình luận
+                    if (cmt.ACCOUNT?.PROFILE != null)
+                    {
+                        if (!string.IsNullOrEmpty(cmt.ACCOUNT.PROFILE.FullName)) { cmtName = cmt.ACCOUNT.PROFILE.FullName; }
+
+                        var cAva = cmt.ACCOUNT.PROFILE.Avatar;
+                        if (!string.IsNullOrEmpty(cAva) && cAva != "default-avatar.png")
+                        {
+                            cmtAva = (cAva.StartsWith("http") || cAva.StartsWith("/")) ? cAva : Url.Content("~/assets/images/avatars/" + cAva);
+                        }
+                    }
+
+                    <div class="d-flex p-3 border-bottom position-relative">
+                        <img src="@cmtAva" class="rounded-circle me-3 object-fit-cover mt-1" style="width: 40px; height: 40px;" onerror="this.src='https://placehold.co/40x40/6c757d/FFF?text=U'">
+                        <div class="flex-grow-1 pe-4">
+                            <div class="d-flex flex-column">
+                                <span class="text-dark" style="font-size: 0.95rem;">
+                                    <a href="@Url.Action("PublicProfile", "User", new { id = cmt.AccountID })" class="fw-bold text-dark text-decoration-none me-1 hover-orange">@cmtName</a>
+                                    @cmt.Content
+                                </span>
+                            </div>
+                            <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
+                                @(cmt.CreateDate.HasValue ? cmt.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")
+                            </small>
+                        </div>
+
+                        <button class="btn btn-sm text-secondary position-absolute top-0 end-0 m-2 p-1 bg-white border-0" onclick="openReportModal(@cmt.ID, 5)" title="Báo cáo bình luận này">
+                            <i class="far fa-flag"></i>
+                        </button>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="far fa-comments fa-2x mb-2 opacity-50"></i>
+                    <p class="small mb-0">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                </div>
+            }
+        </div>
+
+        <div class="p-3 border-top bg-white z-1">
+            <form action="@Url.Action("AddCooksnapComment", "Recipe")" method="POST" class="d-flex align-items-center mb-0">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="CooksnapID" value="@Model.ID" />
+                <input type="hidden" name="RecipeID" value="@Model.RecipeID" />
+
+                <input type="text" name="Content" class="form-control border-0 shadow-none px-0" placeholder="Thêm bình luận..." required autocomplete="off" style="font-size: 0.95rem;">
+                <button type="submit" class="btn fw-bold px-3 text-nowrap bg-transparent border-0" style="color: #ff6600;">Đăng</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Làm đẹp thanh cuộn */
+    .overflow-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .overflow-auto::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .overflow-auto::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,0.15);
+        border-radius: 10px;
+    }
+
+        .overflow-auto::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.3);
+        }
+
+    /* Bỏ viền xanh khi ấn vào ô input bình luận */
+    input[name="Content"]:focus {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .hover-orange:hover {
+        color: #ff6600 !important;
+    }
+</style>

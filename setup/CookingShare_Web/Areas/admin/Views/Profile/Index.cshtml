@@ -1,0 +1,227 @@
+﻿@model CookingShare.Models.PROFILE
+@{
+    ViewBag.Title = "Hồ sơ Cá nhân";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var account = ViewBag.Account as CookingShare.Models.ACCOUNT;
+
+    // Xử lý đường dẫn Avatar thông minh và đồng bộ
+    string firstChar = !string.IsNullOrWhiteSpace(account.UserName) ? account.UserName.Substring(0, 1).ToUpper() : "A";
+    string fallbackAva = $"https://placehold.co/150x150/ff6600/FFFFFF?text={firstChar}";
+
+    string avatarUrl = Url.Content("~/assets/images/avatars/default-avatar.png");
+
+    if (!string.IsNullOrEmpty(Model.Avatar) && Model.Avatar != "default-avatar.png")
+    {
+        if (!Model.Avatar.StartsWith("/") && !Model.Avatar.StartsWith("http"))
+        {
+            avatarUrl = Url.Content("~/assets/images/avatars/" + Model.Avatar);
+        }
+        else
+        {
+            avatarUrl = Model.Avatar;
+        }
+    }
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-4 shadow-sm"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="row">
+    <div class="col-xl-4">
+        <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
+            <div class="card-body text-center py-5 bg-primary text-white">
+                <div class="position-relative d-inline-block mb-3">
+                    <img id="avatarPreview" src="@avatarUrl" class="rounded-circle border border-4 border-white shadow-sm object-fit-cover bg-white" style="width: 150px; height: 150px;" alt="Profile Image" onerror="this.onerror=null; this.src='@fallbackAva';">
+                </div>
+                <h4 class="fw-bold mb-1">@Model.FullName</h4>
+                <p class="text-white-50 mb-3">@@@account.UserName</p>
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm"><i class="fas fa-shield-alt me-1"></i> Quản trị viên (Super Admin)</span>
+            </div>
+            <div class="card-footer bg-white border-top-0 px-4 py-4">
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
+                    <span class="text-muted fw-bold small">Ngày tham gia:</span>
+                    <span class="text-dark small fw-semibold">@(account.RegistDate.HasValue ? account.RegistDate.Value.ToString("dd/MM/yyyy") : "N/A")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted fw-bold small">Trạng thái:</span>
+                    <span class="text-success fw-bold small"><i class="fas fa-circle me-1" style="font-size: 10px;"></i> Đang hoạt động</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4 rounded-top-4">
+                <ul class="nav nav-tabs fw-bold" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active text-primary" data-bs-toggle="tab" data-bs-target="#edit-profile" type="button" role="tab"><i class="fas fa-user-edit me-2"></i>Chỉnh sửa thông tin</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-danger" data-bs-toggle="tab" data-bs-target="#change-password" type="button" role="tab"><i class="fas fa-key me-2"></i>Đổi mật khẩu</button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="tab-content" id="profileTabContent">
+
+                    <div class="tab-pane fade show active" id="edit-profile" role="tabpanel">
+                        <form action="@Url.Action("UpdateProfile", "Profile", new { area = "Admin" })" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+
+                            <h6 class="text-uppercase text-muted fw-bold mb-3 small">Thông tin cá nhân</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Họ và tên</label>
+                                    <input type="text" class="form-control bg-light" name="FullName" value="@Model.FullName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Giới tính</label>
+                                    <select class="form-select bg-light" name="Gender">
+                                        <option value="Nam" @(Model.Gender == "Nam" ? "selected" : "")>Nam</option>
+                                        <option value="Nữ" @(Model.Gender == "Nữ" ? "selected" : "")>Nữ</option>
+                                        <option value="Khác" @(Model.Gender == "Khác" ? "selected" : "")>Khác</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Tài khoản (Username)</label>
+                                    <input type="text" class="form-control bg-light text-muted" value="@account.UserName" readonly disabled title="Không thể đổi tên đăng nhập">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Đổi Ảnh đại diện</label>
+                                    <input type="file" class="form-control bg-light" name="AvatarFile" accept="image/jpeg, image/png, image/jpg" onchange="previewImage(this)">
+                                </div>
+                            </div>
+
+                            <h6 class="text-uppercase text-muted fw-bold mb-3 small mt-4 border-top pt-4">Thông tin liên hệ & Giới thiệu</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Email</label>
+                                    <input type="email" class="form-control bg-light" name="Email" value="@account.Email" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Số điện thoại</label>
+                                    <input type="text" class="form-control bg-light" name="Phone" value="@account.Phone">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Giới thiệu (Bio)</label>
+                                    <textarea class="form-control bg-light" name="Bio" rows="4" placeholder="Viết một chút về bản thân bạn...">@Model.Bio</textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-end mt-4 pt-3 border-top">
+                                <button type="submit" class="btn btn-primary fw-bold px-5 py-2 rounded-pill shadow-sm"><i class="fas fa-save me-2"></i> Lưu thay đổi</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="change-password" role="tabpanel">
+                        <form action="@Url.Action("ChangePassword", "Profile", new { area = "Admin" })" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <div class="alert alert-info border-0 small mb-4 shadow-sm">
+                                <i class="fas fa-info-circle me-2"></i> Để đảm bảo an toàn, vui lòng sử dụng mật khẩu có ít nhất 6 ký tự, bao gồm cả chữ và số.
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Mật khẩu hiện tại</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control bg-light" id="oldPwd" name="OldPassword" placeholder="Nhập mật khẩu bạn đang sử dụng..." required>
+                                    <button class="btn btn-outline-secondary bg-white" type="button" onclick="togglePassword('oldPwd', 'eyeOld')">
+                                        <i class="fas fa-eye text-muted" id="eyeOld"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Mật khẩu mới</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control bg-light" id="newPwd" name="NewPassword" placeholder="Tạo mật khẩu mới..." required>
+                                    <button class="btn btn-outline-secondary bg-white" type="button" onclick="togglePassword('newPwd', 'eyeNew')">
+                                        <i class="fas fa-eye text-muted" id="eyeNew"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Xác nhận mật khẩu mới</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control bg-light" id="confirmPwd" name="ConfirmPassword" placeholder="Nhập lại mật khẩu mới một lần nữa..." required>
+                                    <button class="btn btn-outline-secondary bg-white" type="button" onclick="togglePassword('confirmPwd', 'eyeConfirm')">
+                                        <i class="fas fa-eye text-muted" id="eyeConfirm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="text-end mt-4 pt-3 border-top">
+                                <button type="submit" class="btn btn-danger fw-bold px-5 py-2 rounded-pill shadow-sm"><i class="fas fa-key me-2"></i> Cập nhật Mật khẩu</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Giữ vị trí Tab khi tải lại trang
+        document.addEventListener("DOMContentLoaded", function () {
+            let activeTabTarget = localStorage.getItem('cookingShareProfileTab');
+            if (activeTabTarget) {
+                let tabButton = document.querySelector(`button[data-bs-target="${activeTabTarget}"]`);
+                if (tabButton) {
+                    let tabInstance = new bootstrap.Tab(tabButton);
+                    tabInstance.show();
+                }
+            }
+
+            let tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
+            tabElements.forEach(function (tabEl) {
+                tabEl.addEventListener('shown.bs.tab', function (event) {
+                    let target = event.target.getAttribute("data-bs-target");
+                    localStorage.setItem('cookingShareProfileTab', target);
+                });
+            });
+        });
+
+        // Hiển thị ảnh Avatar ngay lập tức khi Admin chọn file
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                // Kiểm tra dung lượng (giới hạn 5MB)
+                if (input.files[0].size > 5 * 1024 * 1024) {
+                    alert("Vui lòng chọn ảnh có dung lượng nhỏ hơn 5MB!");
+                    input.value = '';
+                    return;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // HÀM ẨN/HIỆN MẬT KHẨU TÍCH HỢP CHO NHIỀU Ô
+        function togglePassword(inputId, iconId) {
+            const pwdInput = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
+
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text"; // Hiện chữ
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash"); // Đổi icon thành mắt gạch chéo
+            } else {
+                pwdInput.type = "password"; // Ẩn chữ thành dấu chấm
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye"); // Đổi icon về mắt bình thường
+            }
+        }
+    </script>
+}

@@ -1,0 +1,307 @@
+﻿@model IEnumerable<CookingShare.Models.ACCOUNT>
+@{
+    ViewBag.Title = "Quản lý Người dùng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int currentAdminId = ViewBag.CurrentAdminID ?? 0;
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-primary text-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="mb-1">Tổng Thành Viên</h6>
+                    <h3 class="mb-0 fw-bold">@ViewBag.TotalUsers</h3>
+                </div>
+                <i class="fas fa-users fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-success text-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="mb-1">Đang Hoạt Động</h6>
+                    <h3 class="mb-0 fw-bold">@ViewBag.ActiveUsers</h3>
+                </div>
+                <i class="fas fa-user-check fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-danger text-white">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="mb-1">Bị Khóa (Banned)</h6>
+                    <h3 class="mb-0 fw-bold">@ViewBag.BannedUsers</h3>
+                </div>
+                <i class="fas fa-user-lock fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#userModal" onclick="resetUserForm()">
+        <i class="fas fa-plus-circle me-2"></i>Thêm Tài khoản
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle datatable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th>Họ Tên / Username</th>
+                    <th>Liên hệ (Email/SĐT)</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Đóng góp</th>
+                    <th>Ngày tham gia</th>
+                    <th class="text-end" style="min-width: 140px;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    // Tên hiển thị
+                    string fullName = item.PROFILE != null && !string.IsNullOrWhiteSpace(item.PROFILE.FullName) ? item.PROFILE.FullName : item.UserName;
+                    string bgClass = item.Status == 0 ? "table-danger opacity-75" : "";
+
+                    // Mã hóa chuỗi để bỏ vào tham số Javascript 
+                    string safeFullName = System.Web.HttpUtility.JavaScriptStringEncode(fullName);
+                    string safeUserName = System.Web.HttpUtility.JavaScriptStringEncode(item.UserName ?? "");
+                    string safeEmail = System.Web.HttpUtility.JavaScriptStringEncode(item.Email ?? "");
+                    string safePhone = System.Web.HttpUtility.JavaScriptStringEncode(item.Phone ?? "");
+
+                    // Logic Avatar thông minh lấy mặc định nếu trống
+                    string defaultAvaUrl = Url.Content("~/assets/images/avatars/default-avatar.png");
+                    string finalAvaUrl = defaultAvaUrl;
+
+                    if (item.PROFILE != null && !string.IsNullOrWhiteSpace(item.PROFILE.Avatar) && item.PROFILE.Avatar != "default-avatar.png")
+                    {
+                        if (!item.PROFILE.Avatar.StartsWith("/") && !item.PROFILE.Avatar.StartsWith("http"))
+                        {
+                            finalAvaUrl = Url.Content("~/assets/images/avatars/" + item.PROFILE.Avatar);
+                        }
+                        else
+                        {
+                            finalAvaUrl = item.PROFILE.Avatar;
+                        }
+                    }
+
+                    <tr class="@bgClass">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="@finalAvaUrl" class="rounded-circle me-2 object-fit-cover shadow-sm border" style="width: 40px; height: 40px;" alt="Avatar" onerror="this.onerror=null; this.src='@defaultAvaUrl';">
+                                <div>
+                                    <span class="fw-bold text-dark d-block @(item.Status == 0 ? "text-decoration-line-through" : "")">@fullName</span>
+                                    <small class="text-muted"><i class="fas fa-user text-secondary" style="width:12px"></i> @item.UserName</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="text-muted d-block @(item.Status == 0 ? "text-decoration-line-through" : "")"><i class="fas fa-envelope text-secondary" style="width:15px"></i> @item.Email</span>
+                            <small class="text-muted"><i class="fas fa-phone-alt text-secondary" style="width:15px"></i> @(string.IsNullOrEmpty(item.Phone) ? "Chưa có SĐT" : item.Phone)</small>
+                        </td>
+                        <td>
+                            @if (item.Role == 1)
+                            {<span class="badge bg-primary"><i class="fas fa-shield-alt me-1"></i> Quản trị viên</span> }
+                            else
+                            { <span class="badge bg-secondary">Thành viên</span>}
+                        </td>
+                        <td>
+                            @if (item.Status == 1)
+                            {<span class="badge bg-success">Hoạt động</span> }
+                            else
+                            { <span class="badge bg-danger"><i class="fas fa-ban me-1"></i> Bị khóa</span>}
+                        </td>
+                        <td><span class="fw-bold text-orange">@(item.RECIPE != null ? item.RECIPE.Count : 0)</span> công thức</td>
+                        <td>@(item.RegistDate.HasValue ? item.RegistDate.Value.ToString("dd/MM/yyyy") : "")</td>
+                        <td class="text-end">
+
+                            <a href="@Url.Action("Details", "User", new { area = "Admin", id = item.ID })" class="btn btn-sm btn-outline-info me-1" title="Xem chi tiết hoạt động">
+                                <i class="fas fa-eye"></i>
+                            </a>
+
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser(@item.ID, '@safeFullName', '@safeUserName', '@safeEmail', '@safePhone', @item.Role, @item.Status)" title="Chỉnh sửa thông tin & Mật khẩu">
+                                <i class="fas fa-edit"></i>
+                            </button>
+
+                            <form action="@Url.Action("ToggleStatus", "User", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Đổi trạng thái tài khoản này?');">
+                                <input type="hidden" name="id" value="@item.ID" />
+                                @Html.AntiForgeryToken()
+                                @if (item.ID == currentAdminId)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Tài khoản của bạn"><i class="fas fa-lock"></i></button>
+                                }
+                                else if (item.Status == 1)
+                                {
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Khóa tài khoản"><i class="fas fa-lock"></i></button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Mở khóa tài khoản"><i class="fas fa-unlock"></i></button>
+                                }
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold" id="modalUserTitle">Cập nhật Người dùng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="@Url.Action("Save", "User", new { area = "Admin" })" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ID" id="u_ID" value="0" />
+
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 p-2 small mb-4 shadow-sm text-center">
+                        <i class="fas fa-info-circle me-1"></i> User có thể đăng nhập bằng <b>Tên đăng nhập</b>, <b>Email</b> hoặc <b>Số điện thoại</b>.
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Họ và Tên</label>
+                            <input type="text" class="form-control bg-light" name="FullName" id="u_FullName" placeholder="VD: Lê Hoàng Anh" required>
+                        </div>
+                        <div class="col-md-6 mt-3 mt-md-0">
+                            <label class="form-label fw-bold text-secondary">Tên đăng nhập (Username)</label>
+                            <input type="text" class="form-control bg-light" name="UserName" id="u_UserName" placeholder="VD: hoanganh2024" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Email</label>
+                            <input type="email" class="form-control bg-light" name="Email" id="u_Email" placeholder="email@example.com" required>
+                        </div>
+                        <div class="col-md-6 mt-3 mt-md-0">
+                            <label class="form-label fw-bold text-secondary">Số điện thoại</label>
+                            <input type="tel" class="form-control bg-light" name="Phone" id="u_Phone" placeholder="VD: 0987654321">
+                        </div>
+                    </div>
+
+                    <div class="mb-4 bg-light p-3 rounded-3 border">
+                        <label class="form-label fw-bold text-danger"><i class="fas fa-key me-1"></i> Đổi Mật khẩu</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" name="Password" id="u_Password" placeholder="Nhập mật khẩu mới...">
+                            <button class="btn btn-outline-secondary bg-white" type="button" id="btnTogglePassword" onclick="togglePasswordVisibility()">
+                                <i class="fas fa-eye text-muted" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted fst-italic mt-2 d-block" id="pwdHint">
+                            Chỉ nhập khi bạn muốn đổi mật khẩu mới cho người dùng này. Bỏ trống nếu muốn giữ nguyên mật khẩu cũ.
+                        </small>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <label class="form-label fw-bold text-secondary">Vai trò</label>
+                            <select class="form-select bg-light" name="Role" id="u_Role">
+                                <option value="2">Thành viên (Member)</option>
+                                <option value="1">Quản trị viên (Admin)</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold text-secondary">Trạng thái</label>
+                            <select class="form-select bg-light" name="Status" id="u_Status">
+                                <option value="1">Đang hoạt động</option>
+                                <option value="0">Khóa (Banned)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="fas fa-save me-1"></i> Lưu Thay Đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function resetUserForm() {
+            document.getElementById('modalUserTitle').innerText = "Thêm Người Dùng Mới";
+            document.getElementById('pwdHint').innerHTML = "Vui lòng đặt mật khẩu ban đầu (Hệ thống sẽ sinh tự động mật khẩu <b>123456</b> nếu bỏ trống).";
+
+            document.getElementById('u_ID').value = "0";
+            document.getElementById('u_FullName').value = "";
+            document.getElementById('u_UserName').value = "";
+            document.getElementById('u_Email').value = "";
+            document.getElementById('u_Phone').value = "";
+
+            document.getElementById('u_Password').value = "";
+            document.getElementById('u_Password').placeholder = "Nhập mật khẩu (Mặc định: 123456)";
+
+            document.getElementById('u_Role').value = "2";
+            document.getElementById('u_Status').value = "1";
+
+            hidePassword();
+        }
+
+        function editUser(id, name, username, email, phone, role, status) {
+            resetUserForm();
+            document.getElementById('modalUserTitle').innerText = "Cập Nhật Thông Tin: " + name;
+            document.getElementById('pwdHint').innerText = "Chỉ nhập khi bạn muốn đổi mật khẩu mới cho người dùng này. Bỏ trống nếu muốn giữ nguyên mật khẩu cũ.";
+
+            document.getElementById('u_ID').value = id;
+            document.getElementById('u_FullName').value = name;
+            document.getElementById('u_UserName').value = username;
+            document.getElementById('u_Email').value = email;
+            document.getElementById('u_Phone').value = phone;
+
+            document.getElementById('u_Password').value = "";
+            document.getElementById('u_Password').placeholder = "Nhập mật khẩu mới (Bỏ trống nếu giữ nguyên)...";
+
+            document.getElementById('u_Role').value = role;
+            document.getElementById('u_Status').value = status;
+
+            hidePassword();
+
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('userModal'));
+            myModal.show();
+        }
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById("u_Password");
+            const eyeIcon = document.getElementById("eyeIcon");
+
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                hidePassword();
+            }
+        }
+
+        function hidePassword() {
+            const pwdInput = document.getElementById("u_Password");
+            const eyeIcon = document.getElementById("eyeIcon");
+            pwdInput.type = "password";
+            eyeIcon.classList.remove("fa-eye-slash");
+            eyeIcon.classList.add("fa-eye");
+        }
+    </script>
+}

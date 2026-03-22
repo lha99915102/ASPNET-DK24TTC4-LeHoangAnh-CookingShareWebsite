@@ -1,0 +1,230 @@
+﻿@using CookingShare.Models;
+@{
+    // Lấy thông tin Admin đang đăng nhập từ Session
+    var currentAcc = HttpContext.Current.Session["Account"] as ACCOUNT;
+    string adminName = "Quản trị viên";
+    string adminAvatar = "https://placehold.co/40x40";
+    int totalNotifications = 0;
+    int pendingRecipes = 0;
+    int pendingCommentReports = 0;
+    int pendingCommunityReports = 0;
+
+    if (currentAcc != null)
+    {
+        adminName = currentAcc.UserName;
+
+        // Bọc db vào block using để tự động Dispose() đóng kết nối Database
+        using (var db = new CookingShareDBEntities())
+        {
+            // Lấy Avatar từ Profile
+            var profile = db.PROFILE.FirstOrDefault(p => p.AccountID == currentAcc.ID);
+            if (profile != null && !string.IsNullOrEmpty(profile.Avatar))
+            {
+                adminAvatar = Url.Content("~/assets/images/avatars/" + profile.Avatar);
+            }
+
+            // Đếm thông báo thực tế
+            pendingRecipes = db.RECIPE.Count(r => r.Status == 0);
+
+            // BÓC TÁCH BÁO CÁO: Type 1, 2 (Bài viết, Bình luận) -> Tab Bình luận
+            pendingCommentReports = db.REPORT.Count(r => r.Status == 0 && r.ReportType != 3);
+
+            // BÓC TÁCH BÁO CÁO: Type 3 (Ảnh thành quả) -> Tab Cộng đồng
+            pendingCommunityReports = db.REPORT.Count(r => r.Status == 0 && r.ReportType == 3);
+
+            totalNotifications = pendingRecipes + pendingCommentReports + pendingCommunityReports;
+        }
+    }
+
+    // 2. Lấy URL hiện tại để làm sáng (Active) menu tương ứng
+    string currentUrl = Request.Url.AbsolutePath.ToLower();
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - @CookingShare.Helpers.SettingHelper.GetValue("SiteName", "CookingShare")</title>
+
+    <link href="~/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/assets/vendor/font-awesome/css/all.min.css">
+    <link href="~/Areas/Admin/assets/vendor/summernote/summernote-bs5.min.css" rel="stylesheet">
+    <link href="~/Areas/Admin/assets/vendor/datatables/css/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/Areas/Admin/assets/css/admin-style.css">
+</head>
+<body>
+
+    <nav id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center">
+            <i class="fas fa-utensils me-2" style="color: #28a745;"></i>
+            CookingShare
+        </div>
+
+        <div class="sidebar-menu">
+            <p class="menu-label">Tổng Quan</p>
+            <a href="@Url.Action("Index", "Home", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/home") || currentUrl == "/admin" ? "active" : "")">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+
+            <p class="menu-label">Kiểm Duyệt</p>
+            <a href="@Url.Action("Index", "Recipe", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/recipe") ? "active" : "")">
+                <i class="fas fa-book-open"></i> Công thức
+                @if (pendingRecipes > 0)
+                {<span class="badge bg-danger float-end rounded-pill">@pendingRecipes</span>}
+            </a>
+            <a href="@Url.Action("Index", "Tip", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/tip") ? "active" : "")">
+                <i class="fas fa-lightbulb"></i> Mẹo vặt
+            </a>
+
+            <a href="@Url.Action("Index", "Comment", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/comment") ? "active" : "")">
+                <i class="fas fa-comment"></i> Bình luận
+                @if (pendingCommentReports > 0)
+                {<span class="badge bg-danger float-end rounded-pill">@pendingCommentReports</span>}
+            </a>
+            <a href="@Url.Action("Index", "Community", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/community") ? "active" : "")">
+                <i class="fas fa-users"></i> Cộng đồng
+                @if (pendingCommunityReports > 0)
+                {<span class="badge bg-danger float-end rounded-pill">@pendingCommunityReports</span>}
+            </a>
+
+            <p class="menu-label">Dữ liệu gốc (Master Data)</p>
+            <a href="@Url.Action("Index", "Ingredient", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/ingredient") ? "active" : "")">
+                <i class="fas fa-carrot" style="width: 25px;"></i> Nguyên liệu & Calo
+            </a>
+            <a href="@Url.Action("Index", "Category", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/category") ? "active" : "")">
+                <i class="fas fa-list" style="width: 25px;"></i> Danh mục Món ăn
+            </a>
+            <a href="@Url.Action("Index", "Unit", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/unit") ? "active" : "")">
+                <i class="fas fa-balance-scale" style="width: 25px;"></i> Đơn vị quy đổi
+            </a>
+            <a href="@Url.Action("Index", "Tag", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/tag") ? "active" : "")">
+                <i class="fas fa-tags" style="width: 25px;"></i> Tag & Chế độ ăn
+            </a>
+
+            <p class="menu-label">Hệ thống</p>
+            <a href="@Url.Action("Index", "User", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/user") ? "active" : "")">
+                <i class="fas fa-user-cog"></i> Người dùng
+            </a>
+            <a href="@Url.Action("Index", "Banner", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/banner") ? "active" : "")">
+                <i class="fas fa-images"></i> Quản lý Banner
+            </a>
+            <a href="@Url.Action("Index", "Setting", new { area = "Admin" })" class="@(currentUrl.Contains("/admin/setting") ? "active" : "")">
+                <i class="fas fa-cogs"></i> Cấu hình Website
+            </a>
+
+            <div class="mt-5 px-3">
+                <a href="@Url.Action("Logout", "Auth", new { area = "Admin" })" class="btn btn-outline-light w-100 text-start border-0">
+                    <i class="fas fa-sign-out-alt text-danger"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="content">
+
+        <div class="top-navbar sticky-top">
+            <div class="d-flex align-items-center">
+                <button type="button" id="sidebarCollapse" class="btn btn-light border me-3">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h4 class="mb-0 fw-bold text-secondary d-none d-md-block">CookingShare CMS</h4>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-group d-none d-md-flex" style="width: 250px;">
+                    <input type="text" class="form-control bg-light border-0" placeholder="Tìm kiếm nhanh...">
+                    <button class="btn btn-light border-0"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="text-secondary position-relative me-2" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell fa-lg"></i>
+                        @if (totalNotifications > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                @totalNotifications
+                            </span>
+                        }
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-0" style="width: 320px;">
+                        <div class="card border-0">
+                            <div class="card-header bg-white fw-bold d-flex justify-content-between">
+                                <span>Thông báo mới</span>
+                                <span class="badge bg-danger rounded-pill">@totalNotifications</span>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                @if (pendingRecipes > 0)
+                                {
+                                    <a href="@Url.Action("Index", "Recipe", new { area = "Admin", statusFilter = 0 })" class="list-group-item list-group-item-action small py-3">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <strong class="text-primary"><i class="fas fa-book-open me-1"></i>Công thức chờ duyệt</strong>
+                                        </div>
+                                        <p class="mb-0 text-secondary mt-1">Có <strong>@pendingRecipes</strong> công thức đang chờ bạn phê duyệt.</p>
+                                    </a>
+                                }
+
+                                @if (pendingCommentReports > 0)
+                                {
+                                    <a href="@Url.Action("Index", "Comment", new { area = "Admin" })" class="list-group-item list-group-item-action small py-3" onclick="localStorage.setItem('cookingShareAdminTab', '#report');">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <strong class="text-danger"><i class="fas fa-flag me-1"></i>Báo cáo Bình luận</strong>
+                                        </div>
+                                        <p class="mb-0 text-secondary mt-1">Có <strong>@pendingCommentReports</strong> báo cáo bình luận cần xử lý.</p>
+                                    </a>
+                                }
+
+                                @if (pendingCommunityReports > 0)
+                                {
+                                    <a href="@Url.Action("Index", "Community", new { area = "Admin" })" class="list-group-item list-group-item-action small py-3" onclick="localStorage.setItem('cookingShareCommunityTab', '#report');">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <strong class="text-danger"><i class="fas fa-camera me-1"></i>Báo cáo Thành quả</strong>
+                                        </div>
+                                        <p class="mb-0 text-secondary mt-1">Có <strong>@pendingCommunityReports</strong> báo cáo ảnh/cộng đồng cần xử lý.</p>
+                                    </a>
+                                }
+
+                                @if (totalNotifications == 0)
+                                {
+                                    <div class="p-3 text-center text-muted small">Không có thông báo mới nào.</div>
+                                }
+                            </div>
+                        </div>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
+                        <img src="@adminAvatar" class="rounded-circle me-2 object-fit-cover" style="width:40px; height:40px;" alt="Admin" onerror="this.src='https://placehold.co/40x40'">
+                        <div class="d-none d-md-block text-end me-1">
+                            <span class="d-block fw-bold text-dark">@adminName</span>
+                            <span class="d-block text-muted" style="font-size: 0.7rem;">Super Admin</span>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <li><a class="dropdown-item" href="@Url.Action("Index", "Profile", new { area = "Admin" })"><i class="fas fa-user-circle me-2"></i>Hồ sơ cá nhân</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("Index", "Profile", new { area = "Admin" })"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Auth", new { area = "Admin" })"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid p-4">
+            @RenderBody()
+        </div>
+
+    </div>
+
+    <script src="~/assets/vendor/jquery/jquery.min.js"></script>
+    <script src="~/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="~/Areas/Admin/assets/vendor/chart/chart.umd.min.js"></script>
+    <script src="~/Areas/Admin/assets/vendor/summernote/summernote-bs5.min.js"></script>
+    <script src="~/Areas/Admin/assets/vendor/datatables/js/datatables.min.js"></script>
+    <script src="~/Areas/Admin/assets/js/admin-main.js"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

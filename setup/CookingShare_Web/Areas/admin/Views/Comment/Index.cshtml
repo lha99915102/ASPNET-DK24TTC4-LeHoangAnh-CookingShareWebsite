@@ -1,0 +1,366 @@
+﻿@model IEnumerable<CookingShare.Models.COMMENT>
+@{
+    ViewBag.Title = "Kiểm duyệt Tương tác & Báo cáo";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    int? currentFilter = ViewBag.CurrentFilter as int?;
+
+    var cooksnapComments = ViewBag.CooksnapComments as IEnumerable<CookingShare.Models.COOKSNAP_COMMENT>;
+    var reports = ViewBag.Reports as IEnumerable<CookingShare.Models.REPORT>;
+}
+
+@if (TempData["Success"] != null)
+{<div class="alert alert-success alert-dismissible fade show mb-3"><i class="fas fa-check-circle me-2"></i> @TempData["Success"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger alert-dismissible fade show mb-3"><i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"] <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-primary h-100">
+            <div class="card-body">
+                <h5 class="text-muted small text-uppercase fw-bold">Tổng bình luận Công thức</h5>
+                <h3 class="fw-bold mb-0">@ViewBag.TotalComments</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-danger h-100">
+            <div class="card-body">
+                <h5 class="text-muted small text-uppercase fw-bold">Bình luận bị Ẩn (Vi phạm)</h5>
+                <h3 class="fw-bold mb-0 text-danger">@ViewBag.HiddenComments</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
+            <div class="card-body">
+                <h5 class="text-muted small text-uppercase fw-bold">Báo cáo chờ xử lý</h5>
+                <h3 class="fw-bold mb-0 text-warning">@(reports != null ? reports.Count(r => r.Status == 0) : 0)</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white p-0 border-bottom">
+        <ul class="nav nav-tabs px-3 pt-3 fw-bold" id="managementTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active text-primary" id="recipe-cmt-tab" data-bs-toggle="tab" data-bs-target="#recipe-cmt" type="button"><i class="fas fa-comments me-2"></i>Bình luận Công thức</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link text-success" id="cooksnap-cmt-tab" data-bs-toggle="tab" data-bs-target="#cooksnap-cmt" type="button"><i class="fas fa-camera me-2"></i>Bình luận Thành quả</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link text-danger" id="report-tab" data-bs-toggle="tab" data-bs-target="#report" type="button">
+                    <i class="fas fa-flag me-2"></i>Báo cáo vi phạm
+                    @if (reports != null && reports.Count(r => r.Status == 0) > 0)
+                    {
+                        <span class="badge bg-danger ms-1">@(reports.Count(r => r.Status == 0))</span>
+                    }
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body">
+        <div class="tab-content" id="managementTabsContent">
+
+            <div class="tab-pane fade show active" id="recipe-cmt" role="tabpanel">
+                <div class="d-flex justify-content-end mb-3">
+                    <form action="@Url.Action("Index", "Comment", new { area = "Admin" })" method="get" id="filterForm">
+                        <select class="form-select form-select-sm w-auto border-primary" name="statusFilter" onchange="document.getElementById('filterForm').submit();">
+                            <option value="">Lọc: Tất cả bình luận</option>
+                            <option value="1" @(currentFilter == 1 ? "selected" : "")>Đang hiển thị (Hợp lệ)</option>
+                            <option value="0" @(currentFilter == 0 ? "selected" : "")>Bị ẩn (Vi phạm)</option>
+                        </select>
+                    </form>
+                </div>
+
+                <table class="table table-hover align-middle datatable" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 150px;">Người bình luận</th>
+                            <th style="width: 200px;">Món ăn</th>
+                            <th>Nội dung & Đánh giá</th>
+                            <th style="width: 100px;">Trạng thái</th>
+                            <th class="text-end" style="width: 140px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                                string userName = item.ACCOUNT != null ? item.ACCOUNT.UserName : "Ẩn danh";
+                                string recipeName = item.RECIPE != null ? item.RECIPE.Name : "Bài viết đã xóa";
+                                string safeContent = System.Web.HttpUtility.JavaScriptStringEncode(item.Content ?? "");
+
+                                <tr class="@(item.Status == 0 ? "opacity-75 bg-light" : "")">
+                                    <td>
+                                        <h6 class="mb-0 fw-bold">@userName</h6>
+                                        <small class="text-muted d-block mb-1">@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yy HH:mm") : "")</small>
+                                        <span class="badge bg-light text-dark border shadow-sm">#@(item.ID)</span>
+                                    </td>
+                                    <td><small class="fw-bold text-primary text-break">@recipeName</small></td>
+                                    <td>
+                                        <div class="text-warning small mb-1">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= item.Rating)
+                                                {<i class="fas fa-star"></i> }
+                                                else
+                                                { <i class="far fa-star text-muted"></i>}
+                                            }
+                                        </div>
+                                        <p class="mb-0 small text-break">@item.Content</p>
+                                    </td>
+                                    <td>
+                                        @if (item.Status == 1)
+                                        {<span class="badge bg-success">Hiển thị</span> }
+                                        else
+                                        { <span class="badge bg-danger">Bị Ẩn</span>}
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-info me-1" title="Xem chi tiết"
+                                                onclick="viewComment('@item.ID', '@userName', '@System.Web.HttpUtility.JavaScriptStringEncode(recipeName)', '@safeContent', @item.Rating, '@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")')">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+
+                                        <form action="@Url.Action("ToggleStatus", "Comment", new { area = "Admin" })" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.ID" />
+                                            @if (item.Status == 1)
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-warning me-1" title="Ẩn & Phạt" onclick="return confirm('ẨN bình luận này và tự động đóng các Báo cáo liên quan?');"><i class="fas fa-eye-slash"></i></button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-success me-1" title="Khôi phục" onclick="return confirm('Khôi phục lại hiển thị bình luận này?');"><i class="fas fa-eye"></i></button>
+                                            }
+                                        </form>
+                                        <form action="@Url.Action("Delete", "Comment", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Xóa vĩnh viễn bình luận này? Hành động này không thể hoàn tác.');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.ID" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa vĩnh viễn"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="cooksnap-cmt" role="tabpanel">
+                <table class="table table-hover align-middle datatable" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 150px;">Người bình luận</th>
+                            <th style="width: 200px;">Món ăn (Thành quả)</th>
+                            <th>Nội dung</th>
+                            <th style="width: 100px;">Trạng thái</th>
+                            <th class="text-end" style="width: 140px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (cooksnapComments != null)
+                        {
+                            foreach (var item in cooksnapComments)
+                            {
+                                string userName = item.ACCOUNT != null ? item.ACCOUNT.UserName : "Ẩn danh";
+                                string recipeName = (item.COOKSNAP != null && item.COOKSNAP.RECIPE != null) ? item.COOKSNAP.RECIPE.Name : "Bài viết đã xóa";
+                                string safeContent = System.Web.HttpUtility.JavaScriptStringEncode(item.Content ?? "");
+                                string safeRecipeName = System.Web.HttpUtility.JavaScriptStringEncode(recipeName);
+
+                                <tr class="@(item.Status == 0 ? "opacity-75 bg-light" : "")">
+                                    <td>
+                                        <h6 class="mb-0 fw-bold">@userName</h6>
+                                        <small class="text-muted d-block mb-1">@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yy HH:mm") : "")</small>
+                                        <span class="badge bg-light text-dark border shadow-sm">#@(item.ID)</span>
+                                    </td>
+                                    <td><small class="fw-bold text-success text-break">@recipeName</small></td>
+                                    <td><p class="mb-0 small text-break">@item.Content</p></td>
+                                    <td>
+                                        @if (item.Status == 1)
+                                        {<span class="badge bg-success">Hiển thị</span> }
+                                        else
+                                        { <span class="badge bg-danger">Bị Ẩn</span>}
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-info me-1" title="Xem chi tiết"
+                                                onclick="viewCooksnapComment('@item.ID', '@userName', '@safeRecipeName', '@safeContent', '@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy HH:mm") : "")')">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+
+                                        <form action="@Url.Action("ToggleCooksnapStatus", "Comment", new { area = "Admin" })" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.ID" />
+                                            @if (item.Status == 1)
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-warning me-1" title="Ẩn & Phạt" onclick="return confirm('ẨN bình luận này khỏi ảnh thành quả và gửi cảnh báo?');"><i class="fas fa-eye-slash"></i></button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-success me-1" title="Khôi phục" onclick="return confirm('Khôi phục lại hiển thị bình luận này?');"><i class="fas fa-eye"></i></button>
+                                            }
+                                        </form>
+                                        <form action="@Url.Action("DeleteCooksnapComment", "Comment", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Xóa vĩnh viễn bình luận này?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.ID" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa vĩnh viễn"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="report" role="tabpanel">
+                <div class="alert alert-info small mb-3">
+                    <i class="fas fa-info-circle me-2"></i> Báo cáo sẽ tự động chuyển thành <b>Đã xử lý</b> khi bạn Ẩn/Phạt bình luận ở Tab 1 hoặc Tab 2. Ở Tab này, bạn chỉ cần bấm "Bỏ qua" với những báo cáo sai sự thật.
+                </div>
+                <table class="table table-hover align-middle datatable" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 120px;">Ngày gửi</th>
+                            <th>Lý do vi phạm</th>
+                            <th style="width: 150px;">Mã đối tượng</th>
+                            <th style="width: 150px;">Trạng thái</th>
+                            <th class="text-end" style="width: 120px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (reports != null)
+                        {
+                            foreach (var r in reports)
+                            {
+                                string statusBadge = r.Status == 0 ? "bg-warning text-dark" : (r.Status == 1 ? "bg-success" : "bg-secondary");
+                                string statusText = r.Status == 0 ? "Chờ xử lý" : (r.Status == 1 ? "Đã xử lý" : "Bỏ qua");
+                                string targetPrefix = r.ReportType == 2 ? "BL CÔNG THỨC" : (r.ReportType == 5 ? "BL THÀNH QUẢ" : "KHÁC");
+
+                                <tr class="@(r.Status != 0 ? "opacity-50 bg-light" : "fw-bold")">
+                                    <td><small class="text-muted">@(r.CreateDate.HasValue ? r.CreateDate.Value.ToString("dd/MM/yy HH:mm") : "")</small></td>
+                                    <td><p class="mb-0 small text-danger text-break">@r.Reason</p></td>
+                                    <td><span class="badge bg-light text-dark border">@targetPrefix #@(r.TargetID)</span></td>
+                                    <td><span class="badge @statusBadge">@statusText</span></td>
+                                    <td class="text-end">
+                                        @if (r.Status == 0)
+                                        {
+                                            <form action="@Url.Action("ResolveReport", "Comment", new { area = "Admin" })" method="post" style="display:inline;" onsubmit="return confirm('Xác nhận bỏ qua báo cáo này (Báo cáo không hợp lệ)?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@r.ID" />
+                                                <input type="hidden" name="status" value="2" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Bỏ qua"><i class="fas fa-times"></i> Bỏ qua</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewCommentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-comment-dots me-2 text-info"></i>Chi tiết Bình luận</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
+                    <div>
+                        <small class="text-muted d-block">Người đăng:</small>
+                        <strong class="text-dark fs-6" id="vc_UserName"></strong>
+                        <span class="badge bg-secondary ms-2" id="vc_ID"></span>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block">Thời gian:</small>
+                        <span id="vc_Date" class="small fw-bold text-secondary"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3 border-bottom pb-3">
+                    <small class="text-muted d-block mb-1">Bình luận tại món ăn:</small>
+                    <strong class="text-primary" id="vc_RecipeName"></strong>
+                </div>
+
+                <div class="mb-2">
+                    <small class="text-muted d-block mb-1">Mức độ hài lòng (Đánh giá):</small>
+                    <div id="vc_Rating" class="text-warning fs-5"></div>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted d-block mb-2">Nội dung chi tiết:</small>
+                    <div class="p-3 bg-light rounded border text-break" style="white-space: pre-wrap; font-size: 15px;" id="vc_Content"></div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // JS XỬ LÝ LƯU VỊ TRÍ TAB KHI REFRESH TRANG
+        document.addEventListener("DOMContentLoaded", function () {
+            let activeTabTarget = localStorage.getItem('cookingShareAdminTab');
+            if (activeTabTarget) {
+                let tabButton = document.querySelector(`button[data-bs-target="${activeTabTarget}"]`);
+                if (tabButton) {
+                    let tabInstance = new bootstrap.Tab(tabButton);
+                    tabInstance.show();
+                }
+            }
+
+            let tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
+            tabElements.forEach(function (tabEl) {
+                tabEl.addEventListener('shown.bs.tab', function (event) {
+                    let target = event.target.getAttribute("data-bs-target");
+                    localStorage.setItem('cookingShareAdminTab', target);
+                });
+            });
+        });
+
+        function viewComment(id, user, recipe, content, rating, date) {
+            document.getElementById('vc_ID').innerText = "#" + id;
+            document.getElementById('vc_UserName').innerText = user;
+            document.getElementById('vc_RecipeName').innerText = recipe;
+            document.getElementById('vc_Content').innerText = content;
+            document.getElementById('vc_Date').innerText = date;
+
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) starsHtml += '<i class="fas fa-star me-1"></i>';
+                else starsHtml += '<i class="far fa-star text-muted me-1"></i>';
+            }
+            document.getElementById('vc_Rating').innerHTML = starsHtml;
+
+            // Chống kẹt Modal Bootstrap
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('viewCommentModal'));
+            myModal.show();
+        }
+
+        function viewCooksnapComment(id, user, recipeName, content, date) {
+            document.getElementById('vc_ID').innerText = "#" + id;
+            document.getElementById('vc_UserName').innerText = user;
+            document.getElementById('vc_RecipeName').innerText = recipeName;
+            document.getElementById('vc_Content').innerText = content;
+            document.getElementById('vc_Date').innerText = date;
+
+            document.getElementById('vc_Rating').innerHTML = '<span class="badge bg-secondary">Bình luận ảnh thành quả (Không có đánh giá sao)</span>';
+
+            // Chống kẹt Modal Bootstrap
+            var myModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('viewCommentModal'));
+            myModal.show();
+        }
+    </script>
+}

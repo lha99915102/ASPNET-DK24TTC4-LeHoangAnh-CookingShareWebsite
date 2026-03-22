@@ -1,0 +1,299 @@
+﻿@model List<CookingShare.Models.TIP>
+
+@{
+    ViewBag.Title = "Mẹo vặt cuộc sống";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var featuredTip = ViewBag.FeaturedTip as CookingShare.Models.TIP;
+    var topTips = ViewBag.TopTips as List<CookingShare.Models.TIP>;
+    string currentTag = ViewBag.CurrentTag as string;
+}
+
+<main class="bg-light py-4">
+
+    <div class="container mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-decoration-none text-success">Trang chủ</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Mẹo vặt</li>
+            </ol>
+        </nav>
+        <div class="text-center py-3">
+            <h2 class="fw-bold display-5" style="font-family: 'Dancing Script'; color: #FF6600;">Bí kíp nhà bếp</h2>
+            <p class="text-muted">Những mẹo nhỏ giúp công việc nội trợ trở nên dễ dàng hơn</p>
+        </div>
+    </div>
+
+    <div class="container">
+
+        @if (featuredTip != null && currentTag == "Tất cả" && ViewBag.CurrentPage == 1)
+        {
+            <div class="card border-0 shadow-sm rounded-3 mb-5 overflow-hidden">
+                <div class="row g-0">
+                    <div class="col-md-7 bg-light d-flex align-items-center justify-content-center">
+                        @{
+                            string firstLetter = !string.IsNullOrWhiteSpace(featuredTip.Title) ? featuredTip.Title.Substring(0, 1).ToUpper() : "M";
+                            string safeFirstLetter = System.Web.HttpUtility.UrlEncode(firstLetter);
+                            string fallbackFtImg = $"https://placehold.co/800x500/28a745/FFFFFF?text={safeFirstLetter}";
+
+                            string ftImageSrc = fallbackFtImg;
+                            if (!string.IsNullOrWhiteSpace(featuredTip.ImageURL))
+                            {
+                                if (!featuredTip.ImageURL.StartsWith("/") && !featuredTip.ImageURL.StartsWith("http"))
+                                {
+                                    ftImageSrc = Url.Content("~/assets/images/tips/" + featuredTip.ImageURL);
+                                }
+                                else
+                                {
+                                    ftImageSrc = featuredTip.ImageURL;
+                                }
+                            }
+                        }
+
+                        <img src="@ftImageSrc" onerror="this.onerror=null; this.src='@fallbackFtImg';" class="w-100 h-100 object-fit-cover" alt="Featured" style="min-height: 350px;">
+                    </div>
+                    <div class="col-md-5 d-flex align-items-center bg-white">
+                        <div class="card-body p-4 p-lg-5">
+                            <span class="badge bg-warning text-dark mb-3 shadow-sm">Mẹo hay mỗi ngày</span>
+                            <h3 class="fw-bold mb-3">
+                                <a href="@Url.Action("Detail", "Tip", new { id = featuredTip.ID })" class="text-decoration-none text-dark">@featuredTip.Title</a>
+                            </h3>
+
+                            @{
+                                string shortContent = !string.IsNullOrEmpty(featuredTip.Content) ? featuredTip.Content : "";
+                                shortContent = System.Text.RegularExpressions.Regex.Replace(shortContent, "<.*?>", String.Empty);
+                                if (shortContent.Length > 150) { shortContent = shortContent.Substring(0, 150) + "..."; }
+                            }
+                            <p class="text-secondary mb-4">@shortContent</p>
+
+                            <a href="@Url.Action("Detail", "Tip", new { id = featuredTip.ID })" class="btn btn-outline-success rounded-pill px-4">Đọc tiếp <i class="fas fa-arrow-right ms-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row">
+
+            <div class="col-lg-8">
+
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <a href="@Url.Action("Index", "Tip")" class="btn rounded-pill btn-sm px-3 @(currentTag == "Tất cả" ? "btn-success" : "btn-white border text-secondary hover-orange")">Tất cả</a>
+                    <a href="@Url.Action("Index", "Tip", new { tag = "Bảo quản" })" class="btn rounded-pill btn-sm px-3 @(currentTag == "Bảo quản" ? "btn-success" : "btn-white border text-secondary hover-orange")">Bảo quản thực phẩm</a>
+                    <a href="@Url.Action("Index", "Tip", new { tag = "Vệ sinh" })" class="btn rounded-pill btn-sm px-3 @(currentTag == "Vệ sinh" ? "btn-success" : "btn-white border text-secondary hover-orange")">Vệ sinh nhà bếp</a>
+                    <a href="@Url.Action("Index", "Tip", new { tag = "Dinh dưỡng" })" class="btn rounded-pill btn-sm px-3 @(currentTag == "Dinh dưỡng" ? "btn-success" : "btn-white border text-secondary hover-orange")">Dinh dưỡng</a>
+                    <a href="@Url.Action("Index", "Tip", new { tag = "Kỹ năng" })" class="btn rounded-pill btn-sm px-3 @(currentTag == "Kỹ năng" ? "btn-success" : "btn-white border text-secondary hover-orange")">Kỹ năng</a>
+                </div>
+
+                <div class="row g-4">
+                    @if (Model.Count > 0)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 shadow-sm blog-card">
+                                    <div class="overflow-hidden rounded-top-3 position-relative bg-light d-flex align-items-center justify-content-center">
+                                        @{
+                                            string firstChar = !string.IsNullOrWhiteSpace(item.Title) ? item.Title.Substring(0, 1).ToUpper() : "M";
+                                            string safeChar = System.Web.HttpUtility.UrlEncode(firstChar);
+                                            string bgColor = "ff6600";
+                                            string titleLower = !string.IsNullOrWhiteSpace(item.Title) ? item.Title.ToLower() : "";
+
+                                            if (titleLower.Contains("bảo quản") || titleLower.Contains("giữ")) { bgColor = "17a2b8"; }
+                                            else if (titleLower.Contains("vệ sinh") || titleLower.Contains("sạch")) { bgColor = "dc3545"; }
+                                            else if (titleLower.Contains("dinh dưỡng") || titleLower.Contains("calo")) { bgColor = "ffc107"; }
+                                            else if (titleLower.Contains("cách") || titleLower.Contains("mẹo")) { bgColor = "28a745"; }
+
+                                            string fallbackItemImg = $"https://placehold.co/400x250/{bgColor}/FFFFFF?text={safeChar}";
+                                            string itemImgSrc = fallbackItemImg;
+
+                                            if (!string.IsNullOrWhiteSpace(item.ImageURL))
+                                            {
+                                                if (!item.ImageURL.StartsWith("/") && !item.ImageURL.StartsWith("http"))
+                                                {
+                                                    itemImgSrc = Url.Content("~/assets/images/tips/" + item.ImageURL);
+                                                }
+                                                else
+                                                {
+                                                    itemImgSrc = item.ImageURL;
+                                                }
+                                            }
+                                        }
+
+                                        <a href="@Url.Action("Detail", "Tip", new { id = item.ID })" class="d-block w-100">
+                                            <img src="@itemImgSrc" onerror="this.onerror=null; this.src='@fallbackItemImg';" class="card-img-top zoom-effect object-fit-cover" style="height: 220px; width: 100%;" alt="@item.Title">
+                                        </a>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <small class="text-orange fw-bold text-uppercase" style="font-size: 0.75rem;">Mẹo bếp</small>
+                                            <small class="text-muted ms-2">• @(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("dd/MM/yyyy") : "")</small>
+                                        </div>
+                                        <h5 class="fw-bold">
+                                            <a href="@Url.Action("Detail", "Tip", new { id = item.ID })" class="text-decoration-none text-dark stretched-link">@item.Title</a>
+                                        </h5>
+
+                                        @{
+                                            string shortDesc = !string.IsNullOrEmpty(item.Content) ? item.Content : "";
+                                            shortDesc = System.Text.RegularExpressions.Regex.Replace(shortDesc, "<.*?>", String.Empty);
+                                            if (shortDesc.Length > 90) { shortDesc = shortDesc.Substring(0, 90) + "..."; }
+                                        }
+                                        <p class="card-text text-secondary small">@shortDesc</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3 opacity-50"></i>
+                            <h6 class="text-muted">Chưa có mẹo vặt nào trong chuyên mục này.</h6>
+                        </div>
+                    }
+                </div>
+
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav class="mt-5 d-flex justify-content-center">
+                        <ul class="pagination pagination-sm">
+                            <li class="page-item custom-page-item @(ViewBag.CurrentPage == 1 ? "disabled d-none" : "")">
+                                <a class="page-link custom-page-link text-orange rounded-start-pill" href="@Url.Action("Index", "Tip", new { tag = (currentTag == "Tất cả" ? null : currentTag), page = ViewBag.CurrentPage - 1 })">Trước</a>
+                            </li>
+
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                            {
+                                <li class="page-item custom-page-item @(i == ViewBag.CurrentPage ? "active custom-active" : "") mx-1">
+                                    <a class="page-link custom-page-link @(i == ViewBag.CurrentPage ? "text-white" : "text-orange") rounded-circle border-0 fw-bold d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;" href="@Url.Action("Index", "Tip", new { tag = (currentTag == "Tất cả" ? null : currentTag), page = i })">@i</a>
+                                </li>
+                            }
+
+                            <li class="page-item custom-page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled d-none" : "")">
+                                <a class="page-link custom-page-link text-orange rounded-end-pill" href="@Url.Action("Index", "Tip", new { tag = (currentTag == "Tất cả" ? null : currentTag), page = ViewBag.CurrentPage + 1 })">Sau</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="card bg-success text-white border-0 shadow-sm rounded-3 mb-4 text-center p-4" style="background-image: url('https://www.transparenttextures.com/patterns/food.png');">
+                    <h5 class="fw-bold mb-3"><i class="far fa-envelope-open me-2"></i>Nhận mẹo hay mỗi tuần</h5>
+                    <p class="small mb-3 text-white-50">Không bỏ lỡ những bí kíp nấu ăn độc đáo gửi thẳng vào email của bạn.</p>
+                    <form onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký nhận tin!');">
+                        <input type="email" class="form-control mb-2 border-0 shadow-none text-center" placeholder="Email của bạn..." required>
+                        <button type="submit" class="btn btn-warning w-100 fw-bold text-dark shadow-sm">Đăng ký ngay</button>
+                    </form>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white border-0 fw-bold py-3"><i class="fas fa-fire text-danger me-2"></i>Bài viết nổi bật</div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @if (topTips != null)
+                            {
+                                int index = 1;
+                                foreach (var top in topTips)
+                                {
+                                    <a href="@Url.Action("Detail", "Tip", new { id = top.ID })" class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center">
+                                        <span class="fw-bold text-secondary me-3 display-6" style="opacity: 0.2;">0@(index)</span>
+                                        <div>
+                                            <h6 class="fw-bold mb-1 text-dark small line-clamp-2">@top.Title</h6>
+                                            <small class="text-muted"><i class="far fa-clock me-1"></i> @(top.CreateDate.HasValue ? top.CreateDate.Value.ToString("dd/MM/yyyy") : "")</small>
+                                        </div>
+                                    </a>
+                                    index++;
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3 position-sticky" style="top: 90px;">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-tags text-info me-2"></i>Từ khóa phổ biến</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="@Url.Action("Index", "Tip", new { tag = "Kỹ năng" })" class="badge bg-light border text-secondary text-decoration-none p-2 hover-orange">#KitchenHacks</a>
+                            <a href="@Url.Action("Index", "Tip", new { tag = "Dinh dưỡng" })" class="badge bg-light border text-secondary text-decoration-none p-2 hover-orange">#Healthy</a>
+                            <a href="@Url.Action("Index", "Tip", new { tag = "Vệ sinh" })" class="badge bg-light border text-secondary text-decoration-none p-2 hover-orange">#Clean</a>
+                            <a href="@Url.Action("Index", "Tip", new { tag = "Bảo quản" })" class="badge bg-light border text-secondary text-decoration-none p-2 hover-orange">#BaoQuan</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<style>
+    /* Hover chữ cam */
+    .hover-orange {
+        transition: color 0.2s, border-color 0.2s;
+    }
+
+        .hover-orange:hover {
+            color: #ff6600 !important;
+            border-color: #ff6600 !important;
+        }
+
+    /* Hiệu ứng zoom ảnh mượt mà */
+    .blog-card .zoom-effect {
+        transition: transform 0.4s ease;
+    }
+
+    .blog-card:hover .zoom-effect {
+        transform: scale(1.05);
+    }
+
+    /* Giới hạn số dòng text */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Giao diện nút phân trang */
+    .text-orange {
+        color: #ff6600 !important;
+    }
+
+    .custom-page-item {
+        margin: 0 5px;
+    }
+
+    .custom-page-link {
+        color: #ff6600;
+        background-color: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+        .custom-page-link:hover {
+            background-color: #e9ecef;
+            color: #ff6600;
+        }
+
+    .custom-page-item.custom-active .custom-page-link {
+        background-color: #28a745 !important;
+        color: white !important;
+        border: 2px solid #ff6600 !important;
+        box-shadow: 0 4px 8px rgba(255, 102, 0, 0.3);
+    }
+
+    .rounded-start-pill {
+        border-top-left-radius: 50rem !important;
+        border-bottom-left-radius: 50rem !important;
+    }
+
+    .rounded-end-pill {
+        border-top-right-radius: 50rem !important;
+        border-bottom-right-radius: 50rem !important;
+    }
+</style>

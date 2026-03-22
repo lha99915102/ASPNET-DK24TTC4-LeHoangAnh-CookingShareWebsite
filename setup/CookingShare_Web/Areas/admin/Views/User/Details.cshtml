@@ -1,0 +1,257 @@
+﻿@model CookingShare.Models.ACCOUNT
+
+@{
+    string fullName = Model.PROFILE != null && !string.IsNullOrEmpty(Model.PROFILE.FullName) ? Model.PROFILE.FullName : Model.UserName;
+    ViewBag.Title = "Chi tiết người dùng: " + fullName;
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    string firstChar = !string.IsNullOrWhiteSpace(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "U";
+    string fallbackAva = $"https://placehold.co/120x120/ff6600/FFFFFF?text={firstChar}";
+
+    string defaultAvaName = "default-avatar.png";
+    string finalAvaUrl = Url.Content("~/assets/images/avatars/" + defaultAvaName);
+
+    if (Model.PROFILE != null && !string.IsNullOrWhiteSpace(Model.PROFILE.Avatar) && Model.PROFILE.Avatar != defaultAvaName)
+    {
+        if (!Model.PROFILE.Avatar.StartsWith("/") && !Model.PROFILE.Avatar.StartsWith("http"))
+        {
+            finalAvaUrl = Url.Content("~/assets/images/avatars/" + Model.PROFILE.Avatar);
+        }
+        else
+        {
+            finalAvaUrl = Model.PROFILE.Avatar;
+        }
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold text-dark mb-0">
+        <i class="fas fa-user-shield me-2 text-primary"></i>Hồ Sơ Thành Viên
+    </h4>
+    <a href="@Url.Action("Index", "User", new { area = "Admin" })" class="btn btn-outline-secondary shadow-sm">
+        <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="bg-primary text-white text-center pt-4 pb-5 position-relative">
+                @if (Model.Status == 0)
+                {
+                    <span class="badge bg-danger position-absolute top-0 start-0 m-3 fs-6 px-3 shadow"><i class="fas fa-ban me-1"></i> Đã bị khóa</span>
+                }
+                else if (Model.Role == 1)
+                {
+                    <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 fs-6 px-3 shadow"><i class="fas fa-star me-1"></i> Quản trị viên</span>
+                }
+
+                <img src="@finalAvaUrl" class="rounded-circle border border-4 border-white object-fit-cover shadow" style="width: 120px; height: 120px; margin-bottom: -50px; position: relative; z-index: 2;" alt="Avatar" onerror="this.onerror=null; this.src='@fallbackAva';">
+            </div>
+            <div class="card-body text-center pt-5 pb-4">
+                <h4 class="fw-bold mb-1">@fullName</h4>
+                <p class="text-muted mb-3">@Model.UserName</p>
+
+                <div class="d-flex justify-content-center gap-3 mb-4 border-bottom pb-4">
+                    <div class="text-center">
+                        <h5 class="fw-bold mb-0 text-primary">@(Model.RECIPE != null ? Model.RECIPE.Count : 0)</h5>
+                        <small class="text-muted">Công thức</small>
+                    </div>
+                    <div class="text-center border-start ps-3 border-end pe-3">
+                        <h5 class="fw-bold mb-0 text-success">@(Model.COOKSNAP != null ? Model.COOKSNAP.Count : 0)</h5>
+                        <small class="text-muted">Thành quả</small>
+                    </div>
+                    <div class="text-center">
+                        <h5 class="fw-bold mb-0 text-info">@(Model.COMMENT != null ? Model.COMMENT.Count : 0)</h5>
+                        <small class="text-muted">Bình luận</small>
+                    </div>
+                </div>
+
+                <ul class="list-group list-group-flush text-start">
+                    <li class="list-group-item px-0 py-3 d-flex align-items-center border-0">
+                        <i class="fas fa-envelope text-secondary me-3 fa-lg" style="width: 20px;"></i>
+                        <div>
+                            <small class="d-block text-muted">Email</small>
+                            <span class="fw-semibold">@Model.Email</span>
+                        </div>
+                    </li>
+                    <li class="list-group-item px-0 py-3 d-flex align-items-center border-0">
+                        <i class="fas fa-calendar-check text-secondary me-3 fa-lg" style="width: 20px;"></i>
+                        <div>
+                            <small class="d-block text-muted">Ngày gia nhập</small>
+                            <span class="fw-semibold">@(Model.RegistDate.HasValue ? Model.RegistDate.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")</span>
+                        </div>
+                    </li>
+                    @if (Model.PROFILE != null && !string.IsNullOrEmpty(Model.PROFILE.JobTitle))
+                    {
+                        <li class="list-group-item px-0 py-3 d-flex align-items-center border-0">
+                            <i class="fas fa-briefcase text-secondary me-3 fa-lg" style="width: 20px;"></i>
+                            <div>
+                                <small class="d-block text-muted">Nghề nghiệp</small>
+                                <span class="fw-semibold">@Model.PROFILE.JobTitle</span>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white p-0 border-bottom rounded-top">
+                <ul class="nav nav-tabs px-3 pt-3 fw-bold" id="activityTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active text-primary" data-bs-toggle="tab" data-bs-target="#recipes" type="button"><i class="fas fa-book-open me-2"></i>Công thức đã đăng</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-success" data-bs-toggle="tab" data-bs-target="#cooksnaps" type="button"><i class="fas fa-camera me-2"></i>Ảnh Thành quả</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-info" data-bs-toggle="tab" data-bs-target="#comments" type="button"><i class="fas fa-comments me-2"></i>Lịch sử bình luận</button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="tab-content">
+
+                    <div class="tab-pane fade show active" id="recipes">
+                        @if (Model.RECIPE != null && Model.RECIPE.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle datatable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Tên món ăn</th>
+                                            <th>Ngày đăng</th>
+                                            <th>Lượt xem</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var r in Model.RECIPE.OrderByDescending(x => x.CreateDate))
+                                        {
+                                            <tr>
+                                                <td><a href="@Url.Action("Detail", "Recipe", new { area = "", id = r.ID })" target="_blank" class="fw-bold text-dark text-decoration-none">@r.Name</a></td>
+                                                <td><small class="text-muted">@(r.CreateDate.HasValue ? r.CreateDate.Value.ToString("dd/MM/yyyy") : "")</small></td>
+                                                <td><span class="badge bg-light text-dark border">@r.Views <i class="fas fa-eye ms-1"></i></span></td>
+                                                <td>
+                                                    @if (r.Status == 1)
+                                                    {<span class="badge bg-success">Hiển thị</span> }
+                                                    else if (r.Status == 0)
+                                                    { <span class="badge bg-warning text-dark">Chờ duyệt / Ẩn</span>}
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-5"><i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i><p>Chưa đăng tải công thức nào.</p></div>
+                        }
+                    </div>
+
+                    <div class="tab-pane fade" id="cooksnaps">
+                        @if (Model.COOKSNAP != null && Model.COOKSNAP.Any())
+                        {
+                            <div class="row g-3">
+                                @foreach (var snap in Model.COOKSNAP.OrderByDescending(x => x.CreateDate))
+                                {
+                                    string imgUrl = "https://placehold.co/300x300?text=Thành+Quả";
+                                    if (!string.IsNullOrEmpty(snap.ImageName))
+                                    {
+                                        if (!snap.ImageName.StartsWith("/") && !snap.ImageName.StartsWith("http"))
+                                        {
+                                            imgUrl = Url.Content("~/assets/images/cooksnaps/" + snap.ImageName);
+                                        }
+                                        else
+                                        {
+                                            imgUrl = snap.ImageName;
+                                        }
+                                    }
+
+                                    <div class="col-md-4">
+                                        <div class="card h-100 border-0 shadow-sm position-relative overflow-hidden @(snap.Status == 0 ? "opacity-50" : "")">
+                                            <img src="@imgUrl" class="card-img-top object-fit-cover" style="height: 150px;" alt="Cooksnap" onerror="this.src='https://placehold.co/300x300?text=Lỗi+Ảnh'">
+                                            <div class="card-body p-2 text-center">
+                                                <small class="d-block text-truncate fw-bold text-success mb-1">Món: @(snap.RECIPE != null ? snap.RECIPE.Name : "")</small>
+                                                <small class="text-muted">@(snap.CreateDate.HasValue ? snap.CreateDate.Value.ToString("dd/MM/yyyy") : "")</small>
+                                            </div>
+                                            @if (snap.Status == 0)
+                                            {<span class="badge bg-danger position-absolute top-0 start-0 m-2">Đã bị Admin Ẩn</span>}
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-5"><i class="fas fa-images fa-3x mb-3 opacity-25"></i><p>Chưa khoe ảnh thành quả nào.</p></div>
+                        }
+                    </div>
+
+                    <div class="tab-pane fade" id="comments">
+                        @if (Model.COMMENT != null && Model.COMMENT.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var cmt in Model.COMMENT.OrderByDescending(x => x.CreateDate))
+                                {
+                                    <div class="list-group-item px-0 py-3 @(cmt.Status == 0 ? "bg-light opacity-75" : "")">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <small class="fw-bold text-primary">Tại món: @(cmt.RECIPE != null ? cmt.RECIPE.Name : "")</small>
+                                            <small class="text-muted">@(cmt.CreateDate.HasValue ? cmt.CreateDate.Value.ToString("dd/MM/yy HH:mm") : "")</small>
+                                        </div>
+                                        <div class="text-warning small mb-2">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= cmt.Rating)
+                                                {<i class="fas fa-star"></i> }
+                                                else
+                                                { <i class="far fa-star text-muted"></i>}
+                                            }
+                                        </div>
+                                        <p class="mb-1 text-dark" style="font-size: 0.95rem; white-space: pre-wrap;">@cmt.Content</p>
+                                        @if (cmt.Status == 0)
+                                        {<span class="badge bg-danger">Bình luận này đã bị bạn Ẩn vì vi phạm</span>}
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-5"><i class="far fa-comment-dots fa-3x mb-3 opacity-25"></i><p>Chưa có bình luận nào.</p></div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Giữ vị trí Tab khi tải lại trang
+        document.addEventListener("DOMContentLoaded", function () {
+            let activeTabTarget = localStorage.getItem('cookingShareUserDetailTab');
+            if (activeTabTarget) {
+                let tabButton = document.querySelector(`button[data-bs-target="${activeTabTarget}"]`);
+                if (tabButton) {
+                    let tabInstance = new bootstrap.Tab(tabButton);
+                    tabInstance.show();
+                }
+            }
+
+            let tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
+            tabElements.forEach(function (tabEl) {
+                tabEl.addEventListener('shown.bs.tab', function (event) {
+                    let target = event.target.getAttribute("data-bs-target");
+                    localStorage.setItem('cookingShareUserDetailTab', target);
+                });
+            });
+        });
+    </script>
+}
